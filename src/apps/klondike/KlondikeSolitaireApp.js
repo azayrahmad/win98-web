@@ -2,6 +2,7 @@ import { Application } from "../Application.js";
 import { ICONS } from "../../config/icons.js";
 import { Game } from "./Game.js";
 import { ShowDialogWindow } from "../../components/DialogWindow.js";
+import { getItem, setItem, LOCAL_STORAGE_KEYS } from "../../utils/localStorage.js";
 import "./klondike.css";
 import "./options.css";
 import "../../styles/solitaire.css";
@@ -324,17 +325,47 @@ export class KlondikeSolitaireApp extends Application {
     const wasteContainer = this.container.querySelector(".waste-pile");
     wasteContainer.innerHTML = "";
     wasteContainer.dataset.pileType = "waste";
+
     if (this.game.wastePile.cards.length > 0) {
-      this.game.wastePile.cards.forEach((card, cardIndex) => {
-        const cardDiv = card.element;
-        // cardDiv.style.position = "absolute";
-        cardDiv.style.left = `${Math.floor(cardIndex / 8) * 3}px`;
-        cardDiv.style.top = `${Math.floor(cardIndex / 8) * 1}px`;
-        cardDiv.dataset.pileType = "waste";
-        cardDiv.dataset.cardIndex = cardIndex;
-        cardDiv.dataset.pileIndex = 0;
-        wasteContainer.appendChild(cardDiv);
-      });
+      if (this.game.drawOption === "three") {
+        const topCards = this.game.wastePile.cards.slice(-3);
+        const bottomCards = this.game.wastePile.cards.slice(0, -3);
+
+        // Render bottom cards stacked
+        bottomCards.forEach((card, cardIndex) => {
+          const cardDiv = card.element;
+          cardDiv.style.left = `0px`;
+          cardDiv.style.top = `0px`;
+          cardDiv.dataset.pileType = "waste";
+          cardDiv.dataset.cardIndex = cardIndex;
+          cardDiv.dataset.pileIndex = 0;
+          wasteContainer.appendChild(cardDiv);
+        });
+
+        // Render top cards fanned out
+        let leftOffset = 0;
+        topCards.forEach((card, cardIndex) => {
+          const cardDiv = card.element;
+          cardDiv.style.left = `${leftOffset}px`;
+          cardDiv.style.top = `0px`;
+          cardDiv.dataset.pileType = "waste";
+          cardDiv.dataset.cardIndex = bottomCards.length + cardIndex;
+          cardDiv.dataset.pileIndex = 0;
+          wasteContainer.appendChild(cardDiv);
+          leftOffset += 15;
+        });
+      } else {
+        // "Draw one" logic
+        this.game.wastePile.cards.forEach((card, cardIndex) => {
+          const cardDiv = card.element;
+          cardDiv.style.left = `0px`;
+          cardDiv.style.top = `0px`;
+          cardDiv.dataset.pileType = "waste";
+          cardDiv.dataset.cardIndex = cardIndex;
+          cardDiv.dataset.pileIndex = 0;
+          wasteContainer.appendChild(cardDiv);
+        });
+      }
     }
   }
 
@@ -548,17 +579,19 @@ export class KlondikeSolitaireApp extends Application {
     const dialogContent = document.createElement("div");
     dialogContent.className = "klondike-options-container";
 
+    const drawOption = this.game.drawOption || "one";
+
     dialogContent.innerHTML = `
       <div class="options-row">
         <fieldset>
           <legend>Draw</legend>
           <div class="options-column">
             <div class="field-row">
-              <input type="radio" id="drawOne" name="draw" value="one">
+              <input type="radio" id="drawOne" name="draw" value="one" ${drawOption === "one" ? "checked" : ""}>
               <label for="drawOne">Draw one</label>
             </div>
             <div class="field-row">
-              <input type="radio" id="drawThree" name="draw" value="three" checked>
+              <input type="radio" id="drawThree" name="draw" value="three" ${drawOption === "three" ? "checked" : ""}>
               <label for="drawThree">Draw three</label>
             </div>
           </div>
@@ -611,7 +644,11 @@ export class KlondikeSolitaireApp extends Application {
       buttons: [
         {
           label: "OK",
-          action: () => {},
+          action: () => {
+            const selectedDrawOption = dialogContent.querySelector('input[name="draw"]:checked').value;
+            setItem(LOCAL_STORAGE_KEYS.KLONDIKE_DRAW_OPTION, selectedDrawOption);
+            this.game.setDrawOption(selectedDrawOption);
+          },
         },
         {
           label: "Cancel",

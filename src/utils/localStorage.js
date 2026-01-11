@@ -24,6 +24,7 @@ export const LOCAL_STORAGE_KEYS = {
   SCREEN_RESOLUTION: 'screenResolution',
   DROPPED_FILES: 'droppedFiles',
   KLONDIKE_CARD_BACK: 'klondikeCardBack',
+  KLONDIKE_DRAW_OPTION: 'klondikeDrawOption',
 };
 
 export function getItem(key) {
