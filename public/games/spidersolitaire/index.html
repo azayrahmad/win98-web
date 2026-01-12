@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" type="image/png" href="assets/spider-16.png" />
+        <title>Spider Solitaire</title>
+
+        <!-- OS-GUI Styles -->
+        <link href="../../os-gui/layout.css" rel="stylesheet" type="text/css" />
+        <link
+            href="../../os-gui/windows-98.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../os-gui/dialog-window.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css"
+        />
+
+        <!-- Spider Solitaire-specific Styles -->
+        <link rel="stylesheet" href="solitaire.css" />
+        <link rel="stylesheet" href="spidersolitaire.css" />
+
+        <style>
+            body {
+                background-color: #008080;
+                overflow: hidden; /* Prevent scrollbars from appearing */
+                margin: 0;
+                padding: 0;
+            }
+            #screen {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="screen"></div>
+
+        <!-- Scripts -->
+        <script src="../../jquery-3.3.1.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+        <script src="../../os-gui/utils.js"></script>
+        <script src="../../os-gui/$Window.js"></script>
+        <script src="../../os-gui/MenuBar.js"></script>
+        <script src="../../os-gui/MenuPopup.js"></script>
+        <script src="DialogWindow.js"></script>
+
+        <!-- Spider Solitaire App Scripts -->
+        <script src="Pile.js"></script>
+        <script src="Card.js"></script>
+        <script src="Deck.js"></script>
+        <script src="TableauPile.js"></script>
+        <script src="StockPile.js"></script>
+        <script src="FoundationPile.js"></script>
+        <script src="Game.js"></script>
+        <script src="OptionsManager.js"></script>
+        <script src="Statistics.js"></script>
+        <script src="SpiderSolitaireApp.js"></script>
+
+        <script>
+            $(document).ready(function () {
+                // Initialize the Spider Solitaire application
+                const spiderSolitaireApp = new SpiderSolitaireApp();
+                const win = spiderSolitaireApp._createWindow();
+
+                // Center the window
+                const desktopWidth = $("#screen").width();
+                const desktopHeight = $("#screen").height();
+                const winWidth = win.width();
+                const winHeight = win.height();
+
+                win.css({
+                    left: (desktopWidth - winWidth) / 2,
+                    top: (desktopHeight - winHeight) / 2,
+                });
+            });
+        </script>
+    </body>
+</html>
