@@ -111,11 +111,92 @@ function showSetupScreen() {
     if (rightColumn) rightColumn.style.display = "none";
     if (footer) footer.style.display = "none";
 
-    if (bootLogEl) {
-        const welcomeMessage = document.createElement("div");
-        welcomeMessage.textContent = "Welcome to setup screen";
-        bootLogEl.appendChild(welcomeMessage);
-    }
+    const menuItems = ["1. Format hard drive", "2. Return"];
+    let selectedIndex = 0;
+
+    const renderMenu = () => {
+        bootLogEl.innerHTML = "";
+        menuItems.forEach((item, index) => {
+            const menuItemEl = document.createElement("div");
+            menuItemEl.textContent = item;
+            if (index === selectedIndex) {
+                menuItemEl.style.backgroundColor = "#aaaaaa";
+                menuItemEl.style.color = "black";
+            }
+            bootLogEl.appendChild(menuItemEl);
+        });
+
+        const promptEl = document.createElement("div");
+        promptEl.textContent = "Enter your choice: ";
+        const cursor = document.createElement("span");
+        cursor.className = "blinking-cursor";
+        cursor.textContent = "_";
+        promptEl.appendChild(cursor);
+        bootLogEl.appendChild(promptEl);
+    };
+
+    const handleKeyDown = (e) => {
+        switch (e.key) {
+            case "ArrowUp":
+                selectedIndex =
+                    (selectedIndex - 1 + menuItems.length) % menuItems.length;
+                renderMenu();
+                break;
+            case "ArrowDown":
+                selectedIndex = (selectedIndex + 1) % menuItems.length;
+                renderMenu();
+                break;
+            case "1":
+                selectedIndex = 0;
+                renderMenu();
+                break;
+            case "2":
+                selectedIndex = 1;
+                renderMenu();
+                break;
+            case "Enter":
+                window.removeEventListener("keydown", handleKeyDown);
+                handleMenuAction();
+                break;
+        }
+    };
+
+    const handleMenuAction = () => {
+        if (selectedIndex === 0) {
+            // Format hard drive
+            const confirmationEl = document.createElement("div");
+            confirmationEl.textContent = "Are you sure? (Y/n) ";
+            const cursor = document.createElement("span");
+            cursor.className = "blinking-cursor";
+            cursor.textContent = "_";
+            confirmationEl.appendChild(cursor);
+            bootLogEl.appendChild(confirmationEl);
+
+            const confirmationHandler = (e) => {
+                // Ignore modifier keys so user can press Shift + y
+                if (["Shift", "Control", "Alt", "Meta"].includes(e.key)) {
+                    return;
+                }
+
+                window.removeEventListener("keydown", confirmationHandler);
+                if (e.key.toLowerCase() === "y") {
+                    localStorage.clear();
+                    window.location.reload();
+                } else {
+                    // Cancellation: Re-render the menu and re-attach the main listener
+                    renderMenu();
+                    window.addEventListener("keydown", handleKeyDown);
+                }
+            };
+            window.addEventListener("keydown", confirmationHandler);
+        } else {
+            // Return
+            window.location.reload();
+        }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    renderMenu();
 }
 
 export {
