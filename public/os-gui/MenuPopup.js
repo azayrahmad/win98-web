@@ -87,7 +87,11 @@
       if (focus_parent_menu_popup) {
         this.parentMenuPopup?.element.focus({ preventScroll: true });
       }
-      (this.wrapperElement || menu_popup_el).style.display = "none";
+      if (this.wrapperElement) {
+        this.wrapperElement.style.display = "none";
+      } else {
+        menu_popup_el.style.display = "none";
+      }
       this.highlight(-1);
       options.setActiveMenuPopup(this.parentMenuPopup);
     };

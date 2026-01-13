@@ -466,7 +466,6 @@
         if (!window.debugKeepMenusOpen) {
           menu_popup.close(true);
           menu_button_el.setAttribute("aria-expanded", "false");
-          menu_popup_el.style.display = "none"; // Explicitly hide the wrapper
         }
         menus_el.dispatchEvent(new CustomEvent("default-info", {}));
       });

@@ -17,9 +17,9 @@
     // 2. Closing logic
     // ──────────────────────────────────────────────
     const closeMenu = () => {
-      if (menuPopup && menuPopup.element.parentNode) {
+      if (menuPopup && wrap.style.display !== "none") {
         menuPopup.close(false);
-        wrap.remove();
+        wrap.style.display = "none";
       }
       document.removeEventListener("pointerdown", closeMenuOnClickOutside);
     };
