@@ -3,6 +3,7 @@ import { launchApp } from "../../utils/appManager.js";
 import { playSound } from "../../utils/soundManager.js";
 import { ICONS } from "../../config/icons.js";
 import warningIconUrl from "../../assets/icons/msg_warning-0.png";
+import html2canvas from "html2canvas";
 
 export class BuggyProgramApp extends Application {
   static config = {
@@ -56,33 +57,97 @@ export class BuggyProgramApp extends Application {
 
     playSound("SystemExclamation");
 
-    setTimeout(() => {
-      const desktop = document.querySelector(".desktop");
-      if (!desktop) return;
+    const desktop = document.querySelector(".desktop");
+    if (desktop) {
+      const canvas = document.createElement("canvas");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      canvas.style.position = "absolute";
+      canvas.style.top = "0";
+      canvas.style.left = "0";
+      canvas.style.zIndex = "9998"; // Just below the active window
+      canvas.style.pointerEvents = "none"; // Initially, let clicks pass through
+      desktop.appendChild(canvas);
 
-      const trailsParent = document.createElement("div");
-      trailsParent.className = "buggy-window-trails";
-      desktop.appendChild(trailsParent);
+      const ctx = canvas.getContext("2d");
+      let isDragging = false;
+      let winSnapshotCanvas = null;
 
-      const observer = new MutationObserver(() => {
-        const trail = win.element.cloneNode(true);
-        trail.style.pointerEvents = "none";
-        trail.style.zIndex = parseInt(win.element.style.zIndex || "0") - 1;
-        trailsParent.appendChild(trail);
-      });
-      observer.observe(win.element, {
-        attributes: true,
-        attributeFilter: ["style"],
-      });
+      const titleBar = win.element.querySelector(".window-titlebar");
+
+      let dragOffsetX, dragOffsetY;
+
+      const onMouseMove = (e) => {
+        if (!isDragging) return;
+
+        // Manually move the window
+        const newX = e.clientX - dragOffsetX;
+        const newY = e.clientY - dragOffsetY;
+        win.element.style.left = `${newX}px`;
+        win.element.style.top = `${newY}px`;
+
+        // Draw the trail
+        if (winSnapshotCanvas) {
+            ctx.drawImage(
+                winSnapshotCanvas,
+                newX,
+                newY
+            );
+        }
+      };
+
+      const onMouseUp = () => {
+        isDragging = false;
+        canvas.style.pointerEvents = "none"; // Let clicks pass through again
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+      };
+
+      const onMouseDown = (e) => {
+        if (e.button !== 0) return;
+
+        // Stop the window's default drag logic
+        e.stopImmediatePropagation();
+
+        isDragging = true;
+        canvas.style.pointerEvents = "auto"; // Start capturing events
+        win.element.style.zIndex = "9999";
+
+        dragOffsetX = e.clientX - win.element.offsetLeft;
+        dragOffsetY = e.clientY - win.element.offsetTop;
+
+        // 1. Freeze the background
+        html2canvas(document.body, {
+          useCORS: true,
+          ignoreElements: (element) => element === win.element || canvas,
+        })
+          .then((bgCanvas) => {
+            ctx.drawImage(bgCanvas, 0, 0);
+
+            // 2. Capture the window snapshot *after* the background is frozen
+            return html2canvas(win.element, { useCORS: true });
+          })
+          .then((winCanvas) => {
+            winSnapshotCanvas = winCanvas;
+            // Now that we have the snapshot, we can start listening for mouse movement
+            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
+          })
+          .catch(console.error);
+      };
+
+      titleBar.addEventListener("mousedown", onMouseDown);
 
       const dispose = win.onClosed(() => {
-        observer.disconnect();
-        if (trailsParent.parentNode) {
-          desktop.removeChild(trailsParent);
+        if (canvas.parentNode) {
+          desktop.removeChild(canvas);
         }
-        dispose(); // self-disposing listener
+        titleBar.removeEventListener("mousedown", onMouseDown);
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+        dispose();
       });
-    }, 100);
+    }
 
     win.on("close", () => {
       launchApp("buggyprogram");
