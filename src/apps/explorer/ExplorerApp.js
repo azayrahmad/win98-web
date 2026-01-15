@@ -718,13 +718,6 @@ export class ExplorerApp extends Application {
         children = [...staticChildren, ...droppedFilesInThisFolder];
       }
 
-      if (item.type === "floppy") {
-        const floppyContents = floppyManager.getContents();
-        if (floppyContents) {
-          children = [...children, ...floppyContents];
-        }
-      }
-
       // Sort children alphabetically by name, but only for subfolders
       if (path !== "/") {
         children.sort((a, b) => {
@@ -922,7 +915,25 @@ export class ExplorerApp extends Application {
     return null;
   }
 
-  _launchItem(item) {
+  async _launchItem(item) {
+    // Handle floppy files
+    if (typeof item.getHandle === "function" && item.type === "file") {
+      const handle = item.getHandle();
+      const file = await handle.getFile();
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const appId = getAssociation(item.name).appId;
+        if (appId) {
+          launchApp(appId, {
+            ...item,
+            contentUrl: e.target.result,
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
     // 1. Handle navigation for folders/drives
     if (item.type === "floppy") {
       if (floppyManager.isInserted()) {

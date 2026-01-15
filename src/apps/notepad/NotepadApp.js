@@ -227,7 +227,18 @@ export class NotepadApp extends Application {
             });
         } else if (data && typeof data === "object") {
           // It's a file object from drag-and-drop or file open
-          if (data.content) {
+          if (data.contentUrl) {
+            this.fileName = data.name;
+            fetch(data.contentUrl)
+              .then(res => res.blob())
+              .then(blob => blob.text())
+              .then(text => {
+                this.editor.setValue(text);
+                this.isDirty = false;
+                this.updateTitle();
+                this.setLanguage(this.getLanguageFromExtension(this.fileName));
+              });
+          } else if (data.content) {
             this.fileName = data.name;
             const content = atob(data.content.split(",")[1]);
             this.editor.setValue(content);

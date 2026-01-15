@@ -3,10 +3,31 @@ import { apps } from "../config/apps.js";
 import { fileAssociations } from "../config/fileAssociations.js";
 import { getRecycleBinItems } from "./recycleBinManager.js";
 import { networkNeighborhood } from "../config/networkNeighborhood.js";
+import { floppyManager } from "./floppyManager.js";
 
 export function getAssociation(filename) {
   const extension = filename.split(".").pop().toLowerCase();
   return fileAssociations[extension] || fileAssociations.default;
+}
+
+function findFloppyItemByPath(pathParts) {
+  let currentLevel = floppyManager.getContents();
+  if (!currentLevel) {
+    return null;
+  }
+
+  let foundItem = null;
+  for (const part of pathParts) {
+    const item = currentLevel.find((item) => item.name === part);
+    if (item) {
+      foundItem = item;
+      currentLevel = item.children || [];
+    } else {
+      return null; // Not found
+    }
+  }
+
+  return foundItem;
 }
 
 function findNodeById(nodes, id) {
@@ -125,6 +146,21 @@ export function findItemByPath(path) {
         type: item.type || "file",
       })),
     };
+  }
+
+  if (path.startsWith("/drive-a")) {
+    const parts = path.split("/").filter(Boolean);
+    const floppyPath = parts.slice(1);
+    const floppyRoot = directory.find((item) => item.id === "drive-a");
+    const floppyItem = findFloppyItemByPath(floppyPath);
+
+    if (floppyPath.length === 0) {
+      return {
+        ...floppyRoot,
+        children: floppyManager.getContents(),
+      };
+    }
+    return floppyItem;
   }
 
   if (path === "//network-neighborhood") {
