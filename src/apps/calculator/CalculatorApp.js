@@ -323,8 +323,8 @@ export class CalculatorApp extends Application {
       degrees: "Degrees",
       radians: "Radians",
       gradients: "Gradians",
-      inv: "Inverse function",
-      hyp: "Hyperbolic function",
+      inv: "Sets the inverse function for sin, cos, tan, PI, x^y, x^2, x^3, ln, log, Ave, Sum, and s.\nThe functions automatically turn off the inverse function after a calculation is completed.",
+      hyp: "Sets the hyperbolic function for sin, cos, and tan.\nThe functions automatically turn off the hyperbolic function after a calculation is completed.",
     };
 
     Object.entries(tooltips).forEach(([id, text]) => {
@@ -361,6 +361,21 @@ export class CalculatorApp extends Application {
         );
       },
     );
+
+    const invCheckbox = this.win.$content.find("#inv")[0];
+    if (invCheckbox) {
+      invCheckbox.addEventListener("change", () => {
+        this.logic.toggleInverse();
+        // Force update to sync if logic rejected it? No, just toggle.
+      });
+    }
+
+    const hypCheckbox = this.win.$content.find("#hyp")[0];
+    if (hypCheckbox) {
+      hypCheckbox.addEventListener("change", () => {
+        this.logic.toggleHyperbolic();
+      });
+    }
   }
 
   _handleBaseChange(newBase) {
@@ -401,6 +416,13 @@ export class CalculatorApp extends Application {
     }
   }
 
+  _updateCheckboxes() {
+    const inv = this.win.$content.find("#inv")[0];
+    const hyp = this.win.$content.find("#hyp")[0];
+    if (inv) inv.checked = this.logic.isInverse;
+    if (hyp) hyp.checked = this.logic.isHyperbolic;
+  }
+
   _copyToClipboard() {
     navigator.clipboard.writeText(this.logic.currentValue).catch((err) => {
       console.error("Could not copy text: ", err);
@@ -439,6 +461,7 @@ export class CalculatorApp extends Application {
     this.win.element.addEventListener("button-action-complete", () => {
       this._updateDisplay();
       this._updateNestingLevelDisplay();
+      this._updateCheckboxes();
     });
   }
 

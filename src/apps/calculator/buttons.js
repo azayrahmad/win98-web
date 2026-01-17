@@ -180,7 +180,9 @@ const buttonDefinitions = {
     id: "F-E",
     label: "F-E",
     style: magenta,
-    tooltip: "Toggles scientific notation.",
+    tooltip:
+      "Turns scinetific notaation on and off. Numbers larger than 10^32 are always displayed exponentially. You can use F-E only with the decimal number system.",
+    action: (app) => app.logic.toggleScientificNotation(),
   }),
   "(": new CalculatorButton({
     id: "(",
@@ -221,13 +223,17 @@ const buttonDefinitions = {
     id: "dms",
     label: "dms",
     style: magenta,
-    tooltip: "Converts the displayed number to degrees-minutes-seconds format.",
+    tooltip:
+      "Converts the displayed number to degree-minute-second format (assuming that the displayed number is in degrees). To convert the displayed number to degrees (assuming that the displayed number is in degree-minute-second format), use Inv+dms. You can use dms only with the decimal number system.",
+    action: (app) => app.logic.dms(),
   }),
   Exp: new CalculatorButton({
     id: "Exp",
     label: "Exp",
     style: magenta,
-    tooltip: "Allows entry of numbers in scientific notation.",
+    tooltip:
+      "Allows entry of scientific-notation numbers. The exponent is limited to four digits. You can use only decimal digits (keys 0 through 9) in the exponent. You can use Exp only with the decimal number system.",
+    action: (app) => app.logic.expInput(),
   }),
   ln: new CalculatorButton({
     id: "ln",
