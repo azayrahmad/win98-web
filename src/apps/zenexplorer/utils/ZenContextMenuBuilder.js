@@ -108,8 +108,12 @@ export class ZenContextMenuBuilder {
           });
         } else {
           menuItems.push({
-            label: "Insert",
+            label: "Insert Disk Image...",
             action: () => this.app.driveManager.insertFloppy(),
+          });
+          menuItems.push({
+            label: "Create Blank Disk Image...",
+            action: () => this.app.driveManager.createBlankFloppy(),
           });
         }
       }

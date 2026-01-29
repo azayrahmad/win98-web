@@ -34,7 +34,7 @@ ZenExplorer follows a modular architecture to separate concerns and maintain a c
 - **Undo**: Multi-level undo for file operations.
 
 ### Media Support
-- **Drive A:**: Mount local folders as a floppy drive using the File System Access API.
+- **Drive A:**: Mount floppy disk images (.img, .ima) as a floppy drive using the File System Access API. Supports creating new blank images and automatic persistence.
 - **Drive E:**: Mount `.iso` files as a virtual CD-ROM.
 
 ### System Integration

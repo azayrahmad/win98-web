@@ -19,6 +19,7 @@
     "@zenfs/core": "^2.4.4",
     "@zenfs/dom": "^1.2.7",
     "ani-cursor": "^0.0.5",
+    "fatfs-wasm": "^3.0.7",
     "html2canvas": "^1.4.1",
     "os-gui": "^0.7.3"
   }

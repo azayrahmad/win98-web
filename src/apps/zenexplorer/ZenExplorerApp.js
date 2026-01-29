@@ -338,6 +338,10 @@ export class ZenExplorerApp extends Application {
     return this.driveManager.insertFloppy();
   }
 
+  createBlankFloppy() {
+    return this.driveManager.createBlankFloppy();
+  }
+
   ejectFloppy() {
     return this.driveManager.ejectFloppy();
   }

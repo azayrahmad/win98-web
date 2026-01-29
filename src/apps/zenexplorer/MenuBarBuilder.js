@@ -110,8 +110,13 @@ export class MenuBarBuilder {
         default: true,
       },
       {
-        label: "&Insert Floppy",
+        label: "&Insert Floppy Image...",
         action: () => this.app.insertFloppy(),
+        enabled: () => !mounts.has("/A:"),
+      },
+      {
+        label: "&Create Blank Floppy Image...",
+        action: () => this.app.createBlankFloppy(),
         enabled: () => !mounts.has("/A:"),
       },
       {
