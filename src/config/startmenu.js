@@ -4,6 +4,7 @@ import { ShowRunDialog } from "../components/RunDialog.js";
 import { ICONS } from "./icons.js";
 
 const startMenuAppIds = [
+  "zenexplorer",
   "webamp",
   "tipOfTheDay",
   "internet-explorer",

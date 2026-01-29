@@ -2,6 +2,7 @@ import { Application } from "../Application.js";
 import { ICONS } from "../../config/icons.js";
 import { ShowDialogWindow } from "../../components/DialogWindow.js";
 import "./flashplayer.css";
+import { isZenFSPath, getZenFSFileAsBlob } from "../../utils/zenfs-utils.js";
 
 export class FlashPlayerApp extends Application {
   static config = {
@@ -123,8 +124,15 @@ export class FlashPlayerApp extends Application {
     };
 
     if (typeof fileData === "string") {
-      // It's a URL from launch data
-      this.player.load(fileData).catch(handleError);
+      // It's a URL or path from launch data
+      if (isZenFSPath(fileData)) {
+        getZenFSFileAsBlob(fileData).then(async blob => {
+          const arrayBuffer = await blob.arrayBuffer();
+          this.player.load({ data: arrayBuffer }).catch(handleError);
+        }).catch(handleError);
+      } else {
+        this.player.load(fileData).catch(handleError);
+      }
     } else if (fileData instanceof File) {
       // It's a File object from the file input
       const reader = new FileReader();

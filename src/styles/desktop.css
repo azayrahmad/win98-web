@@ -125,8 +125,14 @@ html {
     color: var(--highlight-text);
 }
 
-.selected {
+.icon-label.selected {
     border: 1px dotted var(--HilightText);
+    height: auto; /* Allow height to be controlled by content/JS */
+    min-height: 1.2em; /* Ensure at least one line is visible */
+    white-space: normal !important; /* Allow text to wrap */
+    word-break: break-word; /* Ensure long words break */
+    line-height: 1.2; /* Adjust line height for better appearance */
+    padding: 2px; /* Add some padding for better text visibility */
 }
 
 .lasso {

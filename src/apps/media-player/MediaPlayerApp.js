@@ -4,6 +4,7 @@ import "./media-player.css";
 import mediaPlayerHTML from "./media-player.html?raw";
 import mediaPlayerIcon from "../../assets/img/mediaplayer.png";
 import { ICONS } from "../../config/icons.js";
+import { isZenFSPath, getZenFSFileUrl } from "../../utils/zenfs-utils.js";
 
 export class MediaPlayerApp extends Application {
   static config = {
@@ -19,6 +20,14 @@ export class MediaPlayerApp extends Application {
 
   constructor(config) {
     super(config);
+    this.blobUrl = null;
+  }
+
+  _onClose() {
+    if (this.blobUrl) {
+      URL.revokeObjectURL(this.blobUrl);
+      this.blobUrl = null;
+    }
   }
 
   _createWindow() {
@@ -299,8 +308,8 @@ export class MediaPlayerApp extends Application {
     if (data) {
       if (typeof data === "string") {
         // It's a file path
-        this.mediaElement.src = data;
-        const ext = data.split(".").pop().toLowerCase();
+        const fileName = data.split("/").pop();
+        const ext = fileName.split(".").pop().toLowerCase();
         const audioExtensions = [
           "mp3",
           "wav",
@@ -310,24 +319,38 @@ export class MediaPlayerApp extends Application {
           "flac",
           "weba",
         ];
-        if (audioExtensions.includes(ext)) {
-          this.mediaView.style.display = "none";
-          const windowChromeHeight =
-            this.win.element.offsetHeight -
-            this.win.$content.get(0).offsetHeight;
-          const newHeight =
-            this.mediaControls.offsetHeight + windowChromeHeight;
-          this.win.setDimensions({ outerHeight: newHeight });
+
+        const loadMedia = (url) => {
+          if (this.blobUrl) {
+            URL.revokeObjectURL(this.blobUrl);
+            this.blobUrl = null;
+          }
+          if (isZenFSPath(data)) {
+            this.blobUrl = url;
+          }
+          this.mediaElement.src = url;
+          if (audioExtensions.includes(ext)) {
+            this.mediaView.style.display = "none";
+            const windowChromeHeight =
+              this.win.element.offsetHeight -
+              this.win.$content.get(0).offsetHeight;
+            const newHeight =
+              this.mediaControls.offsetHeight + windowChromeHeight;
+            this.win.setDimensions({ outerHeight: newHeight });
+          } else {
+            this.mediaView.style.display = "flex";
+            this.win.setDimensions({ outerHeight: this.originalHeight });
+          }
+          this.win.title(`${fileName} - Media Player`);
+          this._setControlsDisabled(false);
+          this.mediaElement.play();
+        };
+
+        if (isZenFSPath(data)) {
+          getZenFSFileUrl(data).then(loadMedia);
         } else {
-          this.mediaView.style.display = "flex";
-          this.win.setDimensions({ outerHeight: this.originalHeight });
+          loadMedia(data);
         }
-        this.win.title(`${data.split("/").pop()} - Media Player`);
-        this._setControlsDisabled(false);
-        this.mediaElement.play();
-        this.win.title(`${data.split("/").pop()} - Media Player`);
-        this._setControlsDisabled(false);
-        this.mediaElement.play();
       } else if (data instanceof File) {
         const url = URL.createObjectURL(data);
         this._loadUrl(url);

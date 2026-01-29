@@ -32,6 +32,7 @@ import { createMainUI } from "./components/ui.js";
 import { initColorModeManager } from "./utils/colorModeManager.js";
 import screensaver from "./utils/screensaverUtils.js";
 import { initScreenManager } from "./utils/screenManager.js";
+import { fs } from "@zenfs/core";
 
 // Window Management System
 class WindowManagerSystem {
@@ -326,6 +327,7 @@ async function initializeOS() {
     window.ShowDialogWindow = ShowDialogWindow;
     window.playSound = playSound;
     window.setTheme = setTheme;
+    window.fs = fs;
     window.System.launchApp = launchApp;
     console.log("azOS initialized");
 

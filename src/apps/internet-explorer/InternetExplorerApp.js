@@ -4,6 +4,7 @@ import { AddressBar } from "../../components/AddressBar.js";
 import browseUiIcons from "../../assets/icons/browse-ui-icons.png";
 import browseUiIconsGrayscale from "../../assets/icons/browse-ui-icons-grayscale.png";
 import { ICONS } from "../../config/icons.js";
+import { isZenFSPath, getZenFSFileUrl } from "../../utils/zenfs-utils.js";
 
 export class InternetExplorerApp extends IFrameApplication {
   static config = {
@@ -22,6 +23,14 @@ export class InternetExplorerApp extends IFrameApplication {
     this.retroMode = true;
     this.history = [];
     this.historyIndex = -1;
+    this.blobUrl = null;
+  }
+
+  _onClose() {
+    if (this.blobUrl) {
+      URL.revokeObjectURL(this.blobUrl);
+      this.blobUrl = null;
+    }
   }
 
   async _onLaunch(data) {
@@ -147,21 +156,38 @@ export class InternetExplorerApp extends IFrameApplication {
 
       let finalUrl = url.trim();
 
-      const isLocal = finalUrl.startsWith("blob:") || finalUrl.startsWith("file:") || finalUrl.includes("localhost") || finalUrl.includes("127.0.0.1");
+      const isZenFS = isZenFSPath(finalUrl);
+      const isLocal = isZenFS || finalUrl.startsWith("blob:") || finalUrl.startsWith("file:") || finalUrl.includes("localhost") || finalUrl.includes("127.0.0.1");
 
       if (!isLocal && !finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
         finalUrl = `https://${finalUrl}`;
       }
       this.addressBar.setValue(finalUrl);
 
-      const targetUrl = (this.retroMode && !isLocal)
-        ? `https://web.archive.org/web/1998/${finalUrl}`
-        : finalUrl;
+      const loadIframe = async (target) => {
+        if (this.blobUrl) {
+          URL.revokeObjectURL(this.blobUrl);
+          this.blobUrl = null;
+        }
+        if (isZenFSPath(finalUrl)) {
+          this.blobUrl = target;
+        }
+        this.statusText.textContent = "Connecting to site...";
+        this.iframe.src = "about:blank";
+        this.iframe.src = target;
+      };
 
-      this.statusText.textContent = "Connecting to site...";
-      this.iframe.src = "about:blank";
-
-      this.iframe.src = targetUrl;
+      if (isZenFS) {
+        getZenFSFileUrl(finalUrl).then(loadIframe).catch(err => {
+          console.error("Failed to load ZenFS file in IE:", err);
+          this.statusText.textContent = "Failed to load local file.";
+        });
+      } else {
+        const targetUrl = (this.retroMode && !isLocal)
+          ? `https://web.archive.org/web/1998/${finalUrl}`
+          : finalUrl;
+        loadIframe(targetUrl);
+      }
     };
 
     this._updateNavButtons = () => {

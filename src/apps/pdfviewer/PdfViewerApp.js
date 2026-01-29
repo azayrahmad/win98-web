@@ -1,6 +1,7 @@
 import { Application } from "../Application.js";
 import { createPdfViewerContent } from "./pdfviewer.js";
 import { ICONS } from "../../config/icons.js";
+import { isZenFSPath, getZenFSFileAsBlob } from "../../utils/zenfs-utils.js";
 
 export class PdfViewerApp extends Application {
   static config = {
@@ -106,11 +107,17 @@ export class PdfViewerApp extends Application {
         const fileName = correctedPath.split("/").pop();
         this.win.title(`${fileName} - ${this.title}`);
 
-        const response = await fetch(correctedPath);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        let arrayBuffer;
+        if (isZenFSPath(data)) {
+          const blob = await getZenFSFileAsBlob(data);
+          arrayBuffer = await blob.arrayBuffer();
+        } else {
+          const response = await fetch(correctedPath);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          arrayBuffer = await response.arrayBuffer();
         }
-        const arrayBuffer = await response.arrayBuffer();
         const pdfData = new Uint8Array(arrayBuffer);
         await this._loadPdf(pdfData);
       } catch (error) {

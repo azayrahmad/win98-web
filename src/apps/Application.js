@@ -103,6 +103,9 @@ export class Application {
     this.win.element.dataset.appId = this.id;
 
     this.win.onClosed(() => {
+      if (typeof this._onClose === "function") {
+        this._onClose();
+      }
       if (this.hasTaskbarButton) {
         const taskbarButton = document.querySelector(
           `.taskbar-button[for="${windowId}"]`,

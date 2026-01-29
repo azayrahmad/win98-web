@@ -1,4 +1,6 @@
 import { Application } from '../Application.js';
+import { fs } from "@zenfs/core";
+import { initFileSystem } from "../../utils/zenfs-init.js";
 import './notepad.css';
 import '../../components/notepad-editor.css';
 import { languages } from '../../config/languages.js';
@@ -47,8 +49,8 @@ export class NotepadApp extends Application {
             icons: this.icon,
         });
 
-        const menuBar = this._createMenuBar();
-        this.win.setMenuBar(menuBar);
+        this.menuBar = this._createMenuBar();
+        this.win.setMenuBar(this.menuBar);
 
         this.win.$content.append('<div class="notepad-container"></div>');
         return this.win;
@@ -71,6 +73,11 @@ export class NotepadApp extends Application {
                     label: "&Save",
                     shortcutLabel: "Ctrl+S",
                     action: () => this.saveFile(),
+                },
+                {
+                    label: "Save &Locally",
+                    action: () => this.saveLocally(),
+                    enabled: () => !!this.zenfsPath,
                 },
                 {
                     label: "Save &As...",
@@ -178,7 +185,7 @@ export class NotepadApp extends Application {
         });
     }
 
-    _onLaunch(data) {
+    async _onLaunch(data) {
         const container = this.win.$content.find('.notepad-container')[0];
         this.editor = new NotepadEditor(container, {
             win: this.win,
@@ -191,6 +198,7 @@ export class NotepadApp extends Application {
         this.editor.setWordWrap(this.wordWrap);
 
         this.fileHandle = null;
+        this.zenfsPath = null;
         this.isDirty = false;
         this.fileName = 'Untitled';
         this.findState = {
@@ -202,29 +210,50 @@ export class NotepadApp extends Application {
         this.updateTitle();
 
         if (typeof data === "string") {
-          // It's a file path
-          fetch(data)
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-              }
-              return response.text();
-            })
-            .then((text) => {
-              this.fileName = data.split("/").pop();
-              this.editor.setValue(text);
-              this.isDirty = false;
-              this.updateTitle();
-              this.setLanguage(this.getLanguageFromExtension(this.fileName));
-            })
-            .catch((e) => {
-              console.error("Error loading file:", e);
-              ShowDialogWindow({
-                title: "Error",
-                text: `Could not open file: ${data}`,
-                buttons: [{ label: "OK", isDefault: true }],
-              });
-            });
+            const isZenFSPath = data.startsWith('/') && !data.startsWith('http');
+            if (isZenFSPath) {
+                try {
+                    await initFileSystem();
+                    const text = await fs.promises.readFile(data, 'utf8');
+                    this.zenfsPath = data;
+                    this.fileName = data.split("/").pop();
+                    this.editor.setValue(text);
+                    this.isDirty = false;
+                    this.updateTitle();
+                    this.setLanguage(this.getLanguageFromExtension(this.fileName));
+                } catch (e) {
+                    console.error("Error loading from ZenFS:", e);
+                    ShowDialogWindow({
+                        title: "Error",
+                        text: `Could not open file from ZenFS: ${data}`,
+                        buttons: [{ label: "OK", isDefault: true }],
+                    });
+                }
+            } else {
+                // It's a file path
+                fetch(data)
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then((text) => {
+                        this.fileName = data.split("/").pop();
+                        this.editor.setValue(text);
+                        this.isDirty = false;
+                        this.updateTitle();
+                        this.setLanguage(this.getLanguageFromExtension(this.fileName));
+                    })
+                    .catch((e) => {
+                        console.error("Error loading file:", e);
+                        ShowDialogWindow({
+                            title: "Error",
+                            text: `Could not open file: ${data}`,
+                            buttons: [{ label: "OK", isDefault: true }],
+                        });
+                    });
+            }
         } else if (data && typeof data === "object") {
           // It's a file object from drag-and-drop or file open
           if (data.content) {
@@ -629,7 +658,10 @@ export class NotepadApp extends Application {
     updateTitle() {
         const dirtyIndicator = this.isDirty ? '*' : '';
         this.win.title(`${dirtyIndicator}${this.fileName} - Notepad`);
-        this.win.element.querySelector('.menus')?.dispatchEvent(new CustomEvent('update'));
+        if (this.win) {
+            this.menuBar = this._createMenuBar();
+            this.win.setMenuBar(this.menuBar);
+        }
     }
 
     previewMarkdown() {
@@ -712,7 +744,9 @@ export class NotepadApp extends Application {
     }
 
     async saveFile() {
-        if (this.fileHandle) {
+        if (this.zenfsPath) {
+            await this.saveLocally();
+        } else if (this.fileHandle) {
             try {
                 await this.writeFile(this.fileHandle);
                 this.isDirty = false;
@@ -724,6 +758,25 @@ export class NotepadApp extends Application {
             }
         } else {
             await this.saveAs();
+        }
+    }
+
+    async saveLocally() {
+        if (!this.zenfsPath) return;
+        try {
+            await initFileSystem();
+            await fs.promises.writeFile(this.zenfsPath, this.editor.getValue());
+            this.isDirty = false;
+            this.updateTitle();
+            this.editor.statusText.textContent = 'File saved to ZenFS.';
+            setTimeout(() => this.editor.statusText.textContent = 'Ready', 2000);
+        } catch (err) {
+            console.error('Error saving to ZenFS:', err);
+            ShowDialogWindow({
+                title: "Error",
+                text: `Could not save to ZenFS: ${err.message}`,
+                buttons: [{ label: "OK", isDefault: true }],
+            });
         }
     }
 
@@ -779,7 +832,10 @@ a.href = URL.createObjectURL(blob);
             this.editor.setLanguage(lang);
         }
         // Update menu state
-        this.win.element.querySelector('.menus')?.dispatchEvent(new CustomEvent('update'));
+        if (this.win) {
+            this.menuBar = this._createMenuBar();
+            this.win.setMenuBar(this.menuBar);
+        }
     }
 
     getInlineStyledHTML() {

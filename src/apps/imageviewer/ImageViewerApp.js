@@ -2,6 +2,7 @@ import { Application } from "../Application.js";
 import { ShowDialogWindow } from "../../components/DialogWindow.js";
 import "./imageviewer.css";
 import { ICONS } from "../../config/icons.js";
+import { isZenFSPath, getZenFSFileAsBlob } from "../../utils/zenfs-utils.js";
 
 export class ImageViewerApp extends Application {
   static config = {
@@ -128,22 +129,33 @@ export class ImageViewerApp extends Application {
 
       if (typeof data === "string") {
         // It's a file path
-        fetch(data)
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.blob();
-          })
-          .then((blob) => {
-            const fileName = decodeURIComponent(data.split("/").pop());
-            const file = new File([blob], fileName);
-            this.loadFile(file);
-          })
-          .catch((e) => {
-            console.error("Error loading image:", e);
-            this.win.close(); // Close the window if the image fails to load
-          });
+        const fileName = decodeURIComponent(data.split("/").pop());
+        const handleBlob = (blob) => {
+          const file = new File([blob], fileName);
+          this.loadFile(file);
+        };
+
+        if (isZenFSPath(data)) {
+          getZenFSFileAsBlob(data)
+            .then(handleBlob)
+            .catch((e) => {
+              console.error("Error loading image from ZenFS:", e);
+              this.win.close();
+            });
+        } else {
+          fetch(data)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.blob();
+            })
+            .then(handleBlob)
+            .catch((e) => {
+              console.error("Error loading image:", e);
+              this.win.close(); // Close the window if the image fails to load
+            });
+        }
       } else if (data instanceof File) {
         this.loadFile(data);
       } else if (data && typeof data === "object") {

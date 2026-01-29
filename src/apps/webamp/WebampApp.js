@@ -7,6 +7,7 @@ import {
 import { ICONS } from "../../config/icons.js";
 import { appManager } from "../../utils/appManager.js";
 import { getWebampMenuItems } from "./webamp.js";
+import { isZenFSPath, getZenFSFileUrl, getZenFSFileAsText } from "../../utils/zenfs-utils.js";
 
 let webampInstance = null;
 let webampContainer = null;
@@ -33,6 +34,12 @@ export class WebampApp extends Application {
   constructor(config) {
     super(config);
     this.hasTaskbarButton = true;
+    this.blobUrls = [];
+  }
+
+  _revokeBlobUrls() {
+    this.blobUrls.forEach((url) => URL.revokeObjectURL(url));
+    this.blobUrls = [];
   }
 
   _createWindow() {
@@ -42,26 +49,7 @@ export class WebampApp extends Application {
   }
 
   async _onLaunch(filePath) {
-    const createTrackFromFile = (f) => ({
-      metaData: {
-        artist: f.artist || "Unknown Artist",
-        title: f.title || f.name,
-      },
-      url: f.contentUrl || f.content,
-    });
-    const createTrackFromUrl = (url) => {
-      const filename = url.substring(url.lastIndexOf("/") + 1);
-      const title = filename.replace(/\.ogg$/, "").replace(/.* - \d{2} /, "");
-      return {
-        metaData: {
-          artist: "Unknown Artist",
-          title: title,
-        },
-        url: url,
-      };
-    };
-
-    const handleFile = (path) => {
+    const handleFile = async (path) => {
       if (!path) return;
 
       if (path instanceof File) {
@@ -76,10 +64,15 @@ export class WebampApp extends Application {
         return;
       }
 
-      if (typeof path === "string" && path.toLowerCase().endsWith(".m3u")) {
-        fetch(path)
-          .then((response) => response.text())
-          .then((playlistText) => {
+      if (typeof path === "string") {
+        const isZenFS = isZenFSPath(path);
+        const fileName = path.split("/").pop();
+        if (path.toLowerCase().endsWith(".m3u")) {
+          try {
+            const playlistText = isZenFS
+              ? await getZenFSFileAsText(path)
+              : await fetch(path).then((r) => r.text());
+
             const trackFilenames = playlistText
               .split("\n")
               .filter((line) => line.trim() !== "" && !line.startsWith("#"));
@@ -87,27 +80,57 @@ export class WebampApp extends Application {
 
             const baseUrl = path.substring(0, path.lastIndexOf("/") + 1);
 
-            const tracks = trackFilenames.map((filename) => {
+            this._revokeBlobUrls();
+            const tracks = await Promise.all(trackFilenames.map(async (filename) => {
               const trackUrl = baseUrl + filename;
               const title = filename
-                .replace(/\.ogg$/, "")
+                .replace(/\.[^/.]+$/, "")
                 .replace(/.* - \d{2} /, "");
+
+              let url = trackUrl;
+              if (isZenFSPath(trackUrl)) {
+                url = await getZenFSFileUrl(trackUrl);
+                this.blobUrls.push(url);
+              }
 
               return {
                 metaData: {
-                  artist: "anosci",
+                  artist: "Unknown Artist",
                   title: title,
                 },
-                url: trackUrl,
+                url: url,
               };
-            });
+            }));
             webampInstance.setTracksToPlay(tracks);
-          })
-          .catch((error) =>
-            console.error("Error loading M3U playlist:", error),
-          );
-      } else {
-        const track = createTrackFromFile(path);
+          } catch (error) {
+            console.error("Error loading M3U playlist:", error);
+          }
+        } else {
+          const title = fileName.replace(/\.[^/.]+$/, "");
+          let url = path;
+          if (isZenFS) {
+            this._revokeBlobUrls();
+            url = await getZenFSFileUrl(path);
+            this.blobUrls.push(url);
+          }
+          const track = {
+            metaData: {
+              artist: "Unknown Artist",
+              title: title,
+            },
+            url: url,
+          };
+          webampInstance.setTracksToPlay([track]);
+        }
+      } else if (path && typeof path === "object") {
+        // Handle virtual file object (e.g. from briefcase)
+        const track = {
+          metaData: {
+            artist: path.artist || "Unknown Artist",
+            title: path.title || path.name,
+          },
+          url: path.contentUrl || path.content,
+        };
         webampInstance.setTracksToPlay([track]);
       }
     };
@@ -231,6 +254,7 @@ export class WebampApp extends Application {
   }
 
   _cleanup() {
+    this._revokeBlobUrls();
     if (webampContainer) {
       webampContainer.remove();
       webampContainer = null;
