@@ -16,6 +16,15 @@
     animation: play 1.5s steps(41) infinite;
 }
 
+.animated-logo-container.animate-only-busy .animated-logo {
+    animation: none;
+}
+
+.cursor-busy .animated-logo-container.animate-only-busy .animated-logo,
+.cursor-wait .animated-logo-container.animate-only-busy .animated-logo {
+    animation: play 1.5s steps(41) infinite;
+}
+
 @keyframes play {
     from {
         background-position: 0 0;
