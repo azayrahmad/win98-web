@@ -36,6 +36,7 @@ export class ZenExplorerApp extends Application {
   constructor(config) {
     super(config);
     this.currentPath = "/";
+    this.viewMode = "large";
     this.fileOps = new FileOperations(this);
     this.navController = new ZenNavigationController(this);
     this.navHistory = this.navController.navHistory; // Proxy for MenuBarBuilder
@@ -87,7 +88,7 @@ export class ZenExplorerApp extends Application {
 
     // 4b. Icon View
     this.iconContainer = document.createElement("div");
-    this.iconContainer.className = "explorer-icon-view";
+    this.iconContainer.className = `explorer-icon-view ${this.viewMode}-icons`;
     content.appendChild(this.iconContainer);
 
     win.$content.append(content);
@@ -285,6 +286,19 @@ export class ZenExplorerApp extends Application {
 
   goForward() {
     return this.navController.goForward();
+  }
+
+  /**
+   * Set the view mode (large, small, list, details)
+   * @param {string} mode
+   */
+  setViewMode(mode) {
+    this.viewMode = mode;
+    if (this.iconContainer) {
+      this.iconContainer.className = `explorer-icon-view ${mode}-icons`;
+    }
+    this.directoryView.renderDirectoryContents(this.currentPath);
+    this._updateMenuBar();
   }
 
   insertFloppy() {

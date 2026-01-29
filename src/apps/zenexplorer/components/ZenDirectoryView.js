@@ -1,6 +1,7 @@
 import { fs } from "@zenfs/core";
 import { renderFileIcon } from "./FileIconRenderer.js";
 import { ICONS } from "../../../config/icons.js";
+import { getAssociation } from "../../../utils/directory.js";
 import { RecycleBinManager } from "../utils/RecycleBinManager.js";
 import ZenUndoManager from "../utils/ZenUndoManager.js";
 import ZenClipboardManager from "../utils/ZenClipboardManager.js";
@@ -73,6 +74,88 @@ export class ZenDirectoryView {
       ? await RecycleBinManager.getMetadata()
       : null;
     const recycleBinEmpty = await RecycleBinManager.isEmpty();
+
+    // Details view rendering
+    if (this.app.viewMode === "details") {
+      const table = document.createElement("table");
+      table.className = "interactive";
+      const thead = document.createElement("thead");
+      thead.innerHTML = `
+        <tr>
+          <th>Name</th>
+          <th>Size</th>
+          <th>Type</th>
+          <th>Modified</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+      const tbody = document.createElement("tbody");
+      table.appendChild(tbody);
+
+      for (const file of files) {
+        const fullPath = joinPath(path, file);
+        try {
+          const fileStat = await fs.promises.stat(fullPath);
+          const isDir = fileStat.isDirectory();
+
+          const tr = document.createElement("tr");
+          tr.className = "explorer-icon";
+          tr.setAttribute("tabindex", "0");
+          tr.setAttribute("data-path", fullPath);
+          tr.setAttribute("data-type", isDir ? "directory" : "file");
+          tr.setAttribute("data-name", file);
+
+          const nameCell = document.createElement("td");
+          nameCell.className = "name-cell";
+
+          // Re-use renderFileIcon parts or just icons
+          const iconObj = await renderFileIcon(file, fullPath, isDir, {
+            metadata,
+            recycleBinEmpty,
+          });
+          // Extract icon and label
+          const iconPart = iconObj.querySelector(".icon");
+          const labelPart = iconObj.querySelector(".icon-label");
+
+          if (iconPart) nameCell.appendChild(iconPart);
+          if (labelPart) nameCell.appendChild(labelPart);
+          tr.appendChild(nameCell);
+
+          const sizeCell = document.createElement("td");
+          sizeCell.textContent = isDir ? "" : this._formatSize(fileStat.size);
+          tr.appendChild(sizeCell);
+
+          const typeCell = document.createElement("td");
+          typeCell.textContent = isDir ? "Folder" : (getAssociation(file).name || "File");
+          tr.appendChild(typeCell);
+
+          const dateCell = document.createElement("td");
+          dateCell.textContent = this._formatDate(fileStat.mtime);
+          tr.appendChild(dateCell);
+
+          this.app.iconManager.configureIcon(tr);
+
+          // Rename listener
+          tr.addEventListener("click", (e) => {
+            if (this._isRenaming) return;
+            if (
+              this.lastSelectedIcon === tr &&
+              Date.now() - this.selectionTimestamp > 500
+            ) {
+              this.enterRenameMode(tr);
+              e.stopPropagation();
+            }
+          });
+
+          tbody.appendChild(tr);
+        } catch (e) {
+          console.warn("Could not stat", fullPath);
+        }
+      }
+      this.app.iconContainer.appendChild(table);
+      this.app.statusBar.setText(`${tbody.children.length} object(s)`);
+      return;
+    }
 
     // Build icons first (async operations here)
     const icons = [];
@@ -237,6 +320,29 @@ export class ZenDirectoryView {
       this.app.iconManager.setSelection(new Set([icon]));
       this.enterRenameMode(icon);
     }
+  }
+
+  /**
+   * Format file size for display
+   * @private
+   */
+  _formatSize(bytes) {
+    if (bytes === 0) return "0 KB";
+    const k = 1024;
+    return Math.ceil(bytes / k).toLocaleString() + " KB";
+  }
+
+  /**
+   * Format date for display
+   * @private
+   */
+  _formatDate(date) {
+    const d = new Date(date);
+    return (
+      d.toLocaleDateString() +
+      " " +
+      d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    );
   }
 
   /**

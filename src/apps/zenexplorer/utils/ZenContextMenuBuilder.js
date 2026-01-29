@@ -175,6 +175,22 @@ export class ZenContextMenuBuilder {
     const isRoot = this.app.currentPath === "/";
     const menuItems = [
       {
+        label: "View",
+        submenu: [
+          {
+            radioItems: [
+              { label: "Large Icons", value: "large" },
+              { label: "Small Icons", value: "small" },
+              { label: "List", value: "list" },
+              { label: "Details", value: "details" },
+            ],
+            getValue: () => this.app.viewMode,
+            setValue: (value) => this.app.setViewMode(value),
+          },
+        ],
+      },
+      "MENU_DIVIDER",
+      {
         label: "Paste",
         action: () => this.app.fileOps.pasteItems(this.app.currentPath),
         enabled: () => !ZenClipboardManager.isEmpty() && !isRoot,

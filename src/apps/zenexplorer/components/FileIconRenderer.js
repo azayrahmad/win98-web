@@ -8,27 +8,37 @@ import { RecycleBinManager } from "../utils/RecycleBinManager.js";
  */
 
 /**
- * Get appropriate icon for a file based on name and type
+ * Get appropriate icon object for a file based on name and type
+ * @param {string} fileName - Name of the file
+ * @param {boolean} isDir - Whether this is a directory
+ * @returns {Object} Icon object with 16 and 32 sizes
+ */
+export function getIconObjForFile(fileName, isDir) {
+  if (isDir) {
+    if (fileName.match(/^A:$/i)) {
+      return ICONS.disketteDrive;
+    }
+    if (fileName.match(/^E:$/i)) {
+      return ICONS.cdDrive;
+    }
+    if (fileName.match(/^[A-Z]:$/i)) {
+      return ICONS.drive;
+    }
+    return ICONS.folderClosed;
+  }
+
+  const association = getAssociation(fileName);
+  return association.icon;
+}
+
+/**
+ * Get appropriate icon for a file based on name and type (default 32px)
  * @param {string} fileName - Name of the file
  * @param {boolean} isDir - Whether this is a directory
  * @returns {string} Icon URL
  */
 export function getIconForFile(fileName, isDir) {
-  if (isDir) {
-    if (fileName.match(/^A:$/i)) {
-      return ICONS.disketteDrive[32];
-    }
-    if (fileName.match(/^E:$/i)) {
-      return ICONS.cdDrive[32];
-    }
-    if (fileName.match(/^[A-Z]:$/i)) {
-      return ICONS.drive[32];
-    }
-    return ICONS.folderClosed[32];
-  }
-
-  const association = getAssociation(fileName);
-  return association.icon[32];
+  return getIconObjForFile(fileName, isDir)[32];
 }
 
 /**
@@ -53,9 +63,7 @@ export async function renderFileIcon(fileName, fullPath, isDir, options = {}) {
   const iconWrapper = document.createElement("div");
   iconWrapper.className = "icon-wrapper";
 
-  const iconImg = document.createElement("img");
-
-  let iconSrc = getIconForFile(fileName, isDir);
+  let iconObj = getIconObjForFile(fileName, isDir);
   let displayName = getDisplayName(fileName);
 
   // Special handling for Recycle Bin folder
@@ -64,7 +72,7 @@ export async function renderFileIcon(fileName, fullPath, isDir, options = {}) {
       options.recycleBinEmpty !== undefined
         ? options.recycleBinEmpty
         : await RecycleBinManager.isEmpty();
-    iconSrc = isEmpty ? ICONS.recycleBinEmpty[32] : ICONS.recycleBinFull[32];
+    iconObj = isEmpty ? ICONS.recycleBinEmpty : ICONS.recycleBinFull;
   }
   // Special handling for items INSIDE Recycle Bin
   else if (RecycleBinManager.isRecycledItemPath(fullPath)) {
@@ -72,14 +80,22 @@ export async function renderFileIcon(fileName, fullPath, isDir, options = {}) {
       options.metadata || (await RecycleBinManager.getMetadata());
     const entry = metadata[fileName]; // fileName is the ID
     if (entry) {
-      iconSrc = getIconForFile(entry.originalName, isDir);
+      iconObj = getIconObjForFile(entry.originalName, isDir);
       displayName = getDisplayName(entry.originalName);
     }
   }
 
-  iconImg.src = iconSrc;
-  iconImg.draggable = false;
-  iconWrapper.appendChild(iconImg);
+  const iconImg32 = document.createElement("img");
+  iconImg32.src = iconObj[32];
+  iconImg32.className = "icon-32";
+  iconImg32.draggable = false;
+  iconWrapper.appendChild(iconImg32);
+
+  const iconImg16 = document.createElement("img");
+  iconImg16.src = iconObj[16];
+  iconImg16.className = "icon-16";
+  iconImg16.draggable = false;
+  iconWrapper.appendChild(iconImg16);
 
   iconInner.appendChild(iconWrapper);
 

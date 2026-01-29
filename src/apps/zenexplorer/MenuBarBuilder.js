@@ -226,6 +226,17 @@ export class MenuBarBuilder {
   _getViewMenuItems() {
     return [
       {
+        radioItems: [
+          { label: "Large Icons", value: "large" },
+          { label: "Small Icons", value: "small" },
+          { label: "List", value: "list" },
+          { label: "Details", value: "details" },
+        ],
+        getValue: () => this.app.viewMode,
+        setValue: (value) => this.app.setViewMode(value),
+      },
+      "MENU_DIVIDER",
+      {
         label: "&Refresh",
         shortcutLabel: "F5",
         action: () => this.app.navigateTo(this.app.currentPath, true, true),

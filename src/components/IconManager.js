@@ -88,11 +88,13 @@ export class IconManager {
     const iconLabel = icon.querySelector(".icon-label");
 
     if (shouldHighlight) {
+      icon.classList.add("selected");
       if (iconImg) iconImg.classList.add("highlighted-icon");
       if (iconLabel) {
         iconLabel.classList.add("highlighted-label", "selected");
       }
     } else {
+      icon.classList.remove("selected");
       if (iconImg) iconImg.classList.remove("highlighted-icon");
       if (iconLabel) {
         iconLabel.classList.remove("highlighted-label", "selected");
