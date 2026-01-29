@@ -5,6 +5,7 @@ import { getAssociation } from "../../../utils/directory.js";
 import { RecycleBinManager } from "../utils/RecycleBinManager.js";
 import ZenUndoManager from "../utils/ZenUndoManager.js";
 import ZenClipboardManager from "../utils/ZenClipboardManager.js";
+import { ZenShellManager } from "../utils/ZenShellManager.js";
 import {
   getDisplayName,
   formatPathForDisplay,
@@ -32,6 +33,12 @@ export class ZenDirectoryView {
           ? ICONS.drive
           : ICONS.folderOpen;
 
+    // Try shell extension icon
+    const shellIcon = ZenShellManager.getIconObj(path);
+    if (shellIcon) {
+      icon = shellIcon;
+    }
+
     // Handle Floppy icon
     if (path === "/A:") {
       icon = ICONS.disketteDrive;
@@ -55,10 +62,19 @@ export class ZenDirectoryView {
    * Render directory contents
    */
   async renderDirectoryContents(path) {
-    let files = await fs.promises.readdir(path);
+    let files = await ZenShellManager.readdir(path);
 
-    // Sort files alphabetically (so A: comes before C:)
-    files.sort((a, b) => a.localeCompare(b));
+    // Sort files alphabetically
+    files.sort((a, b) => {
+      // Special sort for root: Drives before shell extensions
+      if (path === "/") {
+        const isDriveA = a.match(/^[A-Z]:$/i);
+        const isDriveB = b.match(/^[A-Z]:$/i);
+        if (isDriveA && !isDriveB) return -1;
+        if (!isDriveA && isDriveB) return 1;
+      }
+      return a.localeCompare(b);
+    });
 
     // Clear view
     this.app.iconContainer.innerHTML = "";
@@ -77,25 +93,27 @@ export class ZenDirectoryView {
 
     // Details view rendering
     if (this.app.viewMode === "details") {
+      const columns = ZenShellManager.getColumns(path);
       const table = document.createElement("table");
       table.className = "interactive";
       const thead = document.createElement("thead");
-      thead.innerHTML = `
-        <tr>
-          <th>Name</th>
-          <th>Size</th>
-          <th>Type</th>
-          <th>Modified</th>
-        </tr>
-      `;
+
+      const headerRow = document.createElement("tr");
+      columns.forEach((col) => {
+        const th = document.createElement("th");
+        th.textContent = col.label;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
       table.appendChild(thead);
+
       const tbody = document.createElement("tbody");
       table.appendChild(tbody);
 
       for (const file of files) {
         const fullPath = joinPath(path, file);
         try {
-          const fileStat = await fs.promises.stat(fullPath);
+          const fileStat = await ZenShellManager.stat(fullPath);
           const isDir = fileStat.isDirectory();
 
           const tr = document.createElement("tr");
@@ -105,33 +123,51 @@ export class ZenDirectoryView {
           tr.setAttribute("data-type", isDir ? "directory" : "file");
           tr.setAttribute("data-name", file);
 
-          const nameCell = document.createElement("td");
-          nameCell.className = "name-cell";
+          for (let i = 0; i < columns.length; i++) {
+            const col = columns[i];
+            const td = document.createElement("td");
 
-          // Re-use renderFileIcon parts or just icons
-          const iconObj = await renderFileIcon(file, fullPath, isDir, {
-            metadata,
-            recycleBinEmpty,
-          });
-          // Extract icon and label
-          const iconPart = iconObj.querySelector(".icon");
-          const labelPart = iconObj.querySelector(".icon-label");
+            if (i === 0) {
+              // First column is always the name with icon
+              td.className = "name-cell";
 
-          if (iconPart) nameCell.appendChild(iconPart);
-          if (labelPart) nameCell.appendChild(labelPart);
-          tr.appendChild(nameCell);
+              // Re-use renderFileIcon parts or just icons
+              const iconObj = await renderFileIcon(file, fullPath, isDir, {
+                metadata,
+                recycleBinEmpty,
+              });
+              // Extract icon and label
+              const iconPart = iconObj.querySelector(".icon");
+              const labelPart = iconObj.querySelector(".icon-label");
 
-          const sizeCell = document.createElement("td");
-          sizeCell.textContent = isDir ? "" : this._formatSize(fileStat.size);
-          tr.appendChild(sizeCell);
+              if (iconPart) td.appendChild(iconPart);
+              if (labelPart) td.appendChild(labelPart);
+            } else {
+              // Try shell manager for value
+              let value = await ZenShellManager.getColumnValue(
+                fullPath,
+                col.key,
+                fileStat,
+              );
 
-          const typeCell = document.createElement("td");
-          typeCell.textContent = isDir ? "Folder" : (getAssociation(file).name || "File");
-          tr.appendChild(typeCell);
-
-          const dateCell = document.createElement("td");
-          dateCell.textContent = this._formatDate(fileStat.mtime);
-          tr.appendChild(dateCell);
+              // Fallback to defaults if not provided by extension
+              if (value === null) {
+                if (col.key === "size") {
+                  value = isDir ? "" : this._formatSize(fileStat.size);
+                } else if (col.key === "type") {
+                  value = isDir
+                    ? "Folder"
+                    : getAssociation(file).name || "File";
+                } else if (col.key === "modified") {
+                  value = this._formatDate(fileStat.mtime);
+                } else {
+                  value = "";
+                }
+              }
+              td.textContent = value;
+            }
+            tr.appendChild(td);
+          }
 
           this.app.iconManager.configureIcon(tr);
 
@@ -162,7 +198,7 @@ export class ZenDirectoryView {
     for (const file of files) {
       const fullPath = joinPath(path, file);
       try {
-        const fileStat = await fs.promises.stat(fullPath);
+        const fileStat = await ZenShellManager.stat(fullPath);
         const isDir = fileStat.isDirectory();
         const iconDiv = await renderFileIcon(file, fullPath, isDir, {
           metadata,
@@ -226,8 +262,9 @@ export class ZenDirectoryView {
     const path = icon.getAttribute("data-path");
     const isRootItem = getParentPath(path) === "/";
     const isRecycleBin = RecycleBinManager.isRecycleBinPath(path);
+    const isShellItem = ZenShellManager.getExtensionForPath(path);
 
-    if (isRootItem || isRecycleBin) return;
+    if (isRootItem || isRecycleBin || isShellItem) return;
 
     this._isRenaming = true;
 
