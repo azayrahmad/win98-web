@@ -69,6 +69,8 @@ export class ZenNavigationController {
 
       // Update cut icons
       this.app.directoryView.updateCutIcons();
+
+      this.app.win.focus();
     } catch (err) {
       console.error("Navigation failed", err);
     }

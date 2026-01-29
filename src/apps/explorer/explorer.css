@@ -175,6 +175,10 @@
     padding: 0 4px;
 }
 
+.explorer-icon-view.details-icons tr.explorer-icon .icon .icon-wrapper {
+    position: static;
+}
+
 .explorer-icon-view.details-icons tr.explorer-icon .name-cell {
     display: flex;
     align-items: center;
