@@ -7,6 +7,7 @@ import {
 } from "./utils/PathUtils.js";
 import { ICONS } from "../../config/icons.js";
 import { RecycleBinManager } from "./utils/RecycleBinManager.js";
+import { ZenShellManager } from "./utils/ZenShellManager.js";
 
 export class ZenNavigationController {
   constructor(app) {
@@ -40,7 +41,7 @@ export class ZenNavigationController {
         return;
       }
 
-      const stats = await fs.promises.stat(normalizedPath);
+      const stats = await ZenShellManager.stat(normalizedPath);
 
       if (!stats.isDirectory()) {
         throw new Error("Not a directory");

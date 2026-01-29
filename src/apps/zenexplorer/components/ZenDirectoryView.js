@@ -5,6 +5,7 @@ import { getAssociation } from "../../../utils/directory.js";
 import { RecycleBinManager } from "../utils/RecycleBinManager.js";
 import ZenUndoManager from "../utils/ZenUndoManager.js";
 import ZenClipboardManager from "../utils/ZenClipboardManager.js";
+import { ZenShellManager } from "../utils/ZenShellManager.js";
 import {
   getDisplayName,
   formatPathForDisplay,
@@ -32,6 +33,12 @@ export class ZenDirectoryView {
           ? ICONS.drive
           : ICONS.folderOpen;
 
+    // Try shell extension icon
+    const shellIcon = ZenShellManager.getIconObj(path);
+    if (shellIcon) {
+      icon = shellIcon;
+    }
+
     // Handle Floppy icon
     if (path === "/A:") {
       icon = ICONS.disketteDrive;
@@ -55,7 +62,7 @@ export class ZenDirectoryView {
    * Render directory contents
    */
   async renderDirectoryContents(path) {
-    let files = await fs.promises.readdir(path);
+    let files = await ZenShellManager.readdir(path);
 
     // Sort files alphabetically (so A: comes before C:)
     files.sort((a, b) => a.localeCompare(b));
@@ -95,7 +102,7 @@ export class ZenDirectoryView {
       for (const file of files) {
         const fullPath = joinPath(path, file);
         try {
-          const fileStat = await fs.promises.stat(fullPath);
+          const fileStat = await ZenShellManager.stat(fullPath);
           const isDir = fileStat.isDirectory();
 
           const tr = document.createElement("tr");
@@ -162,7 +169,7 @@ export class ZenDirectoryView {
     for (const file of files) {
       const fullPath = joinPath(path, file);
       try {
-        const fileStat = await fs.promises.stat(fullPath);
+        const fileStat = await ZenShellManager.stat(fullPath);
         const isDir = fileStat.isDirectory();
         const iconDiv = await renderFileIcon(file, fullPath, isDir, {
           metadata,
@@ -226,8 +233,9 @@ export class ZenDirectoryView {
     const path = icon.getAttribute("data-path");
     const isRootItem = getParentPath(path) === "/";
     const isRecycleBin = RecycleBinManager.isRecycleBinPath(path);
+    const isShellItem = ZenShellManager.getExtensionForPath(path);
 
-    if (isRootItem || isRecycleBin) return;
+    if (isRootItem || isRecycleBin || isShellItem) return;
 
     this._isRenaming = true;
 

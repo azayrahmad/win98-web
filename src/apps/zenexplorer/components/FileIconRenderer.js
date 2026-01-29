@@ -2,6 +2,7 @@ import { ICONS } from "../../../config/icons.js";
 import { getAssociation } from "../../../utils/directory.js";
 import { getDisplayName } from "../utils/PathUtils.js";
 import { RecycleBinManager } from "../utils/RecycleBinManager.js";
+import { ZenShellManager } from "../utils/ZenShellManager.js";
 
 /**
  * FileIconRenderer - Handles rendering of file/folder icons in ZenExplorer
@@ -53,6 +54,9 @@ export function getIconForFile(fileName, isDir) {
  * @returns {Promise<HTMLElement>} Icon element
  */
 export async function renderFileIcon(fileName, fullPath, isDir, options = {}) {
+  // Check shell extension icon first
+  const shellIcon = ZenShellManager.getIconObj(fullPath);
+
   const iconDiv = document.createElement("div");
   iconDiv.className = "explorer-icon";
   iconDiv.setAttribute("tabindex", "0");
@@ -66,7 +70,7 @@ export async function renderFileIcon(fileName, fullPath, isDir, options = {}) {
   const iconWrapper = document.createElement("div");
   iconWrapper.className = "icon-wrapper";
 
-  let iconObj = getIconObjForFile(fileName, isDir);
+  let iconObj = shellIcon || getIconObjForFile(fileName, isDir);
   let displayName = getDisplayName(fileName);
 
   // Special handling for Recycle Bin folder

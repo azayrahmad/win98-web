@@ -20,6 +20,11 @@ import { ZenContextMenuBuilder } from "./utils/ZenContextMenuBuilder.js";
 import { ZenKeyboardHandler } from "./utils/ZenKeyboardHandler.js";
 import { RecycleBinManager } from "./utils/RecycleBinManager.js";
 import { PropertiesManager } from "./utils/PropertiesManager.js";
+import { ZenShellManager } from "./utils/ZenShellManager.js";
+import { ControlPanelExtension } from "./shell/ControlPanelExtension.js";
+
+// Initialize Shell Extensions
+ZenShellManager.registerExtension(new ControlPanelExtension());
 
 export class ZenExplorerApp extends Application {
   static config = {
@@ -212,9 +217,14 @@ export class ZenExplorerApp extends Application {
    * Open a file using its association
    * @param {HTMLElement} icon - The icon element of the file
    */
-  openFile(icon) {
+  async openFile(icon) {
     const name = icon.getAttribute("data-name");
     const fullPath = icon.getAttribute("data-path");
+
+    // Try shell extension first
+    const handled = await ZenShellManager.onOpen(fullPath, this);
+    if (handled) return;
+
     const association = getAssociation(name);
     if (association.appId) {
       launchApp(association.appId, fullPath);

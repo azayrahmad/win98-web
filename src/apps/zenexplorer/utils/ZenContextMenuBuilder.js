@@ -4,6 +4,7 @@ import { PropertiesManager } from "./PropertiesManager.js";
 import { ZenRemovableDiskManager } from "./ZenRemovableDiskManager.js";
 import { getParentPath, getPathName } from "./PathUtils.js";
 import ZenClipboardManager from "./ZenClipboardManager.js";
+import { ZenShellManager } from "./ZenShellManager.js";
 import { ShowDialogWindow } from "../../../components/DialogWindow.js";
 import { playSound } from "../../../utils/soundManager.js";
 
@@ -56,7 +57,10 @@ export class ZenContextMenuBuilder {
       menuItems = [
         {
           label: "Open",
-          action: () => {
+          action: async () => {
+            const handled = await ZenShellManager.onOpen(path, this.app);
+            if (handled) return;
+
             if (type === "directory") {
               this.app.navigateTo(path);
             } else {
