@@ -21,8 +21,11 @@ export function getIconObjForFile(fileName, isDir) {
     if (fileName.match(/^E:$/i)) {
       return ICONS.cdDrive;
     }
-    if (fileName.match(/^[A-Z]:$/i)) {
+    if (fileName.match(/^C:$/i)) {
       return ICONS.drive;
+    }
+    if (fileName.match(/^[A-Z]:$/i)) {
+      return ICONS.removableDrive;
     }
     return ICONS.folderClosed;
   }

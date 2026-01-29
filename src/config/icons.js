@@ -65,6 +65,12 @@ export const ICONS = {
     16: new URL("../assets/icons/SHELL32_9-16.png", import.meta.url).href,
     32: new URL("../assets/icons/SHELL32_9-32.png", import.meta.url).href,
   },
+  removableDrive: {
+    16: new URL("../assets/icons/removable_disk_drive-1.png", import.meta.url)
+      .href,
+    32: new URL("../assets/icons/removable_disk_drive-0.png", import.meta.url)
+      .href,
+  },
   folder: {
     16: new URL(
       "../assets/icons/directory_open_file_mydocs_small-5.png",
