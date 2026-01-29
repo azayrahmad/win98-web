@@ -20,6 +20,7 @@ import { ZenContextMenuBuilder } from "./utils/ZenContextMenuBuilder.js";
 import { ZenKeyboardHandler } from "./utils/ZenKeyboardHandler.js";
 import { RecycleBinManager } from "./utils/RecycleBinManager.js";
 import { PropertiesManager } from "./utils/PropertiesManager.js";
+import ZenDragDropManager from "./utils/ZenDragDropManager.js";
 
 export class ZenExplorerApp extends Application {
   static config = {
@@ -124,6 +125,9 @@ export class ZenExplorerApp extends Application {
     // 7e. Removable Disk listener
     this._setupRemovableDiskListener();
 
+    // 7f. FS change listener
+    this._setupFSListener();
+
     // 8. Initial Navigation
     this.navigateTo(this.currentPath);
 
@@ -156,6 +160,9 @@ export class ZenExplorerApp extends Application {
   _setupIconManager() {
     this.iconManager = new IconManager(this.iconContainer, {
       iconSelector: ".explorer-icon",
+      onDragStart: (e, icon, selectedIcons) => {
+        ZenDragDropManager.startDrag(selectedIcons, this, e.clientX, e.clientY);
+      },
       onItemContext: (e, icon) => {
         const menuItems = this.contextMenuBuilder.buildItemMenu(e, icon);
         new window.ContextMenu(menuItems, e);
@@ -264,8 +271,23 @@ export class ZenExplorerApp extends Application {
     );
   }
 
+  /**
+   * Setup FS change listener
+   * @private
+   */
+  _setupFSListener() {
+    this._fsHandler = () => {
+      this.navigateTo(this.currentPath, true, true);
+    };
+    document.addEventListener("zen-fs-change", this._fsHandler);
+  }
+
   async navigateTo(path, isHistoryNav = false, skipMRU = false) {
-    return this.navController.navigateTo(path, isHistoryNav, skipMRU);
+    const result = await this.navController.navigateTo(path, isHistoryNav, skipMRU);
+    if (this.iconContainer) {
+      this.iconContainer.setAttribute("data-current-path", this.currentPath);
+    }
+    return result;
   }
 
   enterRenameMode(icon) {
@@ -403,6 +425,9 @@ export class ZenExplorerApp extends Application {
     }
     if (this._undoHandler) {
       document.removeEventListener("zen-undo-change", this._undoHandler);
+    }
+    if (this._fsHandler) {
+      document.removeEventListener("zen-fs-change", this._fsHandler);
     }
   }
 }

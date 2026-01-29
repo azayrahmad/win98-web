@@ -42,37 +42,65 @@ export class FileOperations {
         const { items, operation } = ZenClipboardManager.get();
         if (items.length === 0) return;
 
+        if (operation === "cut") {
+            await this.moveItemsDirect(items, destinationPath);
+            ZenClipboardManager.clear();
+        } else if (operation === "copy") {
+            await this.copyItemsDirect(items, destinationPath);
+        }
+    }
+
+    /**
+     * Move items directly to a destination
+     * @param {Array<string>} sourcePaths
+     * @param {string} destinationPath
+     */
+    async moveItemsDirect(sourcePaths, destinationPath) {
         const targetPaths = [];
-
         try {
-            for (const itemPath of items) {
+            for (const itemPath of sourcePaths) {
                 const itemName = getPathName(itemPath);
-                const targetPath = await this.getUniquePastePath(destinationPath, itemName, operation);
-
-                if (operation === "cut") {
-                    await fs.promises.rename(itemPath, targetPath);
-                } else if (operation === "copy") {
-                    await this.copyRecursive(itemPath, targetPath);
-                }
+                const targetPath = await this.getUniquePastePath(destinationPath, itemName, "cut");
+                await fs.promises.rename(itemPath, targetPath);
                 targetPaths.push(targetPath);
             }
 
-            if (operation === "cut") {
-                ZenClipboardManager.clear();
-                ZenUndoManager.push({
-                    type: 'move',
-                    data: { from: items, to: targetPaths }
-                });
-            } else if (operation === "copy") {
-                ZenUndoManager.push({
-                    type: 'copy',
-                    data: { created: targetPaths }
-                });
+            ZenUndoManager.push({
+                type: 'move',
+                data: { from: sourcePaths, to: targetPaths }
+            });
+
+            document.dispatchEvent(new CustomEvent("zen-fs-change"));
+        } catch (e) {
+            handleFileSystemError("move", e, "items");
+            throw e;
+        }
+    }
+
+    /**
+     * Copy items directly to a destination
+     * @param {Array<string>} sourcePaths
+     * @param {string} destinationPath
+     */
+    async copyItemsDirect(sourcePaths, destinationPath) {
+        const targetPaths = [];
+        try {
+            for (const itemPath of sourcePaths) {
+                const itemName = getPathName(itemPath);
+                const targetPath = await this.getUniquePastePath(destinationPath, itemName, "copy");
+                await this.copyRecursive(itemPath, targetPath);
+                targetPaths.push(targetPath);
             }
 
-            this.app.navigateTo(this.app.currentPath);
+            ZenUndoManager.push({
+                type: 'copy',
+                data: { created: targetPaths }
+            });
+
+            document.dispatchEvent(new CustomEvent("zen-fs-change"));
         } catch (e) {
-            handleFileSystemError(operation === "cut" ? "move" : "copy", e, "items");
+            handleFileSystemError("copy", e, "items");
+            throw e;
         }
     }
 

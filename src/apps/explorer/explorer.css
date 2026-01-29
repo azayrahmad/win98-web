@@ -232,3 +232,32 @@
 .explorer-icon-view.details-icons tr.explorer-icon .icon-label-input {
     text-align: left;
 }
+
+/* Custom Drag and Drop Styles */
+.zen-drag-ghost {
+    pointer-events: none;
+    user-select: none;
+    filter: opacity(0.8);
+}
+
+.zen-drag-ghost .ghost-item {
+    background: transparent !important;
+    border: none !important;
+}
+
+.zen-drag-ghost .explorer-icon {
+    margin: 0;
+}
+
+.drop-target-highlight {
+    background-color: var(--highlight-blue) !important;
+    color: var(--highlight-text) !important;
+}
+
+.drop-target-highlight .icon img {
+    filter: var(--icon-filter);
+}
+
+body.zen-dragging * {
+    cursor: grabbing !important;
+}
