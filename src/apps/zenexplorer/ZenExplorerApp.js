@@ -321,6 +321,7 @@ export class ZenExplorerApp extends Application {
     }
     this.directoryView.renderDirectoryContents(this.currentPath);
     this._updateMenuBar();
+    this._updateToolbar();
   }
 
   insertFloppy() {

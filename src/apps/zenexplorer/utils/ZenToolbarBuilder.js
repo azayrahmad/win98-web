@@ -15,14 +15,49 @@ export function getToolbarItems(app) {
 
   const isRoot = () => app.currentPath === "/";
 
-  const getMRUSubmenu = () => {
-    return app.navHistory.getMRUFolders().map((entry) => ({
-      label: getDisplayName(entry.path),
+  const getBackSubmenu = () => {
+    const history = app.navHistory.history;
+    const index = app.navHistory.historyIndex;
+    return history.slice(0, index).reverse().map((path, i) => ({
+      label: getDisplayName(path),
       action: () => {
-        app.navHistory.markAsManuallySelectedById(entry.id);
-        app.navigateTo(entry.path, false, true);
+        const steps = i + 1;
+        for (let s = 0; s < steps; s++) {
+          app.goBack();
+        }
       },
     }));
+  };
+
+  const getForwardSubmenu = () => {
+    const history = app.navHistory.history;
+    const index = app.navHistory.historyIndex;
+    return history.slice(index + 1).map((path, i) => ({
+      label: getDisplayName(path),
+      action: () => {
+        const steps = i + 1;
+        for (let s = 0; s < steps; s++) {
+          app.goForward();
+        }
+      },
+    }));
+  };
+
+  const cycleViewMode = () => {
+    const modes = ["large", "small", "list", "details"];
+    const currentIndex = modes.indexOf(app.viewMode);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    app.setViewMode(modes[nextIndex]);
+  };
+
+  const getViewIcon = () => {
+    const iconMap = {
+      large: "view_large_icons",
+      small: "view_small_icons",
+      list: "view_list",
+      details: "view_details",
+    };
+    return iconMap[app.viewMode] || "view_large_icons";
   };
 
   return [
@@ -31,14 +66,14 @@ export function getToolbarItems(app) {
       iconName: "back_explorer",
       action: () => app.goBack(),
       enabled: () => app.navHistory.canGoBack(),
-      submenu: getMRUSubmenu,
+      submenu: getBackSubmenu,
     },
     {
       label: "Forward",
       iconName: "forward_explorer",
       action: () => app.goForward(),
       enabled: () => app.navHistory.canGoForward(),
-      submenu: getMRUSubmenu,
+      submenu: getForwardSubmenu,
     },
     {
       label: "Up",
@@ -106,7 +141,8 @@ export function getToolbarItems(app) {
     "divider",
     {
       label: "Views",
-      iconName: "view_large_icons",
+      iconName: getViewIcon,
+      action: cycleViewMode,
       submenu: [
         {
           radioItems: [
