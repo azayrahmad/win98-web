@@ -160,10 +160,6 @@
     color: var(--highlight-text);
 }
 
-.explorer-icon.selected {
-    border: 1px dotted var(--HilightText);
-}
-
 .explorer-icon-view.details-icons table {
     width: 100%;
 }
@@ -171,11 +167,7 @@
 .explorer-icon-view.details-icons tr.explorer-icon {
     border: none;
     height: 22px;
-}
-
-.explorer-icon-view.details-icons tr.explorer-icon.selected {
-    background-color: var(--highlight-blue);
-    color: var(--highlight-text);
+    display: table-row;
 }
 
 .explorer-icon-view.details-icons td {
