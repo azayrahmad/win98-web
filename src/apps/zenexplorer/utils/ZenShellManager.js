@@ -1,4 +1,5 @@
 import { fs } from "@zenfs/core";
+import { getParentPath } from "./PathUtils.js";
 
 /**
  * VirtualStats - Mock fs.Stats for shell extensions
@@ -138,5 +139,62 @@ export class ZenShellManager {
       return ext.onOpen(path, app);
     }
     return false;
+  }
+
+  /**
+   * Get columns to display for a specific directory path
+   * @param {string} path
+   * @returns {Object[]} Column definitions
+   */
+  static getColumns(path) {
+    if (path === "/") {
+      return [
+        { label: "Name", key: "name" },
+        { label: "Type", key: "type" },
+      ];
+    }
+
+    const ext = this.getExtensionForPath(path);
+    if (ext && ext.getColumns) {
+      return ext.getColumns(path);
+    }
+
+    return [
+      { label: "Name", key: "name" },
+      { label: "Size", key: "size" },
+      { label: "Type", key: "type" },
+      { label: "Modified", key: "modified" },
+    ];
+  }
+
+  /**
+   * Get the value for a specific column and path
+   * @param {string} fullPath
+   * @param {string} columnKey
+   * @param {Object} stats
+   * @returns {Promise<string|null>}
+   */
+  static async getColumnValue(fullPath, columnKey, stats) {
+    const ext = this.getExtensionForPath(fullPath);
+
+    // Give extension first priority for its handled paths
+    if (ext && ext.getColumnValue) {
+      const val = await ext.getColumnValue(fullPath, columnKey, stats);
+      if (val !== undefined && val !== null) return val;
+    }
+
+    // Default handling for root items
+    if (getParentPath(fullPath) === "/") {
+      if (columnKey === "type") {
+        if (fullPath.match(/^\/[A-Z]:$/i)) {
+          return "Disk";
+        }
+        if (ext) {
+          return "System Folder";
+        }
+      }
+    }
+
+    return null;
   }
 }

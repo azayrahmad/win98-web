@@ -11,11 +11,36 @@ export class ControlPanelExtension {
   constructor() {
     this.path = "/Control Panel";
     this.items = [
-      { id: "display", name: "Display", appId: "displayproperties" },
-      { id: "themes", name: "Desktop Themes", appId: "desktopthemes" },
-      { id: "sounds", name: "Sound", appId: "soundschemeexplorer" },
-      { id: "themetocss", name: "Theme to CSS", appId: "themetocss" },
-      { id: "mouse", name: "Mouse", appId: "cursorexplorer" },
+      {
+        id: "display",
+        name: "Display",
+        appId: "displayproperties",
+        description: "Customize your display settings.",
+      },
+      {
+        id: "themes",
+        name: "Desktop Themes",
+        appId: "desktopthemes",
+        description: "Customize your desktop's appearance.",
+      },
+      {
+        id: "sounds",
+        name: "Sound",
+        appId: "soundschemeexplorer",
+        description: "Explore and listen to sound schemes.",
+      },
+      {
+        id: "themetocss",
+        name: "Theme to CSS",
+        appId: "themetocss",
+        description: "Convert a Windows theme file to CSS.",
+      },
+      {
+        id: "mouse",
+        name: "Mouse",
+        appId: "cursorexplorer",
+        description: "Explore and preview cursor schemes.",
+      },
     ];
   }
 
@@ -91,6 +116,32 @@ export class ControlPanelExtension {
   getIcon(path, size = 32) {
     const iconObj = this.getIconObj(path);
     return iconObj ? iconObj[size] : null;
+  }
+
+  /**
+   * Get columns for the Control Panel directory
+   * @returns {Object[]}
+   */
+  getColumns() {
+    return [
+      { label: "Name", key: "name" },
+      { label: "Description", key: "description" },
+    ];
+  }
+
+  /**
+   * Get column value for Control Panel items
+   * @param {string} fullPath
+   * @param {string} columnKey
+   * @returns {string|null}
+   */
+  getColumnValue(fullPath, columnKey) {
+    const name = getPathName(fullPath);
+    const item = this.items.find((i) => i.name === name);
+    if (item && columnKey === "description") {
+      return item.description;
+    }
+    return null;
   }
 
   /**
