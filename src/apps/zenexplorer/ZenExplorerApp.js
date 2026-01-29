@@ -7,6 +7,9 @@ import { launchApp } from "../../utils/appManager.js";
 import { IconManager } from "../../components/IconManager.js";
 import { AddressBar } from "../../components/AddressBar.js";
 import { StatusBar } from "../../components/StatusBar.js";
+import { AnimatedLogo } from "../../components/AnimatedLogo.js";
+import browseUiIcons from "../../assets/icons/browse-ui-icons.png";
+import browseUiIconsGrayscale from "../../assets/icons/browse-ui-icons-grayscale.png";
 import "../explorer/explorer.css"; // Reuse explorer styles
 
 // Extracted modules
@@ -21,6 +24,7 @@ import { ZenKeyboardHandler } from "./utils/ZenKeyboardHandler.js";
 import { RecycleBinManager } from "./utils/RecycleBinManager.js";
 import { PropertiesManager } from "./utils/PropertiesManager.js";
 import { ZenShellManager } from "./utils/ZenShellManager.js";
+import { getToolbarItems } from "./utils/ZenToolbarBuilder.js";
 import { ControlPanelExtension } from "./shell/ControlPanelExtension.js";
 
 // Initialize Shell Extensions
@@ -75,15 +79,30 @@ export class ZenExplorerApp extends Application {
     // 2a. Setup MenuBar
     this._updateMenuBar();
 
-    // 3. Toolbar / Address Bar
+    // 3. Toolbar
+    const toolbarItems = getToolbarItems(this);
+    this.toolbar = new window.Toolbar(toolbarItems, {
+      icons: browseUiIcons,
+      iconsGrayscale: browseUiIconsGrayscale,
+    });
+    win.$content.append(this.toolbar.element);
+
+    // 3a. Address Bar
     this.addressBar = new AddressBar({
       onEnter: (path) => this.navigateTo(path),
     });
     win.$content.append(this.addressBar.element);
 
     // 4. Main Content Area (Split View)
+    win.$content.css({
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+    });
+
     const content = document.createElement("div");
     content.className = "explorer-content sunken-panel";
+    content.style.flexGrow = "1";
     content.style.height = "calc(100% - 60px)"; // Adjust for bars
     this.content = content;
 
@@ -179,6 +198,7 @@ export class ZenExplorerApp extends Application {
         if (this.menuBar) {
           this._updateMenuBar();
         }
+        this._updateToolbar();
       },
     });
   }
@@ -242,6 +262,7 @@ export class ZenExplorerApp extends Application {
       if (this.menuBar) {
         this.menuBar.element.dispatchEvent(new Event("update"));
       }
+      this._updateToolbar();
     };
     document.addEventListener("zen-undo-change", this._undoHandler);
   }
@@ -256,6 +277,7 @@ export class ZenExplorerApp extends Application {
       if (this.menuBar) {
         this.menuBar.element.dispatchEvent(new Event("update"));
       }
+      this._updateToolbar();
     };
     document.addEventListener("zen-clipboard-change", this._clipboardHandler);
   }
@@ -309,6 +331,7 @@ export class ZenExplorerApp extends Application {
     }
     this.directoryView.renderDirectoryContents(this.currentPath);
     this._updateMenuBar();
+    this._updateToolbar();
   }
 
   insertFloppy() {
@@ -332,6 +355,31 @@ export class ZenExplorerApp extends Application {
     const menuBuilder = new MenuBarBuilder(this);
     this.menuBar = menuBuilder.build();
     this.win.setMenuBar(this.menuBar);
+
+    // Add Animated Logo
+    if (!this.logo) {
+      this.logo = new AnimatedLogo();
+      this.logo.classList.add("animate-only-busy");
+    }
+
+    const menuBarElement = this.menuBar.element;
+    const container = document.createElement("div");
+    container.className = "menu-bar-logo-wrapper";
+    container.style.display = "flex";
+    container.style.alignItems = "center";
+    container.style.width = "100%";
+    container.style.justifyContent = "space-between";
+
+    // Wrap the menu bar element
+    menuBarElement.parentNode.insertBefore(container, menuBarElement);
+    container.appendChild(menuBarElement);
+    container.appendChild(this.logo);
+  }
+
+  _updateToolbar() {
+    if (this.toolbar) {
+      this.toolbar.element.dispatchEvent(new Event("update"));
+    }
   }
 
   /**

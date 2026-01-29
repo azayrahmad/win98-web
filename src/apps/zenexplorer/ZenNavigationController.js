@@ -61,6 +61,7 @@ export class ZenNavigationController {
 
       // Refresh menu bar
       this.app._updateMenuBar();
+      this.app._updateToolbar();
 
       // Update UI elements
       await this.app.directoryView.updateUIForPath(normalizedPath);
