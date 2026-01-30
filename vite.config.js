@@ -12,6 +12,9 @@ export default defineConfig({
   define: {
     "import.meta.env.APP_VERSION": JSON.stringify(appVersion),
   },
+  optimizeDeps: {
+    exclude: ["fatfs-wasm"],
+  },
   assetsInclude: ["**/*.ani"],
   base: "/win98-web/",
   plugins: [
