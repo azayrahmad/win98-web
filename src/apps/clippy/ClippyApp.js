@@ -1,4 +1,5 @@
-import { Application, openApps } from '../Application.js';
+import { Application } from '../Application.js';
+import { openApps } from '../registries.js';
 import { launchClippyApp, getClippyMenuItems } from './clippy.js';
 import { appManager } from '../../utils/appManager.js';
 import { ICONS } from '../../config/icons.js';

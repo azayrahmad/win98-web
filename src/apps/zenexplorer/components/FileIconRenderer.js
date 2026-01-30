@@ -1,8 +1,9 @@
-import { ICONS } from "../../../config/icons.js";
+import { ICONS, SHORTCUT_OVERLAY } from "../../../config/icons.js";
 import { getAssociation } from "../../../utils/directory.js";
 import { getDisplayName } from "../utils/PathUtils.js";
 import { RecycleBinManager } from "../utils/RecycleBinManager.js";
 import { ZenShellManager } from "../utils/ZenShellManager.js";
+import { fs } from "@zenfs/core";
 
 /**
  * FileIconRenderer - Handles rendering of file/folder icons in ZenExplorer
@@ -72,6 +73,22 @@ export async function renderFileIcon(fileName, fullPath, isDir, options = {}) {
 
   let iconObj = shellIcon || getIconObjForFile(fileName, isDir);
   let displayName = getDisplayName(fileName);
+  let isShortcut = fileName.toLowerCase().endsWith(".lnk");
+
+  if (isShortcut && !isDir) {
+    try {
+      const content = await fs.promises.readFile(fullPath, "utf8");
+      const data = JSON.parse(content);
+      if (data.type === "shortcut" && data.appId) {
+        const { apps } = await import("../../../config/apps.js");
+        const app = apps.find((a) => a.id === data.appId);
+        if (app) {
+          iconObj = app.icon;
+          displayName = getDisplayName(fileName.slice(0, -4));
+        }
+      }
+    } catch (e) {}
+  }
 
   // Special handling for Recycle Bin folder
   if (RecycleBinManager.isRecycleBinPath(fullPath)) {
@@ -103,6 +120,18 @@ export async function renderFileIcon(fileName, fullPath, isDir, options = {}) {
   iconImg16.className = "icon-16";
   iconImg16.draggable = false;
   iconWrapper.appendChild(iconImg16);
+
+  if (isShortcut) {
+    const overlay32 = document.createElement("img");
+    overlay32.src = SHORTCUT_OVERLAY[32];
+    overlay32.className = "shortcut-overlay icon-32";
+    iconWrapper.appendChild(overlay32);
+
+    const overlay16 = document.createElement("img");
+    overlay16.src = SHORTCUT_OVERLAY[16];
+    overlay16.className = "shortcut-overlay icon-16";
+    iconWrapper.appendChild(overlay16);
+  }
 
   iconInner.appendChild(iconWrapper);
 

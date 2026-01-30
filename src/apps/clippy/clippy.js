@@ -8,6 +8,7 @@ import {
   releaseBusyState,
 } from "../../utils/busyStateManager.js";
 import { appManager } from "../../utils/appManager.js";
+import { AGENT_NAMES } from "../../config/agents.js";
 
 window.clippyAppInstance = null;
 let currentAgentName =
@@ -120,8 +121,6 @@ async function askClippy(agent, question) {
     console.error("API Error:", error);
   }
 }
-
-import { AGENT_NAMES } from "../../config/agents.js";
 
 export function getClippyMenuItems(app) {
   const appInstance = app || window.clippyAppInstance;

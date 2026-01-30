@@ -6,11 +6,10 @@
 // Import icons
 import { launchApp } from "../utils/appManager.js";
 import { getStartupApps } from "../utils/startupManager.js";
-import { apps } from "../config/apps.js";
 import { findItemByPath, getAssociation } from "../utils/directory.js";
 import windowsStartMenuBar from "../assets/img/win98start.png";
 import { ICONS } from "../config/icons.js";
-import startMenuConfig from "../config/startmenu.js";
+import { getStartMenuConfig } from "../config/startmenu.js";
 import { playSound } from "../utils/soundManager.js";
 import { ShowDialogWindow } from "./DialogWindow.js";
 import { createShutdownDialogContent } from "./ShutdownDialog.js";
@@ -46,9 +45,10 @@ class StartMenu {
   /**
    * Initialize the start menu
    */
-  init() {
+  async init() {
     try {
       console.log("Initializing StartMenu...");
+      this.config = await getStartMenuConfig();
       this.render();
       this.bindEvents();
     } catch (error) {
@@ -92,7 +92,7 @@ class StartMenu {
   }
 
   getStartMenuHTML() {
-    const dynamicItemsHTML = startMenuConfig
+    const dynamicItemsHTML = this.config
       .map((item) => {
         const hasSubmenu = item.submenu && item.submenu.length >= 0;
         return `
@@ -156,7 +156,7 @@ class StartMenu {
       }
     };
 
-    const openMenu = () => {
+    const openMenu = async () => {
       clearTimeout(closeTimeout);
       if (activeMenu) return;
 
@@ -263,7 +263,7 @@ class StartMenu {
         this.openSubmenus = [];
       }
 
-      const submenuItems = getSubmenuItems(); // Generate items dynamically
+      const submenuItems = await getSubmenuItems(); // Generate items dynamically
 
       const menuWrapper = document.createElement("div");
       menuWrapper.className = "menu-popup-wrapper";
@@ -325,14 +325,15 @@ class StartMenu {
   }
 
   bindMenuItems() {
-    startMenuConfig.forEach((itemConfig) => {
+    this.config.forEach((itemConfig) => {
       const menuItem = document.querySelector(
         `.start-menu-item[data-id="${this.escapeHtml(itemConfig.label)}"]`,
       );
       if (!menuItem) return;
 
       if (itemConfig.id === "startup-folder") {
-        this.attachDynamicSubmenu(menuItem, () => {
+        this.attachDynamicSubmenu(menuItem, async () => {
+          const { apps } = await import("../config/apps.js");
           const startupAppsList = getStartupApps();
           if (startupAppsList.length === 0) {
             return [{ label: "(Empty)", enabled: false }];
@@ -349,11 +350,12 @@ class StartMenu {
               }
               const file = findItemByPath(appId);
               if (file) {
-                const app = apps.find(app => app.id === getAssociation(file.name).appId);
+                const targetAppId = getAssociation(file.name).appId;
+                const targetApp = apps.find(a => a.id === targetAppId);
                 return {
                   label: file.name,
-                  icon: app.icon[16],
-                  action: () => launchApp(app.id, appId),
+                  icon: targetApp ? targetApp.icon[16] : ICONS.file[16],
+                  action: () => launchApp(targetAppId, appId),
                 };
               }
               return null;

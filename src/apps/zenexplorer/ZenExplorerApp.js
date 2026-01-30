@@ -1,9 +1,9 @@
-import { Application, openApps } from "../Application.js";
+import { Application } from "../Application.js";
+import { openApps } from "../registries.js";
 import { mounts } from "@zenfs/core";
 import { initFileSystem } from "../../utils/zenfs-init.js";
 import { ICONS } from "../../config/icons.js";
 import { getAssociation } from "../../utils/directory.js";
-import { launchApp } from "../../utils/appManager.js";
 import { IconManager } from "../../components/IconManager.js";
 import { AddressBar } from "../../components/AddressBar.js";
 import { StatusBar } from "../../components/StatusBar.js";
@@ -28,9 +28,11 @@ import ZenLayoutManager from "./utils/ZenLayoutManager.js";
 import { ZenShellManager } from "./utils/ZenShellManager.js";
 import { getToolbarItems } from "./utils/ZenToolbarBuilder.js";
 import { ControlPanelExtension } from "./shell/ControlPanelExtension.js";
+import { DesktopExtension } from "./shell/DesktopExtension.js";
 
 // Initialize Shell Extensions
 ZenShellManager.registerExtension(new ControlPanelExtension());
+ZenShellManager.registerExtension(new DesktopExtension());
 
 export class ZenExplorerApp extends Application {
   static config = {
@@ -319,6 +321,7 @@ export class ZenExplorerApp extends Application {
 
     const association = getAssociation(name);
     if (association.appId) {
+      const { launchApp } = await import("../../utils/appManager.js");
       launchApp(association.appId, fullPath);
     } else {
       alert(`Cannot open file: ${name} (No association)`);

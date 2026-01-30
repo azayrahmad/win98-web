@@ -30,6 +30,26 @@ export async function initFileSystem() {
             await fs.promises.mkdir('/C:/WINDOWS');
         }
 
+        // Ensure Desktop exists and populate with initial shortcuts if empty
+        const desktopPath = '/C:/WINDOWS/Desktop';
+        if (!fs.existsSync(desktopPath)) {
+            await fs.promises.mkdir(desktopPath);
+
+            const initialShortcuts = [
+                { name: 'Winamp.lnk', target: 'webamp' },
+                { name: 'Pinball.lnk', target: 'pinball' },
+                { name: 'Minesweeper.lnk', target: 'minesweeper' },
+                { name: 'Solitaire.lnk', target: 'solitaire' },
+            ];
+
+            for (const sc of initialShortcuts) {
+                await fs.promises.writeFile(`${desktopPath}/${sc.name}`, JSON.stringify({
+                    type: 'shortcut',
+                    appId: sc.target
+                }));
+            }
+        }
+
         isInitialized = true;
         console.log("ZenFS initialized successfully.");
     } catch (error) {

@@ -1,6 +1,5 @@
 import directory from "../config/directory.js";
 import { SPECIAL_FOLDER_PATHS } from "../config/special-folders.js";
-import { apps } from "../config/apps.js";
 
 // Create a reverse map for easy lookup
 const reverseSpecialFolderPaths = {};
@@ -16,8 +15,9 @@ export function convertInternalPathToWindows(internalPath) {
   // This will handle "My Documents", "Desktop" etc.
   const specialFolderKey = reverseSpecialFolderPaths[internalPath];
   if (specialFolderKey) {
-    const app = apps.find((app) => app.id === specialFolderKey);
-    return app ? app.title : "My Computer";
+    // Legacy: we don't have apps here anymore to avoid circular dependency.
+    // In a real app we'd use a separate registry for special folder names.
+    return "My Computer";
   }
 
   const parts = internalPath.split("/").filter(Boolean);
@@ -34,9 +34,7 @@ export function convertInternalPathToWindows(internalPath) {
       pathNodes.push(found);
       currentLevel = found.children || [];
     } else {
-      const app = apps.find((app) => app.id === part);
-      console.log(app);
-      return app ? app.title : "My Computer";
+      return "My Computer";
     }
   }
 
@@ -65,12 +63,7 @@ export function convertWindowsPathToInternal(windowsPath) {
   }
 
   // Check for special folder names like "My Documents"
-  for (const key in SPECIAL_FOLDER_PATHS) {
-    const app = apps.find((a) => a.id === key);
-    if (app && app.title.toLowerCase() === windowsPath.toLowerCase()) {
-      return SPECIAL_FOLDER_PATHS[key];
-    }
-  }
+  // Legacy: disabled to avoid circular dependency
 
   // Check for root items like "My Briefcase"
   const rootItem = directory.find(
@@ -91,13 +84,6 @@ export function convertWindowsPathToInternal(windowsPath) {
   );
 
   if (!driveNode) {
-    // Check if it's special explorer app (Recycle Bin, Network Neighborhood, etc.)
-    const app = apps.find(
-      (a) => a.title.toLowerCase() === driveLetter.toLowerCase(),
-    );
-    if (app) {
-      return `//${app.id}`;
-    }
     return null; // Invalid drive
   }
 

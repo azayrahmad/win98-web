@@ -7,7 +7,6 @@ import splashBg from "./assets/img/splash.png";
 import { themes } from "./config/themes.js";
 import { colorSchemes } from "./config/colorSchemes.js";
 import { setupCounter } from "./counter.js";
-import { initDesktop } from "./components/desktop.js";
 import { getItem, LOCAL_STORAGE_KEYS } from "./utils/localStorage.js";
 import { apps, appClasses } from "./config/apps.js";
 import { ICONS } from "./config/icons.js";
@@ -33,6 +32,7 @@ import { initColorModeManager } from "./utils/colorModeManager.js";
 import screensaver from "./utils/screensaverUtils.js";
 import { initScreenManager } from "./utils/screenManager.js";
 import { fs } from "@zenfs/core";
+import { initFileSystem } from "./utils/zenfs-init.js";
 
 // Window Management System
 class WindowManagerSystem {
@@ -277,6 +277,12 @@ async function initializeOS() {
     });
 
     await executeBootStep(async () => {
+      let logElement = startBootProcessStep("Initializing ZenFS...");
+      await initFileSystem();
+      finalizeBootProcessStep(logElement, "OK");
+    });
+
+    await executeBootStep(async () => {
       let logElement = startBootProcessStep("Loading custom applications...");
       await new Promise((resolve) => setTimeout(resolve, 50));
       loadCustomApps();
@@ -299,15 +305,16 @@ async function initializeOS() {
     await executeBootStep(async () => {
       let logElement = startBootProcessStep("Initializing taskbar...");
       await new Promise((resolve) => setTimeout(resolve, 50));
-      taskbar.init();
+      await taskbar.init();
       finalizeBootProcessStep(logElement, "OK");
     });
 
     await executeBootStep(async () => {
       let logElement = startBootProcessStep("Setting up desktop...");
       await new Promise((resolve) => setTimeout(resolve, 50));
-      await initDesktop(window.activeProfile);
-      document.dispatchEvent(new CustomEvent("desktop-refresh"));
+      const { ZenDesktopApp } = await import("./apps/zenexplorer/ZenDesktopApp.js");
+      const desktopApp = new ZenDesktopApp();
+      await desktopApp.init();
       finalizeBootProcessStep(logElement, "OK");
     });
 

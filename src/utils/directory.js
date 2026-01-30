@@ -1,5 +1,4 @@
 import directory from "../config/directory.js";
-import { apps } from "../config/apps.js";
 import { fileAssociations } from "../config/fileAssociations.js";
 import { getRecycleBinItems } from "./recycleBinManager.js";
 import { networkNeighborhood } from "../config/networkNeighborhood.js";
@@ -44,11 +43,25 @@ function findProgramFilesFolder() {
   return null;
 }
 
+// Helper to get apps without top-level import to avoid circular dependency
+let cachedApps = null;
+async function _getApps() {
+    if (!cachedApps) {
+        const module = await import("../config/apps.js");
+        cachedApps = module.apps;
+    }
+    return cachedApps;
+}
+
 export function getDesktopContents() {
   const desktopFolder = findDesktopFolder();
   if (!desktopFolder || !desktopFolder.children) {
     return [];
   }
+
+  // NOTE: This function is now mostly legacy and might return incomplete data
+  // if apps are not loaded. But new desktop doesn't use it.
+  const apps = cachedApps || [];
 
   const systemIcons = new Set([
     "my-computer",

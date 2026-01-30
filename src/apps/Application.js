@@ -1,9 +1,7 @@
 import { ShowDialogWindow } from "../components/DialogWindow.js";
 import { createTaskbarButton, createTrayIcon } from "../components/taskbar.js";
 import { appManager } from "../utils/appManager.js";
-
-const openWindows = new Map();
-export const openApps = new Map();
+import { openApps, openWindows } from "./registries.js";
 
 export class Application {
   constructor(config) {

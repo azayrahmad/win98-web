@@ -1,6 +1,6 @@
 // Webamp integration for the desktop environment
 import { launchApp } from '../../utils/appManager.js';
-import { openApps } from '../Application.js';
+import { openApps } from '../registries.js';
 
 export function getWebampMenuItems(app) {
   const webampApp = openApps.get('webamp');

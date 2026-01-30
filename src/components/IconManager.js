@@ -257,7 +257,7 @@ export class IconManager {
   handleIconClick(e, icon) {
     e.stopPropagation();
 
-    // The drag handler in desktop.js will set wasDragged. If it's true, we don't process the click.
+    // The drag handler in handleIconMouseDown will set wasDragged. If it's true, we don't process the click.
     if (this.wasDragged) {
       this.wasDragged = false;
       return;

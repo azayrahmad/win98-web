@@ -1,6 +1,5 @@
 import { getItem, LOCAL_STORAGE_KEYS } from "./localStorage.js";
 import { getDesktopContents } from "./directory.js";
-import { apps } from "../config/apps.js";
 
 export function getItemFromIcon(icon) {
   const fileId = icon.getAttribute("data-file-id");
@@ -24,7 +23,7 @@ export function getItemFromIcon(icon) {
     }
   }
 
-  const appItem = apps.find((a) => a.id === appId);
+  const appItem = null; // Legacy, apps not easily available synchronously
   const isDesktopApp = desktopContents.some(
     (item) => item.id === appId && item.type === "app",
   );

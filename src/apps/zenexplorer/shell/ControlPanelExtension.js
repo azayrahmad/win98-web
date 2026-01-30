@@ -1,6 +1,5 @@
 import { ICONS } from "../../../config/icons.js";
-import { apps } from "../../../config/apps.js";
-import { launchApp } from "../../../utils/appManager.js";
+import { appManager, launchApp } from "../../../utils/appManager.js";
 import { VirtualStats } from "../utils/ZenShellManager.js";
 import { getPathName } from "../utils/PathUtils.js";
 
@@ -100,8 +99,12 @@ export class ControlPanelExtension {
     const name = getPathName(path);
     const item = this.items.find((i) => i.name === name);
     if (item) {
-      const app = apps.find((a) => a.id === item.appId);
-      return app ? app.icon : ICONS.file;
+      // NOTE: We cannot use async here easily as getIconObj is used synchronously in renderers.
+      // However, by the time we render icons, apps are likely loaded.
+      // We'll use a local cachedApps if possible or just return a default icon if not ready.
+      // In the future, FileIconRenderer should probably handle async icons better.
+      const app = appManager.runningApps[item.appId]?.config || { icon: ICONS.file };
+      return app.icon;
     }
 
     return null;

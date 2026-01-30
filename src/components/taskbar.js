@@ -42,7 +42,7 @@ class Taskbar {
   /**
    * Initialize the taskbar manager
    */
-  init() {
+  async init() {
     if (this.isInitialized) {
       console.warn("Taskbar already initialized");
       return;
@@ -51,7 +51,7 @@ class Taskbar {
     try {
       console.log("Initializing Taskbar...");
       this.renderTaskbar();
-      this.startMenu.init(); // Initialize start menu
+      await this.startMenu.init(); // Initialize start menu
       this.bindEvents();
       this.initializeClock();
       this.setupExistingTaskbarButtons();

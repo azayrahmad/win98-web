@@ -8,6 +8,7 @@ function createMainUI() {
   desktopArea.className = 'desktop-area';
 
   const desktop = document.createElement('div');
+  desktop.id = 'desktop';
   desktop.className = 'desktop';
 
   desktopArea.appendChild(desktop);

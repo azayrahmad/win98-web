@@ -1,4 +1,4 @@
-import { openApps } from "../../Application.js";
+import { openApps } from "../../registries.js";
 import { getParentPath } from "./PathUtils.js";
 
 /**

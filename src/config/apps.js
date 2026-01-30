@@ -9,13 +9,14 @@ import {
 } from "../utils/recycleBinManager.js";
 import { SPECIAL_FOLDER_PATHS } from "./special-folders.js";
 
+export const apps = [];
+export const appClasses = {};
+const staticConfigs = [];
+
 // --- Dynamic App Loading ---
 
 // Use Vite's glob import to get all App modules
 const appModules = import.meta.glob("../apps/*/*App.js", { eager: true });
-
-export const appClasses = {};
-const staticConfigs = [];
 
 for (const path in appModules) {
   const appModule = appModules[path];
@@ -231,11 +232,9 @@ const systemApps = [
 
 // --- Combine and Export ---
 
-// --- Combine and Export ---
-
 if (FlashPlayerApp.config) {
   appClasses[FlashPlayerApp.config.id] = FlashPlayerApp;
   staticConfigs.push({ ...FlashPlayerApp.config, appClass: FlashPlayerApp });
 }
 
-export const apps = [...systemApps, ...staticConfigs];
+apps.push(...systemApps, ...staticConfigs);

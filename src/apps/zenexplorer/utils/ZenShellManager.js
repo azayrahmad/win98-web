@@ -63,7 +63,8 @@ export class ZenShellManager {
   static async stat(path) {
     const ext = this.getExtensionForPath(path);
     if (ext) {
-      return ext.stat(path);
+      const stats = await ext.stat(path);
+      if (stats) return stats;
     }
     return fs.promises.stat(path);
   }
@@ -138,6 +139,22 @@ export class ZenShellManager {
     if (ext && ext.onOpen) {
       return ext.onOpen(path, app);
     }
+
+    // Handle shortcuts
+    if (path.toLowerCase().endsWith(".lnk")) {
+      try {
+        const content = await fs.promises.readFile(path, "utf8");
+        const data = JSON.parse(content);
+        if (data.type === "shortcut" && data.appId) {
+          const { launchApp } = await import("../../../utils/appManager.js");
+          launchApp(data.appId, data.filePath);
+          return true;
+        }
+      } catch (e) {
+        console.error("Failed to open shortcut", e);
+      }
+    }
+
     return false;
   }
 
