@@ -50,34 +50,60 @@ export class ZenDesktopApp {
         });
 
         // Setup event listeners
-        this.iconContainer.addEventListener('dblclick', (e) => {
+        this._dblClickListener = (e) => {
             const icon = e.target.closest('.explorer-icon');
             if (icon) {
                 this.openFile(icon);
             }
-        });
+        };
+        this.iconContainer.addEventListener('dblclick', this._dblClickListener);
 
         // FS change listener
-        document.addEventListener('zen-fs-change', (e) => {
+        this._fsChangeListener = (e) => {
             if (e.detail?.path === this.currentPath || e.detail?.path === '/') {
                 this.refresh();
             }
-        });
+        };
+        document.addEventListener('zen-fs-change', this._fsChangeListener);
 
         // Layout change listener
-        document.addEventListener('zen-layout-change', (e) => {
+        this._layoutChangeListener = (e) => {
             if (e.detail.path === this.currentPath) {
                 this.refresh();
             }
-        });
+        };
+        document.addEventListener('zen-layout-change', this._layoutChangeListener);
 
         // Wallpaper listener
-        document.addEventListener('wallpaper-changed', () => {
+        this._wallpaperListener = () => {
             this.applyWallpaper();
-        });
+        };
+        document.addEventListener('wallpaper-changed', this._wallpaperListener);
 
         await this.refresh();
         this.applyWallpaper();
+
+        // Theme change listener
+        this._themeChangeListener = () => this.refresh();
+        document.addEventListener('theme-changed', this._themeChangeListener);
+    }
+
+    destroy() {
+        if (this.iconContainer && this._dblClickListener) {
+            this.iconContainer.removeEventListener('dblclick', this._dblClickListener);
+        }
+        if (this._fsChangeListener) {
+            document.removeEventListener('zen-fs-change', this._fsChangeListener);
+        }
+        if (this._layoutChangeListener) {
+            document.removeEventListener('zen-layout-change', this._layoutChangeListener);
+        }
+        if (this._wallpaperListener) {
+            document.removeEventListener('wallpaper-changed', this._wallpaperListener);
+        }
+        if (this._themeChangeListener) {
+            document.removeEventListener('theme-changed', this._themeChangeListener);
+        }
     }
 
     applyWallpaper() {

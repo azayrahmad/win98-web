@@ -72,6 +72,42 @@ export async function renderFileIcon(fileName, fullPath, isDir, options = {}) {
   iconWrapper.className = "icon-wrapper";
 
   let iconObj = shellIcon || getIconObjForFile(fileName, isDir);
+
+  // Special handling for My Documents
+  if (fullPath === "/C:/My Documents" || fileName === "My Documents") {
+    iconObj = ICONS.documents;
+  }
+
+  // Theme icons support for desktop
+  if (options.useThemeIcons) {
+    try {
+      const { getIconSchemeName } = await import(
+        "../../../utils/themeManager.js"
+      );
+      const { iconSchemes } = await import("../../../config/icon-schemes.js");
+      const schemeName = getIconSchemeName();
+      const scheme = iconSchemes[schemeName] || iconSchemes.default;
+
+      if (fullPath.endsWith("/My Computer") || fullPath === "/") {
+        iconObj = scheme.myComputer;
+      } else if (fullPath === "/C:/My Documents" || fileName === "My Documents") {
+        if (scheme.myDocuments) {
+          iconObj = scheme.myDocuments;
+        }
+      } else if (fullPath.endsWith("/Recycle Bin")) {
+        const isEmpty =
+          options.recycleBinEmpty !== undefined
+            ? options.recycleBinEmpty
+            : await RecycleBinManager.isEmpty();
+        iconObj = isEmpty ? scheme.recycleBinEmpty : scheme.recycleBinFull;
+      } else if (fullPath.endsWith("/Network Neighborhood")) {
+        iconObj = scheme.networkNeighborhood;
+      }
+    } catch (e) {
+      console.error("Failed to load theme icons", e);
+    }
+  }
+
   let displayName = getDisplayName(fileName);
   let isShortcut = fileName.toLowerCase().endsWith(".lnk");
 
