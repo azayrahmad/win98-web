@@ -249,7 +249,7 @@ class StartMenu {
       }
     };
 
-    const openMenu = () => {
+    const openMenu = async () => {
       clearTimeout(closeTimeout);
       if (activeMenu) return;
 

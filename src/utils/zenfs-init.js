@@ -30,6 +30,11 @@ export async function initFileSystem() {
             await fs.promises.mkdir('/C:/WINDOWS');
         }
 
+        // Ensure My Documents exists
+        if (!fs.existsSync('/C:/My Documents')) {
+            await fs.promises.mkdir('/C:/My Documents');
+        }
+
         // Ensure Desktop exists and populate with initial shortcuts if empty
         const desktopPath = '/C:/WINDOWS/Desktop';
         if (!fs.existsSync(desktopPath)) {
@@ -40,6 +45,10 @@ export async function initFileSystem() {
                 { name: 'Pinball.lnk', target: 'pinball' },
                 { name: 'Minesweeper.lnk', target: 'minesweeper' },
                 { name: 'Solitaire.lnk', target: 'solitaire' },
+                { name: 'Internet Explorer.lnk', target: 'internet-explorer' },
+                { name: 'Paint.lnk', target: 'paint' },
+                { name: 'MS-DOS Prompt.lnk', target: 'command-prompt' },
+                { name: 'WordPad.lnk', target: 'wordpad' },
             ];
 
             for (const sc of initialShortcuts) {

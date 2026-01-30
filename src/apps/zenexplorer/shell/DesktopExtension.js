@@ -14,7 +14,9 @@ export class DesktopExtension {
         if (path === this.path) {
             return new VirtualStats({ isDirectory: true });
         }
-        if (path === this.path + '/My Computer') {
+        if (path === this.path + '/My Computer' ||
+            path === this.path + '/Recycle Bin' ||
+            path === this.path + '/My Documents') {
             return new VirtualStats({ isDirectory: true });
         }
         return null; // Fallback to real filesystem
@@ -22,7 +24,7 @@ export class DesktopExtension {
 
     async readdir(path) {
         if (path === this.path) {
-            return ['My Computer'];
+            return ['My Computer', 'Recycle Bin', 'My Documents'];
         }
         return null;
     }
@@ -31,27 +33,29 @@ export class DesktopExtension {
         if (path === this.path + '/My Computer') {
             return ICONS.computer;
         }
+        if (path === this.path + '/Recycle Bin' || path === '//recycle-bin') {
+            return ICONS.recycleBinEmpty;
+        }
+        if (path === this.path + '/My Documents' || path === '/C:/My Documents') {
+            return ICONS.folder;
+        }
         return null;
-    }
-
-    async getVirtualItems(path) {
-        if (path !== this.path) return [];
-
-        return [
-            {
-                name: 'My Computer',
-                path: '/',
-                type: 'directory',
-                icon: ICONS.computer,
-                isVirtual: true,
-            }
-        ];
     }
 
     async onOpen(path, app) {
         if (path === '/' || path === this.path + '/My Computer') {
             const { launchApp } = await import('../../../utils/appManager.js');
             launchApp('zenexplorer', '/');
+            return true;
+        }
+        if (path === '//recycle-bin' || path === this.path + '/Recycle Bin') {
+            const { launchApp } = await import('../../../utils/appManager.js');
+            launchApp('zenexplorer', '//recycle-bin');
+            return true;
+        }
+        if (path === '/C:/My Documents' || path === this.path + '/My Documents') {
+            const { launchApp } = await import('../../../utils/appManager.js');
+            launchApp('zenexplorer', '/C:/My Documents');
             return true;
         }
         return false;

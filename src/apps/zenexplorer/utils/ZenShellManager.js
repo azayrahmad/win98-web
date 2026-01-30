@@ -96,9 +96,9 @@ export class ZenShellManager {
   /**
    * Get custom icon object for a path if provided by an extension
    * @param {string} path
-   * @returns {Object|null}
+   * @returns {Promise<Object|null>}
    */
-  static getIconObj(path) {
+  static async getIconObj(path) {
     const ext = this.getExtensionForPath(path);
     if (ext && ext.getIconObj) {
       return ext.getIconObj(path);
@@ -117,14 +117,14 @@ export class ZenShellManager {
    * Get custom icon for a path if provided by an extension
    * @param {string} path
    * @param {number} size
-   * @returns {string|null}
+   * @returns {Promise<string|null>}
    */
-  static getIcon(path, size = 32) {
+  static async getIcon(path, size = 32) {
     const ext = this.getExtensionForPath(path);
     if (ext && ext.getIcon) {
       return ext.getIcon(path, size);
     }
-    const iconObj = this.getIconObj(path);
+    const iconObj = await this.getIconObj(path);
     return iconObj ? iconObj[size] : null;
   }
 
@@ -137,7 +137,8 @@ export class ZenShellManager {
   static async onOpen(path, app) {
     const ext = this.getExtensionForPath(path);
     if (ext && ext.onOpen) {
-      return ext.onOpen(path, app);
+      const handled = await ext.onOpen(path, app);
+      if (handled) return true;
     }
 
     // Handle shortcuts

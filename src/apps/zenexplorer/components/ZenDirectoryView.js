@@ -35,7 +35,7 @@ export class ZenDirectoryView {
           : ICONS.folderOpen;
 
     // Try shell extension icon
-    const shellIcon = ZenShellManager.getIconObj(path);
+    const shellIcon = await ZenShellManager.getIconObj(path);
     if (shellIcon) {
       icon = shellIcon;
     }

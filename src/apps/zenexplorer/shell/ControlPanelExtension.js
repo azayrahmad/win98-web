@@ -89,9 +89,9 @@ export class ControlPanelExtension {
   /**
    * Get custom icon object for a path
    * @param {string} path
-   * @returns {Object|null}
+   * @returns {Promise<Object|null>}
    */
-  getIconObj(path) {
+  async getIconObj(path) {
     if (path === this.path) {
       return ICONS.controlPanel;
     }
@@ -99,12 +99,9 @@ export class ControlPanelExtension {
     const name = getPathName(path);
     const item = this.items.find((i) => i.name === name);
     if (item) {
-      // NOTE: We cannot use async here easily as getIconObj is used synchronously in renderers.
-      // However, by the time we render icons, apps are likely loaded.
-      // We'll use a local cachedApps if possible or just return a default icon if not ready.
-      // In the future, FileIconRenderer should probably handle async icons better.
-      const app = appManager.runningApps[item.appId]?.config || { icon: ICONS.file };
-      return app.icon;
+      const { apps } = await import("../../../config/apps.js");
+      const app = apps.find((a) => a.id === item.appId);
+      return app ? app.icon : ICONS.file;
     }
 
     return null;

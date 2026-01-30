@@ -56,7 +56,7 @@ export function getIconForFile(fileName, isDir) {
  */
 export async function renderFileIcon(fileName, fullPath, isDir, options = {}) {
   // Check shell extension icon first
-  const shellIcon = ZenShellManager.getIconObj(fullPath);
+  const shellIcon = await ZenShellManager.getIconObj(fullPath);
 
   const iconDiv = document.createElement("div");
   iconDiv.className = "explorer-icon";

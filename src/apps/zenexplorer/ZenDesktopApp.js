@@ -5,7 +5,7 @@ import ZenDragDropManager from './utils/ZenDragDropManager.js';
 import { ZenContextMenuBuilder } from './utils/ZenContextMenuBuilder.js';
 import { ZenShellManager } from './utils/ZenShellManager.js';
 import { getAssociation } from '../../utils/directory.js';
-import { RecycleBinManager } from './utils/RecycleBinManager.js';
+import { getItem, LOCAL_STORAGE_KEYS } from '../../utils/localStorage.js';
 
 export class ZenDesktopApp {
     constructor() {
@@ -71,7 +71,54 @@ export class ZenDesktopApp {
             }
         });
 
+        // Wallpaper listener
+        document.addEventListener('wallpaper-changed', () => {
+            this.applyWallpaper();
+        });
+
         await this.refresh();
+        this.applyWallpaper();
+    }
+
+    applyWallpaper() {
+        if (!this.iconContainer) return;
+
+        const wallpaper = getItem(LOCAL_STORAGE_KEYS.WALLPAPER);
+        const mode = getItem(LOCAL_STORAGE_KEYS.WALLPAPER_MODE) || 'stretch';
+
+        if (wallpaper && wallpaper !== 'none') {
+            const img = new Image();
+            img.onload = () => {
+                const naturalWidth = img.naturalWidth;
+                const naturalHeight = img.naturalHeight;
+                const scaledWidth = naturalWidth; // desktop usually uses full size
+                const scaledHeight = naturalHeight;
+
+                this.iconContainer.style.backgroundImage = `url(${wallpaper})`;
+                this.iconContainer.style.backgroundRepeat = 'no-repeat';
+                this.iconContainer.style.backgroundPosition = 'center center';
+
+                switch (mode) {
+                    case 'stretch':
+                        this.iconContainer.style.backgroundSize = '100% 100%';
+                        break;
+                    case 'center':
+                        this.iconContainer.style.backgroundSize = 'auto';
+                        break;
+                    case 'tile':
+                        this.iconContainer.style.backgroundRepeat = 'repeat';
+                        this.iconContainer.style.backgroundSize = 'auto';
+                        this.iconContainer.style.backgroundPosition = '0 0';
+                        break;
+                    default:
+                        this.iconContainer.style.backgroundSize = '100% 100%';
+                        break;
+                }
+            };
+            img.src = wallpaper;
+        } else {
+            this.iconContainer.style.backgroundImage = 'none';
+        }
     }
 
     async refresh() {

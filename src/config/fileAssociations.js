@@ -203,6 +203,12 @@ export const fileAssociations = {
     appId: "flashplayer",
     icon: ICONS.swfFile,
   },
+  // Shortcuts
+  lnk: {
+    name: "Shortcut",
+    appId: null, // Handled specially by ZenShellManager
+    icon: ICONS.file,
+  },
   // Default
   default: {
     name: "File",
