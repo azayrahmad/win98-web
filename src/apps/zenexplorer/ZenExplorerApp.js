@@ -1,6 +1,9 @@
 import { Application, openApps } from "../Application.js";
-import { mounts } from "@zenfs/core";
+import { mounts, mount, umount } from "@zenfs/core";
+import { WebAccess } from "@zenfs/dom";
 import { initFileSystem } from "../../utils/zenfs-init.js";
+import { getItem, LOCAL_STORAGE_KEYS } from "../../utils/localStorage.js";
+import { getHandle } from "../../utils/handle-persistence.js";
 import { ICONS } from "../../config/icons.js";
 import { getAssociation } from "../../utils/directory.js";
 import { launchApp } from "../../utils/appManager.js";
@@ -8,6 +11,7 @@ import { IconManager } from "../../components/IconManager.js";
 import { AddressBar } from "../../components/AddressBar.js";
 import { StatusBar } from "../../components/StatusBar.js";
 import { AnimatedLogo } from "../../components/AnimatedLogo.js";
+import { ShowDialogWindow } from "../../components/DialogWindow.js";
 import browseUiIcons from "../../assets/icons/browse-ui-icons.png";
 import browseUiIconsGrayscale from "../../assets/icons/browse-ui-icons-grayscale.png";
 import "../explorer/explorer.css"; // Reuse explorer styles
@@ -222,7 +226,63 @@ export class ZenExplorerApp extends Application {
     // 8. Initial Navigation
     this.navigateTo(this.currentPath);
 
+    // 9. Check for local drive unlock
+    this._checkAndPromptForLocalCDrive();
+
     return win;
+  }
+
+  /**
+   * Check if C: drive is set to local storage and needs to be unlocked
+   * @private
+   */
+  async _checkAndPromptForLocalCDrive() {
+    const storageType = getItem(LOCAL_STORAGE_KEYS.C_DRIVE_STORAGE_TYPE);
+    if (storageType !== 'local') return;
+
+    const handle = await getHandle('c-drive');
+    if (!handle) return;
+
+    // If permission is already granted, zenfs-init.js should have mounted it.
+    // However, it might still return 'prompt' on the first check after reload.
+    const permission = await handle.queryPermission({ mode: 'readwrite' });
+    if (permission === 'granted') return;
+
+    ShowDialogWindow({
+      title: "Unlock C: Drive",
+      text: "Your C: drive is configured to use a local folder. Please click Unlock to grant access to your files.",
+      buttons: [
+        {
+          label: "Unlock",
+          isDefault: true,
+          action: async (dialog) => {
+            try {
+              const newPermission = await handle.requestPermission({ mode: 'readwrite' });
+              if (newPermission === 'granted') {
+                const localFs = await WebAccess.create({ handle });
+                if (mounts.has("/C:")) umount("/C:");
+                mount("/C:", localFs);
+
+                dialog.close();
+
+                // Refresh all ZenExplorer instances and Desktop
+                document.dispatchEvent(new CustomEvent("zen-fs-change"));
+                document.dispatchEvent(new CustomEvent("desktop-refresh"));
+
+                // Refresh current app view
+                this.navigateTo(this.currentPath, true, true);
+              }
+            } catch (e) {
+              console.error("Failed to unlock C: drive:", e);
+              alert("Failed to unlock C: drive: " + e.message);
+            }
+          }
+        },
+        { label: "Cancel" }
+      ],
+      modal: true,
+      parentWindow: this.win
+    });
   }
 
   /**

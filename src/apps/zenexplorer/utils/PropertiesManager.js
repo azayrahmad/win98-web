@@ -11,6 +11,8 @@ import {
 import { getIconForFile } from "../components/FileIconRenderer.js";
 import { RecycleBinManager } from "./RecycleBinManager.js";
 import { ZenShellManager } from "./ZenShellManager.js";
+import { getItem, LOCAL_STORAGE_KEYS } from "../../../utils/localStorage.js";
+import { migrateCDrive } from "./StorageMigration.js";
 
 /**
  * PropertiesManager - Handles showing properties for files and folders in ZenExplorer
@@ -100,6 +102,33 @@ export class PropertiesManager {
       buttons: [{ label: "OK", isDefault: true }],
       modal: true,
     });
+
+    if (path === '/C:') {
+      const storageType = getItem(LOCAL_STORAGE_KEYS.C_DRIVE_STORAGE_TYPE) || 'indexeddb';
+      const storageRow = document.createElement("div");
+      storageRow.style.gridColumn = "span 2";
+      storageRow.style.display = "flex";
+      storageRow.style.alignItems = "center";
+      storageRow.style.justifyContent = "space-between";
+      storageRow.style.marginTop = "10px";
+      storageRow.style.paddingTop = "10px";
+      storageRow.style.borderTop = "1px solid #808080";
+
+      const label = document.createElement("div");
+      label.textContent = "Storage: " + (storageType === 'local' ? "Local Folder" : "IndexedDB");
+      storageRow.appendChild(label);
+
+      const changeBtn = document.createElement("button");
+      changeBtn.textContent = "Change...";
+      changeBtn.disabled = !('showDirectoryPicker' in window);
+      changeBtn.onclick = () => {
+        win.close();
+        migrateCDrive(storageType === 'local' ? 'indexeddb' : 'local');
+      };
+      storageRow.appendChild(changeBtn);
+
+      container.querySelector('div[style*="grid-template-columns"]').appendChild(storageRow);
+    }
 
     if (isDir) {
       const controller = new AbortController();
