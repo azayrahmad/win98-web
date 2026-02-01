@@ -303,18 +303,9 @@ async function initializeOS() {
     });
 
     await executeBootStep(async () => {
-      let logElement = startBootProcessStep("Initializing taskbar...");
+      let logElement = startBootProcessStep("Starting system shell...");
       await new Promise((resolve) => setTimeout(resolve, 50));
-      await taskbar.init();
-      finalizeBootProcessStep(logElement, "OK");
-    });
-
-    await executeBootStep(async () => {
-      let logElement = startBootProcessStep("Setting up desktop...");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      const { ZenDesktopApp } = await import("./apps/zenexplorer/ZenDesktopApp.js");
-      const desktopApp = new ZenDesktopApp();
-      await desktopApp.init();
+      await launchApp("desktop");
       finalizeBootProcessStep(logElement, "OK");
     });
 

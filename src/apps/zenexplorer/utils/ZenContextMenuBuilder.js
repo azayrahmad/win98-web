@@ -231,7 +231,14 @@ export class ZenContextMenuBuilder {
       "MENU_DIVIDER",
       {
         label: "Properties",
-        action: () => PropertiesManager.show([this.app.currentPath]),
+        action: async () => {
+          if (this.app.config?.id === "desktop") {
+            const { launchApp } = await import("../../../utils/appManager.js");
+            launchApp("displayproperties");
+          } else {
+            PropertiesManager.show([this.app.currentPath]);
+          }
+        },
       },
     ];
     return menuItems;
