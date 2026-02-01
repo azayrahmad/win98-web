@@ -133,6 +133,10 @@ export const ICONS = {
     16: new URL("../assets/icons/desktop_old-4.png", import.meta.url).href,
     32: new URL("../assets/icons/desktop_old-4.png", import.meta.url).href,
   },
+  desktop: {
+    16: new URL("../assets/icons/desktop_old-4.png", import.meta.url).href,
+    32: new URL("../assets/icons/desktop_old-4.png", import.meta.url).href,
+  },
   themetocss: {
     16: new URL("../assets/icons/word_001-16.png", import.meta.url).href,
     32: new URL("../assets/icons/word_001-32.png", import.meta.url).href,

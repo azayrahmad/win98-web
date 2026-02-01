@@ -30,9 +30,11 @@ import { joinPath } from "./navigation/PathUtils.js";
 import { getToolbarItems } from "./interface/ToolbarBuilder.js";
 import { sortFileInfos } from "./fileoperations/SortUtils.js";
 import { ControlPanelExtension } from "./extensions/ControlPanelExtension.js";
+import { DesktopExtension } from "./extensions/DesktopExtension.js";
 
 // Initialize Shell Extensions
 ShellManager.registerExtension(new ControlPanelExtension());
+ShellManager.registerExtension(new DesktopExtension());
 
 export class ZenExplorerApp extends Application {
   static config = {
