@@ -1,30 +1,40 @@
-import { IFrameApplication } from "../IFrameApplication.js";
+import { Application } from "../Application.js";
 import { ShowDialogWindow } from "../../components/DialogWindow.js";
 import { ICONS } from "../../config/icons.js";
+import {
+  setupEmscriptenFS,
+  teardownEmscriptenFS,
+  setupIframeInactivity,
+} from "../../utils/emscripten-utils.js";
 
-export class PinballApp extends IFrameApplication {
+export class PinballApp extends Application {
   static config = {
     id: "pinball",
     title: "Space Cadet Pinball",
     description: "Play a classic game of pinball.",
     icon: ICONS.pinball,
-    width: 600,
-    height: 400,
+    width: 620,
+    height: 480,
     resizable: false,
+    maximizable: false,
     isSingleton: true,
   };
 
   constructor(config) {
     super(config);
+    this.iframe = null;
+    this.isMounted = false;
+    this.baseLocalPath = "/C:/Program Files/Pinball";
+    this._boundHandleMessage = this._handleMessage.bind(this);
   }
 
   _createWindow() {
-    const win = new $Window({
+    const win = new window.$Window({
       title: this.title,
-      outerWidth: 620,
-      outerHeight: 480,
-      resizable: false,
-      maximizable: false,
+      outerWidth: this.width,
+      outerHeight: this.height,
+      resizable: this.resizable,
+      maximizable: this.maximizable,
       icons: this.icon,
     });
 
@@ -37,18 +47,17 @@ export class PinballApp extends IFrameApplication {
     iframe.style.height = "100%";
     iframe.style.border = "none";
 
-    // Instead of appending, set the inner HTML to allow $Window.js to observe
-    win.$content.html(iframe.outerHTML);
+    win.$content.append(iframe);
+    this.iframe = iframe;
+    this.win = win;
 
-    // Get the actual iframe element that was added to the DOM
-    this.iframe = win.$content.find("iframe")[0];
-    this._setupIframeForInactivity(this.iframe);
+    setupIframeInactivity(this.iframe);
 
     return win;
   }
 
   _createMenuBar() {
-    return new MenuBar({
+    return new window.MenuBar({
       "&Game": [
         {
           label: "&New Game",
@@ -97,13 +106,33 @@ export class PinballApp extends IFrameApplication {
     });
   }
 
-  _onLaunch() {
-    // Most of the logic is now handled by the iframe
+  async _onLaunch() {
+    window.addEventListener("message", this._boundHandleMessage);
     this.win.focus();
   }
 
+  async _handleMessage(event) {
+    if (event.data && event.data.type === "PINBALL_READY") {
+      this.isMounted = await setupEmscriptenFS(this.iframe, this.baseLocalPath);
+      if (this.isMounted) {
+        this._startGame();
+      }
+    }
+  }
+
+  _startGame() {
+    if (!this.iframe || !this.iframe.contentWindow) return;
+    const guestWindow = this.iframe.contentWindow;
+
+    if (typeof guestWindow.callMain === "function") {
+      guestWindow.callMain([]);
+    } else if (guestWindow.Module && guestWindow.Module.callMain) {
+      guestWindow.Module.callMain([]);
+    }
+  }
+
   sendKey(key) {
-    // To send a key to the iframe, we need to dispatch the event on its contentWindow
+    if (!this.iframe || !this.iframe.contentWindow) return;
     const event = new KeyboardEvent("keydown", {
       key: key,
       code: key,
@@ -123,7 +152,9 @@ export class PinballApp extends IFrameApplication {
   }
 
   toggleFullScreen() {
-    this.iframe.requestFullscreen();
+    if (this.iframe) {
+      this.iframe.requestFullscreen();
+    }
   }
 
   showPlayerKeysDialog() {
@@ -141,5 +172,14 @@ export class PinballApp extends IFrameApplication {
       text: dialogText,
       buttons: [{ label: "OK", isDefault: true }],
     });
+  }
+
+  async _onClose() {
+    window.removeEventListener("message", this._boundHandleMessage);
+
+    if (this.isMounted) {
+      await teardownEmscriptenFS(this.iframe, this.baseLocalPath, ["SpaceCadetPinball.data"]);
+      this.isMounted = false;
+    }
   }
 }

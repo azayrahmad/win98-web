@@ -49,6 +49,7 @@
 
         <script>
             var Module = {
+                noInitialRun: true,
                 preRun: [],
                 postRun: [],
                 print: function (text) {
@@ -107,6 +108,8 @@
                     document.getElementById("splash-image").style.display =
                         "none";
                     document.getElementById("canvas").style.display = "block";
+                    console.log("Pinball runtime initialized in iframe");
+                    window.parent.postMessage({ type: 'PINBALL_READY' }, '*');
                 },
             };
 

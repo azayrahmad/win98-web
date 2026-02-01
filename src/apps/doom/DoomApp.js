@@ -1,7 +1,10 @@
 import { Application } from "../Application.js";
 import { ICONS } from "../../config/icons.js";
-import { fs } from "@zenfs/core";
-import { Emscripten } from "@zenfs/emscripten";
+import {
+  setupEmscriptenFS,
+  teardownEmscriptenFS,
+  setupIframeInactivity,
+} from "../../utils/emscripten-utils.js";
 
 export class DoomApp extends Application {
   static config = {
@@ -45,6 +48,8 @@ export class DoomApp extends Application {
     this.iframe = iframe;
     this.win = win;
 
+    setupIframeInactivity(this.iframe);
+
     return win;
   }
 
@@ -54,53 +59,10 @@ export class DoomApp extends Application {
 
   async _handleMessage(event) {
     if (event.data && event.data.type === "DOOM_READY") {
-      await this._setupFileSystem();
-      this._startGame();
-    }
-  }
-
-  async _setupFileSystem() {
-    if (!this.iframe || !this.iframe.contentWindow) return;
-
-    const guestModule = this.iframe.contentWindow.Module;
-    if (!guestModule || !guestModule.FS) {
-      console.error("Doom guest module or FS not found");
-      return;
-    }
-
-    const FS = guestModule.FS;
-
-    // 1. Sync persistent files from host ZenFS to iframe MEMFS
-    try {
-      const loadRecursive = async (localPath, emPath) => {
-        if (!fs.existsSync(localPath)) return;
-        const entries = await fs.promises.readdir(localPath);
-        for (const entry of entries) {
-          const fullLocalPath = `${localPath}/${entry}`;
-          const fullEmPath = emPath === "/" ? `/${entry}` : `${emPath}/${entry}`;
-          const stat = await fs.promises.stat(fullLocalPath);
-          if (stat.isDirectory()) {
-            try { FS.mkdir(fullEmPath); } catch (e) {}
-            await loadRecursive(fullLocalPath, fullEmPath);
-          } else {
-            const data = await fs.promises.readFile(fullLocalPath);
-            FS.writeFile(fullEmPath, new Uint8Array(data));
-          }
-        }
-      };
-      await loadRecursive(this.baseLocalPath, "/");
-    } catch (e) {
-      console.warn("Failed to load persistent files from ZenFS:", e);
-    }
-
-    // 2. Mount iframe's FS to host ZenFS
-    try {
-      const emscriptenFS = Emscripten.create({ FS: FS });
-      fs.mount(this.baseLocalPath, emscriptenFS);
-      this.isMounted = true;
-      document.dispatchEvent(new CustomEvent("zen-fs-change", { detail: { path: this.baseLocalPath } }));
-    } catch (e) {
-      console.error("Failed to mount Emscripten FS:", e);
+      this.isMounted = await setupEmscriptenFS(this.iframe, this.baseLocalPath);
+      if (this.isMounted) {
+        this._startGame();
+      }
     }
   }
 
@@ -126,66 +88,9 @@ export class DoomApp extends Application {
   async _onClose() {
     window.removeEventListener("message", this._boundHandleMessage);
 
-    if (this.isMounted && this.iframe && this.iframe.contentWindow) {
-      const FS = this.iframe.contentWindow.Module.FS;
-
-      // 1. Collect files from iframe FS to sync back
-      const syncData = [];
-      const collectFiles = (path) => {
-        const entries = FS.readdir(path).filter((e) => e !== "." && e !== "..");
-        for (const entry of entries) {
-          const fullPath = path === "/" ? `/${entry}` : `${path}/${entry}`;
-          try {
-            const stat = FS.stat(fullPath);
-            if (FS.isDir(stat.mode)) {
-              collectFiles(fullPath);
-            } else {
-              // Optimization: Don't sync back the large static WAD file
-              if (entry.toLowerCase() === "doom1.wad") continue;
-
-              syncData.push({
-                path: fullPath,
-                data: new Uint8Array(FS.readFile(fullPath)),
-              });
-            }
-          } catch (e) {}
-        }
-      };
-      collectFiles("/");
-
-      // 2. Unmount from host ZenFS
-      try {
-        fs.umount(this.baseLocalPath);
-        this.isMounted = false;
-      } catch (e) {
-        console.error("Failed to unmount Doom FS:", e);
-      }
-
-      // 3. Persist changed files back to host ZenFS (IndexedDB)
-      for (const item of syncData) {
-        const targetPath = `${this.baseLocalPath}${item.path}`;
-        const targetDir = targetPath.substring(0, targetPath.lastIndexOf("/"));
-
-        if (!fs.existsSync(targetDir)) {
-          await this._mkdirRecursive(targetDir);
-        }
-        await fs.promises.writeFile(targetPath, item.data);
-      }
-
-      document.dispatchEvent(
-        new CustomEvent("zen-fs-change", { detail: { path: this.baseLocalPath } }),
-      );
-    }
-  }
-
-  async _mkdirRecursive(path) {
-    const parts = path.split("/").filter(Boolean);
-    let current = "";
-    for (const part of parts) {
-      current += "/" + part;
-      if (!fs.existsSync(current)) {
-        await fs.promises.mkdir(current);
-      }
+    if (this.isMounted) {
+      await teardownEmscriptenFS(this.iframe, this.baseLocalPath, ["doom1.wad"]);
+      this.isMounted = false;
     }
   }
 }

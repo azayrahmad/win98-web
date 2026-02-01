@@ -35,6 +35,7 @@ import { initScreenManager } from "./utils/screenManager.js";
 import { fs } from "@zenfs/core";
 import { initFileSystem } from "./utils/zenfs-init.js";
 import { RecycleBinManager } from "./apps/zenexplorer/fileoperations/RecycleBinManager.js";
+import { preloadGameData } from "./utils/emscripten-utils.js";
 
 // Window Management System
 class WindowManagerSystem {
@@ -319,35 +320,41 @@ async function initializeOS() {
     });
 
     await executeBootStep(async () => {
-      const doomFiles = ["doom1.wad", "default.cfg"];
-      const baseRemotePath = "games/doom/";
-      const baseLocalPath = "/C:/Program Files/Doom/";
-
-      let needed = false;
-      for (const file of doomFiles) {
-        if (!fs.existsSync(baseLocalPath + file)) {
-          needed = true;
-          break;
-        }
-      }
-
-      if (needed) {
-        let logElement = startBootProcessStep("Loading Doom game data...");
-        for (const file of doomFiles) {
-          if (!fs.existsSync(baseLocalPath + file)) {
-            if (logElement && logElement.firstChild) {
-              logElement.firstChild.nodeValue = `Loading Doom game data: ${file}...`;
-            }
-            const response = await fetch(baseRemotePath + file);
-            const buffer = await response.arrayBuffer();
-            await fs.promises.writeFile(baseLocalPath + file, new Uint8Array(buffer));
+      const baseMsg = "Loading Doom game data...";
+      let logElement = startBootProcessStep(baseMsg);
+      await preloadGameData(
+        "/C:/Program Files/Doom/",
+        "games/doom/",
+        ["doom1.wad", "default.cfg"],
+        (file) => {
+          if (logElement && logElement.firstChild) {
+            logElement.firstChild.nodeValue = `${baseMsg} ${file}...`;
           }
         }
-        if (logElement && logElement.firstChild) {
-          logElement.firstChild.nodeValue = "Loading Doom game data...";
-        }
-        finalizeBootProcessStep(logElement, "OK");
+      );
+      if (logElement && logElement.firstChild) {
+        logElement.firstChild.nodeValue = baseMsg;
       }
+      finalizeBootProcessStep(logElement, "OK");
+    });
+
+    await executeBootStep(async () => {
+      const baseMsg = "Loading Pinball game data...";
+      let logElement = startBootProcessStep(baseMsg);
+      await preloadGameData(
+        "/C:/Program Files/Pinball/",
+        "games/pinball/",
+        ["SpaceCadetPinball.data"],
+        (file) => {
+          if (logElement && logElement.firstChild) {
+            logElement.firstChild.nodeValue = `${baseMsg} ${file}...`;
+          }
+        }
+      );
+      if (logElement && logElement.firstChild) {
+        logElement.firstChild.nodeValue = baseMsg;
+      }
+      finalizeBootProcessStep(logElement, "OK");
     });
 
     await executeBootStep(async () => {
