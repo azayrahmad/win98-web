@@ -79,10 +79,17 @@ html {
     overflow: hidden;
     display: grid;
     grid-auto-flow: column;
-    grid-template-rows: repeat(auto-fill, 60px);
-    grid-auto-columns: 60px;
+    grid-template-rows: repeat(auto-fill, 75px);
+    grid-auto-columns: 75px;
     gap: 5px;
     align-content: start;
+}
+
+/* Ensure column-first layout even when explorer-icon-view is present */
+.desktop.explorer-icon-view {
+    grid-auto-flow: column;
+    grid-template-columns: unset;
+    grid-template-rows: repeat(auto-fill, 75px);
 }
 
 /* When dragging, disable grid so icons stay put */
