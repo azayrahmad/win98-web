@@ -299,6 +299,38 @@ async function initializeOS() {
     });
 
     await executeBootStep(async () => {
+      const pinballFiles = ["SpaceCadetPinball.data", "SPLASH_BITMAP.bmp"];
+      const baseRemotePath = "games/pinball/";
+      const baseLocalPath = "/C:/Program Files/Pinball/";
+
+      let needed = false;
+      for (const file of pinballFiles) {
+        if (!fs.existsSync(baseLocalPath + file)) {
+          needed = true;
+          break;
+        }
+      }
+
+      if (needed) {
+        let logElement = startBootProcessStep("Loading Pinball game data...");
+        for (const file of pinballFiles) {
+          if (!fs.existsSync(baseLocalPath + file)) {
+            if (logElement && logElement.firstChild) {
+              logElement.firstChild.nodeValue = `Loading Pinball game data: ${file}...`;
+            }
+            const response = await fetch(baseRemotePath + file);
+            const buffer = await response.arrayBuffer();
+            await fs.promises.writeFile(baseLocalPath + file, new Uint8Array(buffer));
+          }
+        }
+        if (logElement && logElement.firstChild) {
+          logElement.firstChild.nodeValue = "Loading Pinball game data...";
+        }
+        finalizeBootProcessStep(logElement, "OK");
+      }
+    });
+
+    await executeBootStep(async () => {
       let logElement = startBootProcessStep("Loading custom applications...");
       await new Promise((resolve) => setTimeout(resolve, 50));
       loadCustomApps();

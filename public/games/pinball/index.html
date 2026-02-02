@@ -49,6 +49,7 @@
 
         <script>
             var Module = {
+                noInitialRun: true,
                 preRun: [],
                 postRun: [],
                 print: function (text) {
@@ -104,10 +105,14 @@
                 },
                 // ✅ Add this: ensure canvas is revealed when runtime is ready
                 onRuntimeInitialized: function () {
-                    document.getElementById("splash-image").style.display =
-                        "none";
-                    document.getElementById("canvas").style.display = "block";
+                    console.log("Pinball runtime initialized in iframe");
+                    window.parent.postMessage({ type: "PINBALL_READY" }, "*");
                 },
+                revealCanvas: function () {
+                    document.getElementById("splash-image").style.display = "none";
+                    document.getElementById("canvas").style.display = "block";
+                    document.getElementById("canvas").focus();
+                }
             };
 
             window.onerror = function () {
