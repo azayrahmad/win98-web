@@ -77,9 +77,6 @@ export class RecycleBinExtension {
      * @returns {Promise<string[]|null>}
      */
     async readdir(path) {
-        if (path === "/") {
-            return ["Recycle Bin"];
-        }
         if (path === this.path) {
             const allIds = new Set();
             const recyclePaths = this.getRecyclePaths();

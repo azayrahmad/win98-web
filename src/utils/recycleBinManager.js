@@ -1,17 +1,22 @@
 import { getItem, setItem, LOCAL_STORAGE_KEYS } from './localStorage.js';
 import { recycleBinContent } from '../config/recyclebin.js';
 
+let zenfsNotEmpty = false;
+
+export function setZenFSNotEmpty(notEmpty) {
+  zenfsNotEmpty = notEmpty;
+}
+
 /**
  * Gets all items from the Recycle Bin.
  * @returns {Array} An array of items in the Recycle Bin.
  */
 export function getRecycleBinItems() {
   const items = getItem(LOCAL_STORAGE_KEYS.RECYCLE_BIN);
-  if (items === null) {
-    setItem(LOCAL_STORAGE_KEYS.RECYCLE_BIN, recycleBinContent);
-    return recycleBinContent;
-  }
-  return items;
+  const localStorageItems = items === null ? recycleBinContent : items;
+  if (localStorageItems.length > 0) return localStorageItems;
+  if (zenfsNotEmpty) return [{}]; // Return a dummy item to signal "not empty"
+  return [];
 }
 
 /**

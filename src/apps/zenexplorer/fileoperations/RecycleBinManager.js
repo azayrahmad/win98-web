@@ -38,7 +38,7 @@ export class RecycleBinManager {
     }
 
     static async getMetadata(recyclePath) {
-        if (recyclePath === "/Recycle Bin") {
+        if (recyclePath === "/Recycle Bin" || recyclePath === "/C:/WINDOWS/Desktop/Recycle Bin") {
             const allMetadata = {};
             const paths = this.getAllRecyclePaths();
             for (const p of paths) {
@@ -274,18 +274,29 @@ export class RecycleBinManager {
     }
 
     static async isEmpty(recyclePath) {
+        if (recyclePath === "/Recycle Bin" || recyclePath === "/C:/WINDOWS/Desktop/Recycle Bin") {
+            const paths = this.getAllRecyclePaths();
+            for (const p of paths) {
+                const empty = await this._getSingleMetadata(p).then(m => Object.keys(m).length === 0);
+                if (!empty) return false;
+            }
+            return true;
+        }
         const metadata = await this.getMetadata(recyclePath);
         return Object.keys(metadata).length === 0;
     }
 
     static isRecycleBinPath(path) {
-        return !!path.match(/^\/[A-Z]:\/Recycled$/i) || path === "/Recycle Bin";
+        return !!path.match(/^\/[A-Z]:\/Recycled$/i) || path === "/Recycle Bin" || path === "/C:/WINDOWS/Desktop/Recycle Bin";
     }
 
     static isRecycledItemPath(path) {
-        const match = path.match(/^(\/[A-Z]:\/Recycled)\/([^/]+)$/i) || path.match(/^(\/Recycle Bin)\/([^/]+)$/i);
+        const match = path.match(/^(\/[A-Z]:\/Recycled)\/([^/]+)$/i) ||
+                      path.match(/^(\/Recycle Bin)\/([^/]+)$/i) ||
+                      path.match(/^(\/C:\/WINDOWS\/Desktop\/Recycle Bin)\/([^/]+)$/i);
         if (!match) return false;
-        return match[2] !== ".metadata.json";
+        const filename = path.split('/').pop();
+        return filename !== ".metadata.json";
     }
 
     static async _getUniqueRestorePath(path) {

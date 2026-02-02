@@ -35,6 +35,7 @@ import { initScreenManager } from "./utils/screenManager.js";
 import { fs } from "@zenfs/core";
 import { initFileSystem } from "./utils/zenfs-init.js";
 import { RecycleBinManager } from "./apps/zenexplorer/fileoperations/RecycleBinManager.js";
+import { setZenFSNotEmpty } from "./utils/recycleBinManager.js";
 
 // Window Management System
 class WindowManagerSystem {
@@ -234,6 +235,16 @@ async function initializeOS() {
     await executeBootStep(async () => {
       let logElement = startBootProcessStep("Initializing Recycle Bin...");
       await RecycleBinManager.init();
+
+      const updateGlobalRecycleBinStatus = async () => {
+        const empty = await RecycleBinManager.isEmpty("/Recycle Bin");
+        setZenFSNotEmpty(!empty);
+        document.dispatchEvent(new CustomEvent("desktop-refresh"));
+      };
+
+      document.addEventListener("recycle-bin-change", updateGlobalRecycleBinStatus);
+      await updateGlobalRecycleBinStatus();
+
       finalizeBootProcessStep(logElement, "OK");
     });
 
