@@ -51,6 +51,9 @@ export async function initFileSystem(onProgress) {
         if (!fs.existsSync('/C:/Program Files/Doom')) {
             await fs.promises.mkdir('/C:/Program Files/Doom');
         }
+        if (!fs.existsSync('/C:/Program Files/Pinball')) {
+            await fs.promises.mkdir('/C:/Program Files/Pinball');
+        }
         // Ensure WINDOWS/Desktop directory exists for the Desktop shell extension
         if (!fs.existsSync('/C:/WINDOWS/Desktop')) {
             await fs.promises.mkdir('/C:/WINDOWS/Desktop');
