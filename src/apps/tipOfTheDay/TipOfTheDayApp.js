@@ -1,6 +1,5 @@
 import { Application } from '../Application.js';
 import { tipOfTheDayContent } from './tipOfTheDay.js';
-import { apps } from '../../config/apps.js';
 import { launchApp } from '../../utils/appManager.js';
 import { getStartupApps, addStartupApp, removeStartupApp } from '../../utils/startupManager.js';
 import { ICONS } from '../../config/icons.js';
@@ -44,6 +43,7 @@ export class TipOfTheDayApp extends Application {
     }
 
     async _onLaunch() {
+        const { apps } = await import('../../config/apps.js');
         const tips = apps.reduce((acc, app) => {
             if (app.tips) {
                 return acc.concat(app.tips);

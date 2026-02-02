@@ -1,6 +1,6 @@
 import { fs } from "@zenfs/core";
 import { ICONS } from "../../../config/icons.js";
-import { VirtualStats } from "./ShellManager.js";
+import { VirtualStats } from "./VirtualStats.js";
 import { getPathName, joinPath } from "../navigation/PathUtils.js";
 
 /**
@@ -15,6 +15,16 @@ export class DesktopExtension {
         name: "My Computer",
         icon: ICONS.computer,
         target: "/",
+      },
+      {
+        name: "My Documents",
+        icon: ICONS.documents,
+        target: "/C:/My Documents",
+      },
+      {
+        name: "Recycle Bin",
+        icon: ICONS.recycleBinEmpty,
+        target: "/Recycle Bin",
       },
     ];
   }

@@ -2,20 +2,17 @@ import { getItem, setItem, LOCAL_STORAGE_KEYS } from './localStorage.js';
 import { ShowDialogWindow } from '../components/DialogWindow.js';
 import { renderHTML } from './domUtils.js';
 import { Application } from '../apps/Application.js';
-import { apps, appClasses } from '../config/apps.js';
 import { ICONS } from '../config/icons.js';
 import { addDesktopShortcut, removeDesktopShortcut } from './directory.js';
 import { launchApp } from './appManager.js';
 import { addToRecycleBin } from './recycleBinManager.js';
 
 export function setupIcons() {
-    const desktop = document.querySelector('.desktop');
-    if (desktop && typeof desktop.refreshIcons === 'function') {
-        desktop.refreshIcons();
-    }
+    document.dispatchEvent(new CustomEvent("desktop-refresh"));
 }
 
-export function registerCustomApp(appInfo) {
+export async function registerCustomApp(appInfo) {
+    const { apps, appClasses } = await import('../config/apps.js');
     const existingApp = apps.find(app => app.id === appInfo.id);
 
     if (existingApp) {
@@ -111,7 +108,8 @@ export function registerCustomApp(appInfo) {
     setupIcons();
 }
 
-export function deleteCustomApp(appId) {
+export async function deleteCustomApp(appId) {
+    const { apps, appClasses } = await import('../config/apps.js');
     const appIndex = apps.findIndex(app => app.id === appId);
     if (appIndex === -1) return;
 

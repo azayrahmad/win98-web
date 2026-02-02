@@ -4,7 +4,6 @@ import { getDisplayName } from "../navigation/PathUtils.js";
 import { RecycleBinManager } from "../fileoperations/RecycleBinManager.js";
 import { ShellManager } from "../extensions/ShellManager.js";
 import { fs } from "@zenfs/core";
-import { apps } from "../../../config/apps.js";
 
 /**
  * FileIconRenderer - Handles rendering of file/folder icons in ZenExplorer
@@ -91,6 +90,7 @@ export async function renderFileIcon(fileName, fullPath, isDir, options = {}) {
       const content = await fs.promises.readFile(fullPath, "utf8");
       const data = JSON.parse(content);
       if (data.type === "shortcut" && data.appId) {
+        const { apps } = await import("../../../config/apps.js");
         const app = apps.find((a) => a.id === data.appId);
         if (app) {
           iconObj = app.icon;

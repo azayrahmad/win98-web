@@ -1,7 +1,5 @@
 import { ICONS } from "../../../config/icons.js";
-import { apps } from "../../../config/apps.js";
-import { launchApp } from "../../../utils/appManager.js";
-import { VirtualStats } from "./ShellManager.js";
+import { VirtualStats } from "./VirtualStats.js";
 import { getPathName } from "../navigation/PathUtils.js";
 
 /**
@@ -100,8 +98,10 @@ export class ControlPanelExtension {
     const name = getPathName(path);
     const item = this.items.find((i) => i.name === name);
     if (item) {
+      // Use system icons as fallback or try to get from global apps
+      const apps = window.System?.apps || [];
       const app = apps.find((a) => a.id === item.appId);
-      return app ? app.icon : ICONS.file;
+      return app ? app.icon : ICONS.settings || ICONS.file;
     }
 
     return null;
@@ -159,7 +159,12 @@ export class ControlPanelExtension {
     const name = getPathName(path);
     const item = this.items.find((i) => i.name === name);
     if (item) {
-      launchApp(item.appId);
+      if (window.System?.launchApp) {
+        window.System.launchApp(item.appId);
+      } else {
+        const { launchApp } = await import("../../../utils/appManager.js");
+        launchApp(item.appId);
+      }
       return true;
     }
 

@@ -3,9 +3,8 @@ import { launchApp } from "../utils/appManager.js";
 import { findItemByPath, getAssociation } from "../utils/directory.js";
 import { convertWindowsPathToInternal } from "../utils/path.js";
 import { ShowDialogWindow } from "./DialogWindow.js";
-import { apps } from "../config/apps.js";
 
-function ShowRunDialog() {
+async function ShowRunDialog() {
   const win = new $FormWindow("Run");
   win.setDimensions({
     outerWidth: 300,
@@ -46,7 +45,7 @@ function ShowRunDialog() {
 
   win.$main.append(contentContainer, formContainer);
 
-  const executeCommand = () => {
+  const executeCommand = async () => {
     const command = inputEl.value.trim();
     if (!command) {
       return;
@@ -64,6 +63,7 @@ function ShowRunDialog() {
     }
 
     // Check if it's an app ID
+    const { apps } = await import("../config/apps.js");
     const app = apps.find(
       (app) => app.id.toLowerCase() === command.toLowerCase(),
     );

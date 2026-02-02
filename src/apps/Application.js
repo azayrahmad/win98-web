@@ -1,6 +1,5 @@
 import { ShowDialogWindow } from "../components/DialogWindow.js";
 import { createTaskbarButton, createTrayIcon } from "../components/taskbar.js";
-import { appManager } from "../utils/appManager.js";
 
 const openWindows = new Map();
 export const openApps = new Map();
@@ -32,6 +31,7 @@ export class Application {
   }
 
   async launch(data = null) {
+    const { appManager } = await import("../utils/appManager.js");
     let filePath = null;
     let windowIdOverride = null;
 
@@ -104,7 +104,7 @@ export class Application {
     this.win.element.id = windowId;
     this.win.element.dataset.appId = this.id;
 
-    this.win.onClosed(() => {
+    this.win.onClosed(async () => {
       if (typeof this._onClose === "function") {
         this._onClose();
       }
@@ -117,6 +117,7 @@ export class Application {
         }
       }
       openWindows.delete(windowId);
+      const { appManager } = await import("../utils/appManager.js");
       appManager.closeApp(instanceKey);
     });
 

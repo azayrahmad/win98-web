@@ -3,7 +3,6 @@ import { IndexedDB } from "@zenfs/dom";
 import { migrateToZenFS, PINNED_PATH, START_MENU_PATH, FAVORITES_PATH } from "./startMenuUtils.js";
 import startMenuConfig from "../config/startmenu.js";
 import { getStartupApps } from "./startupManager.js";
-import { apps } from "../config/apps.js";
 import { existsAsync } from "./zenfs-utils.js";
 
 let isInitialized = false;
@@ -61,6 +60,11 @@ export async function initFileSystem(onProgress) {
             await fs.promises.mkdir('/C:/WINDOWS/Desktop');
         }
 
+        // Ensure My Documents directory exists
+        if (!(await existsAsync('/C:/My Documents'))) {
+            await fs.promises.mkdir('/C:/My Documents');
+        }
+
         if (onProgress) onProgress("Initializing Start Menu...");
         // Ensure PINNED_PATH exists (C:/WINDOWS/Start Menu)
         if (!(await existsAsync(PINNED_PATH))) {
@@ -85,6 +89,7 @@ export async function initFileSystem(onProgress) {
             // Migrate startup apps from localStorage to ZenFS
             const startupApps = await getStartupApps();
             if (startupApps.length > 0) {
+                const { apps } = await import("../config/apps.js");
                 const startupPath = `${START_MENU_PATH}/StartUp`;
                 if (!(await existsAsync(startupPath))) {
                     await fs.promises.mkdir(startupPath, { recursive: true });

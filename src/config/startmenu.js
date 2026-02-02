@@ -1,4 +1,3 @@
-import { apps } from "./apps.js";
 import { launchApp } from "../utils/appManager.js";
 import { ShowRunDialog } from "../components/RunDialog.js";
 import { ICONS } from "./icons.js";
@@ -30,16 +29,7 @@ const accessoriesAppIds = [
 ];
 
 function getAppList(appListIds) {
-  return appListIds
-    .map((id) => apps.find((app) => app.id === id))
-    .filter((app) => app)
-    .sort((a, b) => a.title.localeCompare(b.title))
-    .map((app) => ({
-      label: app.title,
-      icon: app.icon[16],
-      appId: app.id,
-      action: () => launchApp(app.id),
-    }));
+  return appListIds.map((id) => ({ appId: id }));
 }
 
 const startMenuConfig = [

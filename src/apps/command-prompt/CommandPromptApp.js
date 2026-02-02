@@ -3,7 +3,6 @@ import { Terminal } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
 import "./command-prompt.css";
 import { fs, mounts } from "@zenfs/core";
-import { apps } from "../../config/apps.js";
 import { getAssociation } from "../../utils/directory.js";
 import { launchApp } from "../../utils/appManager.js";
 import { ICONS } from "../../config/icons.js";
@@ -330,6 +329,7 @@ export class CommandPromptApp extends Application {
         break;
 
       default:
+        const { apps } = await import("../../config/apps.js");
         const app = apps.find(
           (app) =>
             app.id.toLowerCase() === cmd.toLowerCase() ||

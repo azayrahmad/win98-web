@@ -1,5 +1,4 @@
 import { fs } from "@zenfs/core";
-import { apps } from "../config/apps.js";
 import { launchApp } from "./appManager.js";
 import { ICONS } from "../config/icons.js";
 import { getAssociation } from "./directory.js";
@@ -59,6 +58,7 @@ export async function loadLnk(path, iconSize = 16) {
     const label = filename.replace(".lnk", "");
     const content = await fs.promises.readFile(path, "utf8");
     const data = JSON.parse(content);
+    const { apps } = await import("../config/apps.js");
     const app = apps.find((a) => a.id === data.appId);
 
     return {

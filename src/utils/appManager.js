@@ -1,4 +1,3 @@
-import { apps } from "../config/apps.js";
 import {
   requestWaitState,
   releaseWaitState,
@@ -13,7 +12,8 @@ const appManager = {
         return this.runningApps;
     },
 
-    getAppConfig(appId) {
+    async getAppConfig(appId) {
+        const { apps } = await import("../config/apps.js");
         return apps.find((a) => a.id === appId);
     },
 
@@ -40,7 +40,7 @@ export async function launchApp(appId, data = null) {
   const launchId = `launch-${appId}-${Date.now()}`;
   requestWaitState(launchId);
 
-  const appConfig = appManager.getAppConfig(appId);
+  const appConfig = await appManager.getAppConfig(appId);
   playSound("Open");
   if (!appConfig) {
     console.error(`No application config found for ID: ${appId}`);

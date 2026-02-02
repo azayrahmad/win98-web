@@ -1,7 +1,6 @@
 import { getItem, setItem } from "./localStorage.js";
 import { fs } from "@zenfs/core";
 import { START_MENU_PATH } from "./startMenuUtils.js";
-import { apps } from "../config/apps.js";
 import { existsAsync } from "./zenfs-utils.js";
 
 const STARTUP_APPS_KEY = "startup_apps";
@@ -49,6 +48,7 @@ export async function addStartupApp(appId) {
     if (!(await existsAsync(STARTUP_PATH))) {
       await fs.promises.mkdir(STARTUP_PATH, { recursive: true });
     }
+    const { apps } = await import("../config/apps.js");
     const app = apps.find(a => a.id === appId);
     const label = app ? app.title : appId;
     const lnkPath = `${STARTUP_PATH}/${label}.lnk`;

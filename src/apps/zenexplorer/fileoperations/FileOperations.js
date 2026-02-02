@@ -92,11 +92,11 @@ export class FileOperations {
                     const offset = options.offsets ? options.offsets[i] : { x: i * 10, y: i * 10 };
                     positions[name] = { x: options.dropX + offset.x, y: options.dropY + offset.y };
                 });
-                await LayoutManager.updateItemPositions(destinationPath, positions, this.app.win.element.id);
+                await LayoutManager.updateItemPositions(destinationPath, positions, this.app.win?.element?.id || 'desktop');
             }
             UndoManager.push({ type: 'move', data: { from: sourcePaths, to: targetPaths } });
             await this.app.navigateTo(this.app.currentPath, true, true);
-            document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win.element.id } }));
+            document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win?.element?.id || 'desktop' } }));
         } catch (e) {
             handleFileSystemError("move", e, "items");
             throw e;
@@ -120,11 +120,11 @@ export class FileOperations {
                     const offset = options.offsets ? options.offsets[i] : { x: i * 10, y: i * 10 };
                     positions[name] = { x: options.dropX + offset.x, y: options.dropY + offset.y };
                 });
-                await LayoutManager.updateItemPositions(destinationPath, positions, this.app.win.element.id);
+                await LayoutManager.updateItemPositions(destinationPath, positions, this.app.win?.element?.id || 'desktop');
             }
             UndoManager.push({ type: 'copy', data: { created: targetPaths } });
             await this.app.navigateTo(this.app.currentPath, true, true);
-            document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win.element.id } }));
+            document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win?.element?.id || 'desktop' } }));
         } catch (e) {
             handleFileSystemError("copy", e, "items");
             throw e;
@@ -271,7 +271,7 @@ export class FileOperations {
                     isDefault: true,
                     action: async () => {
                         const busyId = `delete-${Math.random()}`;
-                        requestBusyState(busyId, this.app.win.element);
+                        requestBusyState(busyId, this.app.win?.element || document.body);
                         const { ProgressBarDialogWindow } = await import("../interface/ProgressBarDialogWindow.js");
                         const totalSize = await this.getTotalSize(paths);
                         const dialog = new ProgressBarDialogWindow(isPermanent ? "delete" : "recycle", paths.length, totalSize);
@@ -304,13 +304,13 @@ export class FileOperations {
                             }
                             if (isPermanent && !alreadyInRecycle) {
                                 await this.app.navigateTo(this.app.currentPath, true, true);
-                                document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win.element.id } }));
+                                document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win?.element?.id || 'desktop' } }));
                             }
                         } catch (e) {
                             handleFileSystemError("delete", e, "items");
                         } finally {
                             dialog.close();
-                            releaseBusyState(busyId, this.app.win.element);
+                            releaseBusyState(busyId, this.app.win?.element || document.body);
                         }
                     }
                 },
@@ -325,35 +325,35 @@ export class FileOperations {
 
     async createNewFolder() {
         const busyId = `create-folder-${Math.random()}`;
-        requestBusyState(busyId, this.app.win.element);
+        requestBusyState(busyId, this.app.win?.element || document.body);
         try {
             const name = await this.getUniqueName(this.app.currentPath, "New Folder");
             const newPath = joinPath(this.app.currentPath, name);
             await fs.promises.mkdir(ShellManager.getRealPath(newPath));
             await this.app.navigateTo(this.app.currentPath, true, true);
-            document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win.element.id } }));
+            document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win?.element?.id || 'desktop' } }));
             this.app.enterRenameModeByPath(newPath);
         } catch (e) {
             handleFileSystemError("create", e, "folder");
         } finally {
-            releaseBusyState(busyId, this.app.win.element);
+            releaseBusyState(busyId, this.app.win?.element || document.body);
         }
     }
 
     async createNewTextFile() {
         const busyId = `create-file-${Math.random()}`;
-        requestBusyState(busyId, this.app.win.element);
+        requestBusyState(busyId, this.app.win?.element || document.body);
         try {
             const name = await this.getUniqueName(this.app.currentPath, "New Text Document", ".txt");
             const newPath = joinPath(this.app.currentPath, name);
             await fs.promises.writeFile(ShellManager.getRealPath(newPath), "");
             await this.app.navigateTo(this.app.currentPath, true, true);
-            document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win.element.id } }));
+            document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win?.element?.id || 'desktop' } }));
             this.app.enterRenameModeByPath(newPath);
         } catch (e) {
             handleFileSystemError("create", e, "file");
         } finally {
-            releaseBusyState(busyId, this.app.win.element);
+            releaseBusyState(busyId, this.app.win?.element || document.body);
         }
     }
 
@@ -397,7 +397,7 @@ export class FileOperations {
     async restoreItems(paths) {
         if (paths.length === 0) return;
         const busyId = `restore-${Math.random()}`;
-        requestBusyState(busyId, this.app.win.element);
+        requestBusyState(busyId, this.app.win?.element || document.body);
         const { ProgressBarDialogWindow } = await import("../interface/ProgressBarDialogWindow.js");
         const totalSize = await this.getTotalSize(paths);
         const dialog = new ProgressBarDialogWindow("restore", paths.length, totalSize);
@@ -407,9 +407,9 @@ export class FileOperations {
             handleFileSystemError("restore", e, "items");
         } finally {
             dialog.close();
-            releaseBusyState(busyId, this.app.win.element);
+            releaseBusyState(busyId, this.app.win?.element || document.body);
             await this.app.navigateTo(this.app.currentPath, true, true);
-            document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win.element.id } }));
+            document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win?.element?.id || 'desktop' } }));
         }
     }
 
@@ -430,7 +430,7 @@ export class FileOperations {
                     isDefault: true,
                     action: async () => {
                         const busyId = `empty-recycle-${Math.random()}`;
-                        requestBusyState(busyId, this.app.win.element);
+                        requestBusyState(busyId, this.app.win?.element || document.body);
                         const metadata = await RecycleBinManager.getMetadata(recyclePath);
                         const ids = Object.keys(metadata);
                         const paths = ids.map(id => joinPath(recyclePath, id));
@@ -445,7 +445,7 @@ export class FileOperations {
                             handleFileSystemError("delete", e, "items");
                         } finally {
                             dialog.close();
-                            releaseBusyState(busyId, this.app.win.element);
+                            releaseBusyState(busyId, this.app.win?.element || document.body);
                             await this.app.navigateTo(this.app.currentPath, true, true);
                         }
                     }
@@ -459,7 +459,7 @@ export class FileOperations {
         const op = UndoManager.peek();
         if (!op) return;
         const busyId = `undo-${Math.random()}`;
-        requestBusyState(busyId, this.app.win.element);
+        requestBusyState(busyId, this.app.win?.element || document.body);
         try {
             switch (op.type) {
                 case 'rename': await this._undoRename(op.data); break;
@@ -480,7 +480,7 @@ export class FileOperations {
                 buttons: [{ label: "OK" }]
             });
         } finally {
-            releaseBusyState(busyId, this.app.win.element);
+            releaseBusyState(busyId, this.app.win?.element || document.body);
         }
     }
 

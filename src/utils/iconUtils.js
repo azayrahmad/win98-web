@@ -1,8 +1,7 @@
 import { getItem, LOCAL_STORAGE_KEYS } from "./localStorage.js";
 import { getDesktopContents } from "./directory.js";
-import { apps } from "../config/apps.js";
 
-export function getItemFromIcon(icon) {
+export async function getItemFromIcon(icon) {
   const fileId = icon.getAttribute("data-file-id");
   const filePath = icon.getAttribute("data-file-path");
   const appId = icon.getAttribute("data-app-id");
@@ -24,6 +23,7 @@ export function getItemFromIcon(icon) {
     }
   }
 
+  const { apps } = await import("../config/apps.js");
   const appItem = apps.find((a) => a.id === appId);
   const isDesktopApp = desktopContents.some(
     (item) => item.id === appId && item.type === "app",

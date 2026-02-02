@@ -52,10 +52,18 @@ export class DirectoryView {
       icon = isEmpty ? ICONS.recycleBinEmpty : ICONS.recycleBinFull;
     }
 
-    this.app.addressBar.setValue(formatPathForDisplay(path));
-    this.app.win.title(name);
-    this.app.sidebar.update(name, icon[32]);
-    this.app.win.setIcons(icon);
+    if (this.app.addressBar) {
+      this.app.addressBar.setValue(formatPathForDisplay(path));
+    }
+    if (this.app.win && typeof this.app.win.title === "function") {
+      this.app.win.title(name);
+    }
+    if (this.app.sidebar) {
+      this.app.sidebar.update(name, icon[32]);
+    }
+    if (this.app.win && typeof this.app.win.setIcons === "function") {
+      this.app.win.setIcons(icon);
+    }
   }
 
   async renderDirectoryContents(path) {
@@ -93,19 +101,27 @@ export class DirectoryView {
     const sortedInfos = sortFileInfos(fileInfos, sortBy, path, order);
 
     const isIconView = this.app.viewMode === "large" || this.app.viewMode === "small";
+    const iconContainer = this.app.iconContainer;
+    const iconManager = this.app.iconManager;
 
     if (isIconView) {
       if (layout.autoArrange) {
-        this.app.iconContainer.classList.remove("has-absolute-icons");
+        iconContainer.classList.remove("has-absolute-icons");
       } else {
-        this.app.iconContainer.classList.add("has-absolute-icons");
+        iconContainer.classList.add("has-absolute-icons");
+      }
+      if (this.app.isColumnLayout) {
+        iconContainer.classList.add("column-layout");
+      } else {
+        iconContainer.classList.remove("column-layout");
       }
     } else {
-      this.app.iconContainer.classList.remove("has-absolute-icons");
+      iconContainer.classList.remove("has-absolute-icons");
+      iconContainer.classList.remove("column-layout");
     }
 
-    this.app.iconContainer.innerHTML = "";
-    this.app.iconManager.clearSelection();
+    iconContainer.innerHTML = "";
+    iconManager.clearSelection();
 
     const isRecycleBin = RecycleBinManager.isRecycleBinPath(path);
     const metadata = isRecycleBin ? await RecycleBinManager.getMetadata(path) : null;
@@ -170,8 +186,10 @@ export class DirectoryView {
           tbody.appendChild(tr);
         } catch (e) {}
       }
-      this.app.iconContainer.appendChild(table);
-      this.app.statusBar.setText(`${tbody.children.length} object(s)`);
+      iconContainer.appendChild(table);
+      if (this.app.statusBar) {
+        this.app.statusBar.setText(`${tbody.children.length} object(s)`);
+      }
       return;
     }
 
@@ -197,10 +215,19 @@ export class DirectoryView {
           } else {
             const gridX = 75;
             const gridY = 85;
-            const cols = Math.floor(this.app.iconContainer.clientWidth / gridX) || 1;
             const index = icons.length;
-            const x = (index % cols) * gridX + 10;
-            const y = Math.floor(index / cols) * gridY + 10;
+            let x, y;
+
+            if (this.app.isColumnLayout) {
+              const rows = Math.floor(iconContainer.clientHeight / gridY) || 1;
+              x = Math.floor(index / rows) * gridX + 10;
+              y = (index % rows) * gridY + 10;
+            } else {
+              const cols = Math.floor(iconContainer.clientWidth / gridX) || 1;
+              x = (index % cols) * gridX + 10;
+              y = Math.floor(index / cols) * gridY + 10;
+            }
+
             iconDiv.style.left = `${x}px`;
             iconDiv.style.top = `${y}px`;
           }
@@ -209,8 +236,8 @@ export class DirectoryView {
       } catch (e) {}
     }
 
-    this.app.iconContainer.innerHTML = "";
-    this.app.iconManager.clearSelection();
+    iconContainer.innerHTML = "";
+    iconManager.clearSelection();
     const fragment = document.createDocumentFragment();
     let maxRight = 0;
     let maxBottom = 0;
@@ -233,8 +260,10 @@ export class DirectoryView {
       spacer.style.visibility = "hidden";
       fragment.appendChild(spacer);
     }
-    this.app.iconContainer.appendChild(fragment);
-    this.app.statusBar.setText(`${icons.length} object(s)`);
+    iconContainer.appendChild(fragment);
+    if (this.app.statusBar) {
+      this.app.statusBar.setText(`${icons.length} object(s)`);
+    }
   }
 
   updateCutIcons() {

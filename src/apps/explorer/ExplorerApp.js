@@ -1,6 +1,5 @@
 import { Application } from "../Application.js";
 import directory from "../../config/directory.js";
-import { apps } from "../../config/apps.js";
 import { fileAssociations } from "../../config/fileAssociations.js";
 import { ICONS, SHORTCUT_OVERLAY } from "../../config/icons.js";
 import { launchApp } from "../../utils/appManager.js";
@@ -64,9 +63,10 @@ const specialFolderIcons = {
   [SPECIAL_FOLDER_PATHS["my-documents"]]: "my-documents",
 };
 
-function getIconForPath(path) {
+async function getIconForPath(path) {
   const appId = specialFolderIcons[path];
   if (appId) {
+    const { apps } = await import("../../config/apps.js");
     const app = apps.find((a) => a.id === appId);
     if (app) {
       return app.icon;
@@ -666,7 +666,8 @@ export class ExplorerApp extends Application {
     this.addressBar.setValue(convertInternalPathToWindows(path));
   }
 
-  _renderIcons() {
+  async _renderIcons() {
+    const { apps } = await import("../../config/apps.js");
     this.currentFolderItems.forEach((child) => {
       let iconData = { ...child };
 
@@ -674,7 +675,7 @@ export class ExplorerApp extends Application {
       if (child.type === "shortcut") {
         const target = this.findItemInDirectory(child.targetId);
         if (target) {
-          iconData = { ...target, name: child.name };
+          iconData = { ...target, name: child.name, type: child.type };
         }
       }
 
@@ -701,7 +702,7 @@ export class ExplorerApp extends Application {
     });
   }
 
-  render(path, isNewNavigation = true) {
+  async render(path, isNewNavigation = true) {
     this.currentPath = path;
     const item = findItemByPath(path);
 
@@ -714,7 +715,7 @@ export class ExplorerApp extends Application {
     const name = item.type === "drive" ? `(${item.name})` : item.name;
     this.win.title(name);
     this.titleElement.text(name);
-    const icon = getIconForPath(path);
+    const icon = await getIconForPath(path);
     if (icon) {
       this.win.setIcons(icon);
       this.sidebarIcon.src = icon[32];
@@ -762,6 +763,7 @@ export class ExplorerApp extends Application {
       }
 
       if (path === SPECIAL_FOLDER_PATHS.desktop) {
+        const { apps } = await import("../../config/apps.js");
         const desktopContents = getDesktopContents();
         const desktopApps = desktopContents.apps.map((appId) => {
           const app = apps.find((a) => a.id === appId);
@@ -839,8 +841,9 @@ export class ExplorerApp extends Application {
   }
 
   createExplorerIcon(item) {
+    const apps = window.System?.apps || [];
     const app = apps.find((a) => a.id === item.appId) || {};
-    const originalName = item.name || item.filename || item.title || app.title;
+    const originalName = item.name || item.filename || item.title || app.title || item.appId;
     let displayName =
       item.type === "drive" ? `(${originalName})` : originalName;
 
@@ -1416,7 +1419,8 @@ export class ExplorerApp extends Application {
     document.dispatchEvent(new CustomEvent("desktop-refresh"));
   }
 
-  showProperties(item) {
+  async showProperties(item) {
+    const { apps } = await import("../../config/apps.js");
     // Check if the item is an app from the main configuration
     if (item.appId && item.isStatic) {
       const appConfig = apps.find((app) => app.id === item.appId);

@@ -112,7 +112,7 @@ export class IconManager {
   }
 
   handleMouseDown(e) {
-    if (e.target !== this.container) return; // Only start lasso on container itself
+    if (e.target.closest(this.iconSelector)) return;
     if (e.button !== 0) return; // Only for left click
 
     this.isLassoing = true;
@@ -193,7 +193,8 @@ export class IconManager {
   }
 
   handleContextMenu(e) {
-    if (e.target === this.container) {
+    const icon = e.target.closest(this.iconSelector);
+    if (!icon) {
       if (this.options.onBackgroundContext) {
         e.preventDefault();
         this.options.onBackgroundContext(e);

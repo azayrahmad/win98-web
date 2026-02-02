@@ -18,7 +18,7 @@ export class TaskManagerApp extends Application {
 
   async _onLaunch() {
     this.win.element.style.zIndex = $Window.Z_INDEX++; // Bring to front on launch
-    this._updateTaskList();
+    await this._updateTaskList();
     this._setupEventDelegation();
 
     // Custom event listener for app changes
@@ -26,7 +26,7 @@ export class TaskManagerApp extends Application {
     document.addEventListener("app-closed", () => this._updateTaskList());
   }
 
-  _updateTaskList() {
+  async _updateTaskList() {
     const taskList = this.win.$content.find(".task-list");
     const selectedAppId = this.win.$content
       .find(".task-list tr.highlighted")
@@ -38,7 +38,7 @@ export class TaskManagerApp extends Application {
     for (const [instanceKey, appInstance] of Object.entries(runningApps)) {
       if (appInstance.id === "taskmanager") continue;
 
-      const appConfig = appManager.getAppConfig(appInstance.id);
+      const appConfig = await appManager.getAppConfig(appInstance.id);
       const title = appInstance.win ? appInstance.win.title() : appConfig.title;
 
       const tableRow = $(`<tr><td>${title}</td></tr>`);

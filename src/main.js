@@ -7,13 +7,13 @@ import splashBg from "./assets/img/splash.png";
 import { themes } from "./config/themes.js";
 import { colorSchemes } from "./config/colorSchemes.js";
 import { setupCounter } from "./counter.js";
-import { initDesktop } from "./components/desktop.js";
 import { getItem, LOCAL_STORAGE_KEYS } from "./utils/localStorage.js";
 import { apps, appClasses } from "./config/apps.js";
 import { ICONS } from "./config/icons.js";
 import { Application } from "./apps/Application.js";
 import { registerCustomApp } from "./utils/customAppManager.js";
 import { taskbar } from "./components/taskbar.js";
+import { initDesktop } from "./components/desktop.js";
 import { ShowDialogWindow } from "./components/DialogWindow.js";
 import { playSound } from "./utils/soundManager.js";
 import { setTheme, getCurrentTheme, setColorScheme } from "./utils/themeManager.js";
@@ -35,6 +35,13 @@ import { initScreenManager } from "./utils/screenManager.js";
 import { fs } from "@zenfs/core";
 import { initFileSystem } from "./utils/zenfs-init.js";
 import { RecycleBinManager } from "./apps/zenexplorer/fileoperations/RecycleBinManager.js";
+import { ShellManager } from "./apps/zenexplorer/extensions/ShellManager.js";
+import { ControlPanelExtension } from "./apps/zenexplorer/extensions/ControlPanelExtension.js";
+import { DesktopExtension } from "./apps/zenexplorer/extensions/DesktopExtension.js";
+
+// Initialize Shell Extensions
+ShellManager.registerExtension(new ControlPanelExtension());
+ShellManager.registerExtension(new DesktopExtension());
 
 // Window Management System
 class WindowManagerSystem {
@@ -198,11 +205,11 @@ async function initializeOS() {
       }
     });
 
-    function loadCustomApps() {
+    async function loadCustomApps() {
       const savedApps = getItem(LOCAL_STORAGE_KEYS.CUSTOM_APPS) || [];
-      savedApps.forEach((appInfo) => {
-        registerCustomApp(appInfo);
-      });
+      for (const appInfo of savedApps) {
+        await registerCustomApp(appInfo);
+      }
     }
 
     await executeBootStep(async () => {
@@ -301,7 +308,7 @@ async function initializeOS() {
     await executeBootStep(async () => {
       let logElement = startBootProcessStep("Loading custom applications...");
       await new Promise((resolve) => setTimeout(resolve, 50));
-      loadCustomApps();
+      await loadCustomApps();
       finalizeBootProcessStep(logElement, "OK");
     });
 
@@ -360,8 +367,7 @@ async function initializeOS() {
     await executeBootStep(async () => {
       let logElement = startBootProcessStep("Setting up desktop...");
       await new Promise((resolve) => setTimeout(resolve, 50));
-      await initDesktop(window.activeProfile);
-      document.dispatchEvent(new CustomEvent("desktop-refresh"));
+      await initDesktop();
       finalizeBootProcessStep(logElement, "OK");
     });
 
@@ -383,6 +389,7 @@ async function initializeOS() {
     window.setTheme = setTheme;
     window.fs = fs;
     window.System.launchApp = launchApp;
+    window.System.apps = apps;
     console.log("azOS initialized");
 
     let inactivityTimer;

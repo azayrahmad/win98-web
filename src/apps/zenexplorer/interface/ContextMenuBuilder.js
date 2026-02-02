@@ -56,11 +56,11 @@ export class ContextMenuBuilder {
           label: "Properties",
           action: async () => {
             const busyId = `properties-${Math.random()}`;
-            requestBusyState(busyId, this.app.win.element);
+            requestBusyState(busyId, this.app.win?.element || document.body);
             try {
               await PropertiesManager.show(selectedPaths);
             } finally {
-              releaseBusyState(busyId, this.app.win.element);
+              releaseBusyState(busyId, this.app.win?.element || document.body);
             }
           },
         },
@@ -153,11 +153,11 @@ export class ContextMenuBuilder {
           label: "Properties",
           action: async () => {
             const busyId = `properties-${Math.random()}`;
-            requestBusyState(busyId, this.app.win.element);
+            requestBusyState(busyId, this.app.win?.element || document.body);
             try {
               await PropertiesManager.show(selectedPaths);
             } finally {
-              releaseBusyState(busyId, this.app.win.element);
+              releaseBusyState(busyId, this.app.win?.element || document.body);
             }
           },
         },
@@ -231,11 +231,11 @@ export class ContextMenuBuilder {
         label: "Properties",
         action: async () => {
           const busyId = `properties-${Math.random()}`;
-          requestBusyState(busyId, this.app.win.element);
+          requestBusyState(busyId, this.app.win?.element || document.body);
           try {
             await PropertiesManager.show([this.app.currentPath]);
           } finally {
-            releaseBusyState(busyId, this.app.win.element);
+            releaseBusyState(busyId, this.app.win?.element || document.body);
           }
         },
       },

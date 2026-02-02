@@ -76,6 +76,13 @@
     padding: 0;
 }
 
+.explorer-icon-view.column-layout {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-template-rows: repeat(auto-fill, 85px);
+    justify-content: start;
+}
+
 .explorer-icon-view.has-absolute-icons {
     display: block;
     position: relative;

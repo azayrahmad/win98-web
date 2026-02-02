@@ -1,6 +1,5 @@
 import directory from "../config/directory.js";
 import { SPECIAL_FOLDER_PATHS } from "../config/special-folders.js";
-import { apps } from "../config/apps.js";
 
 // Create a reverse map for easy lookup
 const reverseSpecialFolderPaths = {};
@@ -9,6 +8,7 @@ for (const key in SPECIAL_FOLDER_PATHS) {
 }
 
 export function convertInternalPathToWindows(internalPath) {
+  const apps = window.System?.apps || [];
   // Handle root and other special names directly
   if (internalPath === "/") {
     return "My Computer";
@@ -35,7 +35,6 @@ export function convertInternalPathToWindows(internalPath) {
       currentLevel = found.children || [];
     } else {
       const app = apps.find((app) => app.id === part);
-      console.log(app);
       return app ? app.title : "My Computer";
     }
   }
@@ -60,6 +59,7 @@ export function convertInternalPathToWindows(internalPath) {
 }
 
 export function convertWindowsPathToInternal(windowsPath) {
+  const apps = window.System?.apps || [];
   if (windowsPath.toLowerCase() === "my computer") {
     return "/";
   }

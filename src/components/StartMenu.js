@@ -6,7 +6,6 @@
 // Import icons
 import { launchApp } from "../utils/appManager.js";
 import { getStartupApps } from "../utils/startupManager.js";
-import { apps } from "../config/apps.js";
 import { findItemByPath, getAssociation } from "../utils/directory.js";
 import windowsStartMenuBar from "../assets/img/win98start.png";
 import { ICONS } from "../config/icons.js";
@@ -346,6 +345,7 @@ class StartMenu {
         });
       } else if (itemConfig.id === "startup-folder") {
         this.attachDynamicSubmenu(menuItem, async () => {
+          const { apps } = await import("../config/apps.js");
           const startupAppsList = await getStartupApps();
           if (startupAppsList.length === 0) {
             return [{ label: "(Empty)", enabled: false }];
@@ -374,7 +374,33 @@ class StartMenu {
             .filter(Boolean);
         });
       } else if (itemConfig.submenu) {
-        this.attachSubmenu(menuItem, itemConfig.submenu);
+        // Resolve lazy app items in submenus
+        const resolveSubmenu = async (items) => {
+            const { apps } = await import("../config/apps.js");
+            return items.map(item => {
+                if (item.appId && !item.label) {
+                    const app = apps.find(a => a.id === item.appId);
+                    if (app) {
+                        return {
+                            label: app.title,
+                            icon: app.icon[16],
+                            appId: app.id,
+                            action: () => launchApp(app.id)
+                        };
+                    }
+                }
+                if (item.submenu) {
+                    // Recursive resolve if needed, but for now we only have 1 level of lazy apps
+                }
+                return item;
+            });
+        };
+
+        if (itemConfig.submenu.some(i => i.appId && !i.label)) {
+             this.attachDynamicSubmenu(menuItem, () => resolveSubmenu(itemConfig.submenu));
+        } else {
+             this.attachSubmenu(menuItem, itemConfig.submenu);
+        }
       } else if (itemConfig.action) {
         this.addTrackedEventListener(menuItem, "click", () => {
           itemConfig.action();

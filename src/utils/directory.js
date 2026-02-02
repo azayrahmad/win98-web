@@ -1,5 +1,4 @@
 import directory from "../config/directory.js";
-import { apps } from "../config/apps.js";
 import { fileAssociations } from "../config/fileAssociations.js";
 import { getRecycleBinItems } from "./recycleBinManager.js";
 import { networkNeighborhood } from "../config/networkNeighborhood.js";
@@ -60,31 +59,9 @@ export function getDesktopContents() {
 
   const desktopItems = desktopFolder.children.map((item) => {
     if (item.type === "app") {
-      const appConfig = apps.find((a) => a.id === item.appId);
-      if (appConfig) {
-        return {
-          id: appConfig.id,
-          name: appConfig.title,
-          type: "app",
-          isSystemIcon: systemIcons.has(appConfig.id),
-          appId: appConfig.id, // Keep appId for setupIcons
-        };
-      }
+        return null; // Skip apps in legacy desktop contents to avoid circular dependency
     } else if (item.type === "shortcut") {
-      const targetNode = findNodeById(directory, item.targetId);
-      if (targetNode && targetNode.type === "app") {
-        const appConfig = apps.find((a) => a.id === targetNode.appId);
-        if (appConfig) {
-          return {
-            id: item.id,
-            name: item.name,
-            type: "shortcut",
-            app: appConfig.id,
-            path: `/${item.id}`,
-            icon: appConfig.icon,
-          };
-        }
-      }
+        return null; // Skip shortcuts in legacy desktop contents
     } else if (item.type === "file") {
       const association = getAssociation(item.name);
       return {
