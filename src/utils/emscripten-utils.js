@@ -85,10 +85,12 @@ export async function teardownEmscriptenFS(guestModule, localPath, excludeList =
 
   // 1. Collect files from iframe FS to sync back
   const syncData = [];
+  const allFiles = [];
   const collectFiles = (path) => {
     const entries = FS.readdir(path).filter((e) => e !== "." && e !== "..");
     for (const entry of entries) {
       const fullPath = path === "/" ? `/${entry}` : `${path}/${entry}`;
+      allFiles.push(fullPath);
       try {
         const stat = FS.stat(fullPath);
         if (FS.isDir(stat.mode)) {
@@ -107,6 +109,7 @@ export async function teardownEmscriptenFS(guestModule, localPath, excludeList =
     }
   };
   collectFiles("/");
+  console.log(`[Emscripten Sync] All files in guest FS at ${localPath}:`, allFiles);
 
   // 2. Unmount from host ZenFS
   try {
