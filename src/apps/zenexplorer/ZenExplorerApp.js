@@ -30,10 +30,12 @@ import { getToolbarItems } from "./interface/ToolbarBuilder.js";
 import { sortFileInfos } from "./fileoperations/SortUtils.js";
 import { ControlPanelExtension } from "./extensions/ControlPanelExtension.js";
 import { DesktopExtension } from "./extensions/DesktopExtension.js";
+import { RecycleBinExtension } from "./extensions/RecycleBinExtension.js";
 
 // Initialize Shell Extensions
 ShellManager.registerExtension(new ControlPanelExtension());
 ShellManager.registerExtension(new DesktopExtension());
+ShellManager.registerExtension(new RecycleBinExtension());
 
 export class ZenExplorerApp extends Application {
   static config = {

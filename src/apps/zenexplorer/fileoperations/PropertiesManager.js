@@ -54,7 +54,7 @@ export class PropertiesManager {
     let iconUrl = getIconForFile(name, isDir);
 
     if (isRecycled) {
-      const recyclePath = RecycleBinManager.getRecyclePath(path);
+      const recyclePath = await RecycleBinManager.getRecyclePath(path);
       const metadata = recyclePath ? await RecycleBinManager.getMetadata(recyclePath) : {};
       const entry = metadata[name]; // name is the ID
       if (entry) {

@@ -39,6 +39,34 @@ export class ContextMenuBuilder {
 
     let menuItems = [];
 
+    if (isRecycleBin && selectedPaths.length === 1) {
+      menuItems = [
+        {
+          label: "Open",
+          action: () => this.app.navigateTo(path),
+          default: true,
+        },
+        {
+          label: "Empty Recycle Bin",
+          action: () => this.app.fileOps.emptyRecycleBin(path),
+        },
+        "MENU_DIVIDER",
+        {
+          label: "Properties",
+          action: async () => {
+            const busyId = `properties-${Math.random()}`;
+            requestBusyState(busyId, this.app.win.element);
+            try {
+              await PropertiesManager.show(selectedPaths);
+            } finally {
+              releaseBusyState(busyId, this.app.win.element);
+            }
+          },
+        },
+      ];
+      return menuItems;
+    }
+
     if (isRecycledItem) {
       menuItems = [
         {
@@ -168,6 +196,65 @@ export class ContextMenuBuilder {
 
   buildBackgroundMenu(e) {
     const isRoot = this.app.currentPath === "/";
+    const isRecycleBin = RecycleBinManager.isRecycleBinPath(this.app.currentPath);
+
+    if (isRecycleBin) {
+      return [
+        {
+          label: "Empty Recycle Bin",
+          action: () => this.app.fileOps.emptyRecycleBin(this.app.currentPath),
+        },
+        "MENU_DIVIDER",
+        {
+          label: "View",
+          submenu: [
+            {
+              radioItems: [
+                { label: "Large Icons", value: "large" },
+                { label: "Small Icons", value: "small" },
+                { label: "List", value: "list" },
+                { label: "Details", value: "details" },
+              ],
+              getValue: () => this.app.viewMode,
+              setValue: (value) => this.app.setViewMode(value),
+            },
+          ],
+        },
+        {
+          label: "Arrange Icons",
+          submenu: [
+            { label: "by Name", action: () => this.app.sortIcons("name") },
+            { label: "by Size", action: () => this.app.sortIcons("size") },
+            { label: "by Type", action: () => this.app.sortIcons("type") },
+            { label: "by Date", action: () => this.app.sortIcons("date") },
+            "MENU_DIVIDER",
+            {
+              label: "Auto Arrange",
+              enabled: () =>
+                this.app.viewMode === "large" || this.app.viewMode === "small",
+              checkbox: {
+                check: () => this.app.autoArrange,
+                toggle: () => this.app.toggleAutoArrange(),
+              },
+            },
+          ],
+        },
+        "MENU_DIVIDER",
+        {
+          label: "Properties",
+          action: async () => {
+            const busyId = `properties-${Math.random()}`;
+            requestBusyState(busyId, this.app.win.element);
+            try {
+              await PropertiesManager.show([this.app.currentPath]);
+            } finally {
+              releaseBusyState(busyId, this.app.win.element);
+            }
+          },
+        },
+      ];
+    }
+
     const menuItems = [
       {
         label: "View",

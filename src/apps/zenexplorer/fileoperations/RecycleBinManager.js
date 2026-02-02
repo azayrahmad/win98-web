@@ -1,4 +1,4 @@
-import { fs } from "@zenfs/core";
+import { fs, mounts } from "@zenfs/core";
 import { joinPath, getPathName, getParentPath } from "../navigation/PathUtils.js";
 
 export class RecycleBinManager {
@@ -12,13 +12,45 @@ export class RecycleBinManager {
         return match ? match[1] : "/";
     }
 
-    static getRecyclePath(path) {
+    static async getRecyclePath(path) {
+        if (path.startsWith("/Recycle Bin/")) {
+            const id = getPathName(path);
+            const allPaths = this.getAllRecyclePaths();
+            for (const p of allPaths) {
+                const metadata = await this._getSingleMetadata(p);
+                if (metadata[id]) return p;
+            }
+            return null;
+        }
         const driveRoot = this.getDriveRoot(path);
         if (driveRoot === "/" || driveRoot.toUpperCase() === "/E:") return null;
         return joinPath(driveRoot, "Recycled");
     }
 
+    static getAllRecyclePaths() {
+        const paths = [];
+        for (const mountPoint of mounts.keys()) {
+            if (mountPoint.match(/^\/[A-Z]:$/i)) {
+                paths.push(joinPath(mountPoint, "Recycled"));
+            }
+        }
+        return paths;
+    }
+
     static async getMetadata(recyclePath) {
+        if (recyclePath === "/Recycle Bin") {
+            const allMetadata = {};
+            const paths = this.getAllRecyclePaths();
+            for (const p of paths) {
+                const m = await this._getSingleMetadata(p);
+                Object.assign(allMetadata, m);
+            }
+            return allMetadata;
+        }
+        return this._getSingleMetadata(recyclePath);
+    }
+
+    static async _getSingleMetadata(recyclePath) {
         const metadataFile = joinPath(recyclePath, ".metadata.json");
         try {
             const content = await fs.promises.readFile(metadataFile, 'utf8');
@@ -36,7 +68,7 @@ export class RecycleBinManager {
     static async moveItemsToRecycleBin(paths, dialog = null) {
         const groups = {};
         for (const path of paths) {
-            const recyclePath = this.getRecyclePath(path);
+            const recyclePath = await this.getRecyclePath(path);
             if (!recyclePath) continue;
             if (!groups[recyclePath]) groups[recyclePath] = [];
             groups[recyclePath].push(path);
@@ -119,11 +151,25 @@ export class RecycleBinManager {
     static async restoreItems(itemPaths, dialog = null) {
         const groups = {};
         for (const itemPath of itemPaths) {
-            const match = itemPath.match(/^(\/[A-Z]:\/Recycled)\/([^/]+)$/i);
-            if (!match) continue;
-            const recyclePath = match[1];
-            const id = match[2];
-            if (id === ".metadata.json") continue;
+            let match = itemPath.match(/^(\/[A-Z]:\/Recycled)\/([^/]+)$/i);
+            let recyclePath, id;
+            if (match) {
+                recyclePath = match[1];
+                id = match[2];
+            } else if (itemPath.startsWith("/Recycle Bin/")) {
+                id = getPathName(itemPath);
+                // Find which recycle bin has this ID
+                const allPaths = this.getAllRecyclePaths();
+                for (const p of allPaths) {
+                    const metadata = await this._getSingleMetadata(p);
+                    if (metadata[id]) {
+                        recyclePath = p;
+                        break;
+                    }
+                }
+            }
+
+            if (!recyclePath || !id || id === ".metadata.json") continue;
             if (!groups[recyclePath]) groups[recyclePath] = [];
             groups[recyclePath].push(id);
         }
@@ -186,8 +232,17 @@ export class RecycleBinManager {
         await this.restoreItems([path]);
     }
 
-    static async emptyRecycleBin(recyclePath, dialog = null) {
-        const metadata = await this.getMetadata(recyclePath);
+    static async emptyAllRecycleBins(dialog = null) {
+        const recyclePaths = this.getAllRecyclePaths();
+        for (const recyclePath of recyclePaths) {
+            if (dialog && dialog.cancelled) break;
+            await this._emptySingleRecycleBin(recyclePath, dialog);
+        }
+        document.dispatchEvent(new CustomEvent("recycle-bin-change"));
+    }
+
+    static async _emptySingleRecycleBin(recyclePath, dialog = null) {
+        const metadata = await this._getSingleMetadata(recyclePath);
         const ids = Object.keys(metadata);
 
         for (const id of ids) {
@@ -216,7 +271,6 @@ export class RecycleBinManager {
         } else {
             await this.saveMetadata(recyclePath, {});
         }
-        document.dispatchEvent(new CustomEvent("recycle-bin-change"));
     }
 
     static async isEmpty(recyclePath) {
@@ -225,11 +279,11 @@ export class RecycleBinManager {
     }
 
     static isRecycleBinPath(path) {
-        return !!path.match(/^\/[A-Z]:\/Recycled$/i);
+        return !!path.match(/^\/[A-Z]:\/Recycled$/i) || path === "/Recycle Bin";
     }
 
     static isRecycledItemPath(path) {
-        const match = path.match(/^(\/[A-Z]:\/Recycled)\/([^/]+)$/i);
+        const match = path.match(/^(\/[A-Z]:\/Recycled)\/([^/]+)$/i) || path.match(/^(\/Recycle Bin)\/([^/]+)$/i);
         if (!match) return false;
         return match[2] !== ".metadata.json";
     }

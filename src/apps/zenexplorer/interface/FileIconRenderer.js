@@ -85,7 +85,7 @@ export async function renderFileIcon(fileName, fullPath, isDir, options = {}) {
   }
   // Special handling for items INSIDE Recycle Bin
   else if (RecycleBinManager.isRecycledItemPath(fullPath)) {
-    const recyclePath = RecycleBinManager.getRecyclePath(fullPath);
+    const recyclePath = await RecycleBinManager.getRecyclePath(fullPath);
     const metadata =
       options.metadata || (recyclePath ? await RecycleBinManager.getMetadata(recyclePath) : {});
     const entry = metadata[fileName]; // fileName is the ID

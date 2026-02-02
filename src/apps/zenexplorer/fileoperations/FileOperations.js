@@ -276,7 +276,7 @@ export class FileOperations {
                                     await this.removeRecursiveWithProgress(path, dialog);
                                 }
                                 if (alreadyInRecycle && !dialog.cancelled) {
-                                    const recyclePath = RecycleBinManager.getRecyclePath(paths[0]);
+                                    const recyclePath = await RecycleBinManager.getRecyclePath(paths[0]);
                                     if (recyclePath) {
                                         const metadata = await RecycleBinManager.getMetadata(recyclePath);
                                         let changed = false;
@@ -406,11 +406,12 @@ export class FileOperations {
         }
     }
 
-    async emptyRecycleBin() {
-        const recyclePath = RecycleBinManager.getRecyclePath(this.app.currentPath) || this.app.currentPath;
-        if (!RecycleBinManager.isRecycleBinPath(recyclePath)) return;
+    async emptyRecycleBin(path) {
+        const targetPath = path || this.app.currentPath;
+        const isRecycleBin = RecycleBinManager.isRecycleBinPath(targetPath);
+        if (!isRecycleBin) return;
 
-        const isEmpty = await RecycleBinManager.isEmpty(recyclePath);
+        const isEmpty = await RecycleBinManager.isEmpty(targetPath);
         if (isEmpty) return;
         ShowDialogWindow({
             title: "Confirm Empty Recycle Bin",
@@ -424,14 +425,24 @@ export class FileOperations {
                     action: async () => {
                         const busyId = `empty-recycle-${Math.random()}`;
                         requestBusyState(busyId, this.app.win.element);
-                        const metadata = await RecycleBinManager.getMetadata(recyclePath);
+                        const metadata = await RecycleBinManager.getMetadata("/Recycle Bin");
                         const ids = Object.keys(metadata);
-                        const paths = ids.map(id => joinPath(recyclePath, id));
+
+                        // To get total size, we need the real paths
+                        const paths = [];
+                        const allRecyclePaths = RecycleBinManager.getAllRecyclePaths();
+                        for(const rp of allRecyclePaths) {
+                            const m = await RecycleBinManager.getMetadata(rp);
+                            for(const id in m) {
+                                paths.push(joinPath(rp, id));
+                            }
+                        }
+
                         const { ProgressBarDialogWindow } = await import("../interface/ProgressBarDialogWindow.js");
                         const totalSize = await this.getTotalSize(paths);
-                        const dialog = new ProgressBarDialogWindow("empty", ids.length, totalSize);
+                        const dialog = new ProgressBarDialogWindow("empty", paths.length, totalSize);
                         try {
-                            await RecycleBinManager.emptyRecycleBin(recyclePath, dialog);
+                            await RecycleBinManager.emptyAllRecycleBins(dialog);
                             const { playSound } = await import("../../../utils/soundManager.js");
                             playSound("EmptyRecycleBin");
                         } catch (e) {

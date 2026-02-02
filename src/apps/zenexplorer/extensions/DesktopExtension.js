@@ -15,6 +15,11 @@ export class DesktopExtension {
         icon: ICONS.computer,
         target: "/",
       },
+      {
+        name: "Recycle Bin",
+        icon: ICONS.recycleBinEmpty,
+        target: "/Recycle Bin",
+      },
     ];
   }
 
