@@ -1,191 +1,229 @@
-import { fs } from "@zenfs/core";
 import { Emscripten } from "@zenfs/emscripten";
+import { fs } from "@zenfs/core";
 
 /**
- * Sets up the Emscripten filesystem by syncing persistent files from ZenFS to MEMFS
- * and mounting the MEMFS back to the host ZenFS.
- * @param {HTMLIFrameElement} iframe
- * @param {string} baseLocalPath
- * @returns {Promise<boolean>}
+ * Creates directories recursively in an Emscripten FS.
+ * @param {object} FS - The Emscripten FS object.
+ * @param {string} path - The path to create.
  */
-export async function setupEmscriptenFS(iframe, baseLocalPath) {
-    if (!iframe || !iframe.contentWindow) return false;
-
-    const guestModule = iframe.contentWindow.Module;
-    if (!guestModule || !guestModule.FS) {
-        console.error("Emscripten guest module or FS not found");
-        return false;
-    }
-
-    const FS = guestModule.FS;
-
-    // 1. Sync persistent files from host ZenFS to iframe MEMFS
-    try {
-        await loadRecursive(baseLocalPath, "/", FS);
-    } catch (e) {
-        console.warn("Failed to load persistent files from ZenFS:", e);
-    }
-
-    // 2. Mount iframe's FS to host ZenFS
-    try {
-        const emscriptenFS = Emscripten.create({ FS: FS });
-        fs.mount(baseLocalPath, emscriptenFS);
-        document.dispatchEvent(new CustomEvent("zen-fs-change", { detail: { path: baseLocalPath } }));
-        return true;
-    } catch (e) {
-        console.error("Failed to mount Emscripten FS:", e);
-        return false;
-    }
-}
-
-/**
- * Syncs files from MEMFS back to ZenFS and unmounts the filesystem.
- * @param {HTMLIFrameElement} iframe
- * @param {string} baseLocalPath
- * @param {string[]} excludeFiles
- */
-export async function teardownEmscriptenFS(iframe, baseLocalPath, excludeFiles = []) {
-    if (!iframe || !iframe.contentWindow) return;
-
-    const guestModule = iframe.contentWindow.Module;
-    if (!guestModule || !guestModule.FS) return;
-    const FS = guestModule.FS;
-
-    // 1. Collect files from iframe FS to sync back
-    const syncData = [];
-    const collectFiles = (path) => {
-        const entries = FS.readdir(path).filter((e) => e !== "." && e !== "..");
-        for (const entry of entries) {
-            const fullPath = path === "/" ? `/${entry}` : `${path}/${entry}`;
-            try {
-                const stat = FS.stat(fullPath);
-                if (FS.isDir(stat.mode)) {
-                    collectFiles(fullPath);
-                } else {
-                    if (excludeFiles.some(f => entry.toLowerCase() === f.toLowerCase())) continue;
-
-                    syncData.push({
-                        path: fullPath,
-                        data: new Uint8Array(FS.readFile(fullPath)),
-                    });
-                }
-            } catch (e) { }
-        }
-    };
-    collectFiles("/");
-
-    // 2. Unmount from host ZenFS
-    try {
-        fs.umount(baseLocalPath);
-    } catch (e) {
-        console.error("Failed to unmount Emscripten FS:", e);
-    }
-
-    // 3. Persist changed files back to host ZenFS
-    for (const item of syncData) {
-        const targetPath = `${baseLocalPath}${item.path}`;
-        const targetDir = targetPath.substring(0, targetPath.lastIndexOf("/"));
-
-        if (!fs.existsSync(targetDir)) {
-            await mkdirRecursive(targetDir);
-        }
-        await fs.promises.writeFile(targetPath, item.data);
-    }
-
-    document.dispatchEvent(
-        new CustomEvent("zen-fs-change", { detail: { path: baseLocalPath } }),
-    );
-}
-
-/**
- * Recursively creates directories in ZenFS.
- * @param {string} path
- */
-export async function mkdirRecursive(path) {
-    const parts = path.split("/").filter(Boolean);
-    let current = "";
+export function mkdirRecursive(FS, path) {
+    const parts = path.split('/').filter(p => p);
+    let current = '';
     for (const part of parts) {
-        current += "/" + part;
-        if (!fs.existsSync(current)) {
-            await fs.promises.mkdir(current);
-        }
-    }
-}
-
-async function loadRecursive(localPath, emPath, FS) {
-    if (!fs.existsSync(localPath)) return;
-    const entries = await fs.promises.readdir(localPath);
-    for (const entry of entries) {
-        const fullLocalPath = `${localPath}/${entry}`;
-        const fullEmPath = emPath === "/" ? `/${entry}` : `${emPath}/${entry}`;
-        const stat = await fs.promises.stat(fullLocalPath);
-        if (stat.isDirectory()) {
-            try {
-                FS.mkdir(fullEmPath);
-            } catch (e) { }
-            await loadRecursive(fullLocalPath, fullEmPath, FS);
-        } else {
-            const data = await fs.promises.readFile(fullLocalPath);
-            FS.writeFile(fullEmPath, new Uint8Array(data));
-        }
-    }
-}
-
-/**
- * Preloads game data from a remote URL to a local ZenFS path.
- * @param {string} baseLocalPath
- * @param {string} baseRemotePath
- * @param {string[]} files
- * @param {function} onProgress
- */
-export async function preloadGameData(baseLocalPath, baseRemotePath, files, onProgress) {
-    let needed = false;
-    for (const file of files) {
-        if (!fs.existsSync(baseLocalPath + file)) {
-            needed = true;
-            break;
-        }
-    }
-
-    if (needed) {
-        for (const file of files) {
-            const targetPath = baseLocalPath + file;
-            if (!fs.existsSync(targetPath)) {
-                if (onProgress) onProgress(file);
-                const response = await fetch(baseRemotePath + file);
-                const buffer = await response.arrayBuffer();
-
-                // Ensure target directory exists
-                const targetDir = targetPath.substring(0, targetPath.lastIndexOf("/"));
-                if (!fs.existsSync(targetDir)) {
-                    await mkdirRecursive(targetDir);
-                }
-
-                await fs.promises.writeFile(targetPath, new Uint8Array(buffer));
+        current += '/' + part;
+        try {
+            FS.mkdir(current);
+        } catch (e) {
+            if (e.errno !== 20 && e.code !== 'EEXIST') {
+                console.warn(`Could not create directory ${current}:`, e);
             }
         }
     }
 }
 
 /**
- * Sets up inactivity listeners on an iframe to reset the system inactivity timer.
- * @param {HTMLIFrameElement} iframe
+ * Sets up the Emscripten filesystem bridge.
+ * @param {HTMLIFrameElement} iframe - The iframe containing the Emscripten module.
+ * @param {string} localPath - The ZenFS path where the Emscripten FS should be mounted.
+ * @param {string} subfolder - Optional subfolder within Emscripten FS to promote to root.
+ * @param {string} syncSourcePath - Optional ZenFS path to sync files from to Emscripten root.
+ * @returns {Promise<boolean>}
  */
-export function setupIframeInactivity(iframe) {
-    if (!iframe) return;
-    const resetTimer = () => window.System?.resetInactivityTimer?.();
-    const setupListeners = () => {
-        try {
-            const iframeDoc = iframe.contentWindow.document;
-            iframeDoc.addEventListener("mousemove", resetTimer);
-            iframeDoc.addEventListener("mousedown", resetTimer);
-            iframeDoc.addEventListener("keydown", resetTimer);
-        } catch (e) {
-            console.warn("Could not add inactivity listeners to iframe", e);
+export async function setupEmscriptenFS(iframe, localPath, subfolder = null, syncSourcePath = null) {
+    return new Promise((resolvePromise) => {
+        let attempts = 0;
+        const maxAttempts = 100; // 10 seconds
+
+        const checkRuntime = () => {
+            const guestWindow = iframe.contentWindow;
+            if (!guestWindow) {
+                resolvePromise(false);
+                return;
+            }
+
+            const FS = guestWindow.FS;
+            const Module = guestWindow.Module;
+
+            // Wait for runtime to be initialized
+            if (FS && Module && Module.run && !Module.runtimeExited) {
+                try {
+                    // Sync initial files from ZenFS to Emscripten FS (always to root)
+                    // We sync from BOTH localPath (persistence) and syncSourcePath (game data)
+                    const sources = [];
+                    if (localPath) sources.push(localPath);
+                    if (syncSourcePath && syncSourcePath !== localPath) sources.push(syncSourcePath);
+
+                    for (const source of sources) {
+                        let exists = false;
+                        try {
+                            fs.statSync(source);
+                            exists = true;
+                        } catch (e) {}
+
+                        if (exists) {
+                            const files = fs.readdirSync(source);
+                            for (const file of files) {
+                                const filePath = `${source}/${file}`;
+                                try {
+                                    if (!fs.statSync(filePath).isDirectory()) {
+                                        const data = fs.readFileSync(filePath);
+                                        FS.writeFile(`/${file}`, new Uint8Array(data));
+                                        console.log(`Synced ${file} from ${source} to Emscripten FS root`);
+                                    }
+                                } catch (e) {
+                                    console.warn(`Could not sync ${file} from ${source}:`, e);
+                                }
+                            }
+                        }
+                    }
+
+                    // Promote subfolder contents to root if requested
+                    if (subfolder && subfolder !== "/") {
+                        try {
+                            const files = FS.readdir(subfolder);
+                            for (const file of files) {
+                                if (file === "." || file === "..") continue;
+                                FS.rename(`${subfolder}/${file}`, `/${file}`);
+                            }
+                            // Don't rmdir/symlink if it might break things, just leave it or use a link
+                            try {
+                                FS.rmdir(subfolder);
+                                FS.symlink('/', subfolder);
+                            } catch (e) {
+                                console.warn(`Could not replace ${subfolder} with symlink, assets are at root anyway.`);
+                            }
+                            console.log(`Promoted ${subfolder} contents to root.`);
+                        } catch (err) {
+                            console.warn(`Failed to promote subfolder ${subfolder}:`, err);
+                        }
+                    }
+
+                    // Mount the Emscripten root to ZenFS
+                    fs.mount(localPath, Emscripten.create({ FS }));
+                    console.log(`Mounted Emscripten root to ${localPath}`);
+                    resolvePromise(true);
+                } catch (err) {
+                    console.error("Error setting up Emscripten FS:", err);
+                    resolvePromise(false);
+                }
+            } else if (attempts < maxAttempts) {
+                attempts++;
+                setTimeout(checkRuntime, 100);
+            } else {
+                console.warn("Timed out waiting for Emscripten FS/Module");
+                resolvePromise(false);
+            }
+        };
+
+        checkRuntime();
+    });
+}
+
+/**
+ * Tears down the Emscripten filesystem bridge and syncs back files.
+ * @param {HTMLIFrameElement} iframe - The iframe containing the Emscripten module.
+ * @param {string} localPath - The ZenFS path where the Emscripten FS was mounted.
+ * @param {string[]} excludeFiles - List of filenames to exclude from sync-back.
+ */
+export function teardownEmscriptenFS(iframe, localPath, excludeFiles = []) {
+    try {
+        const guestWindow = iframe.contentWindow;
+        if (!guestWindow || !guestWindow.FS) {
+            fs.umount(localPath);
+            return;
         }
-    };
-    iframe.addEventListener("load", setupListeners);
-    if (iframe.contentWindow && iframe.contentWindow.document.readyState === "complete") {
-        setupListeners();
+
+        const FS = guestWindow.FS;
+
+        // Recursive sync-back helper
+        const syncBack = (zenPath, emPath) => {
+            const files = FS.readdir(emPath);
+            for (const file of files) {
+                if (file === "." || file === ".." || file === "dev" || file === "proc" || file === "tmp" || file === "home") continue;
+                if (emPath === "/" && excludeFiles.includes(file)) continue;
+
+                const fullEmPath = emPath === "/" ? `/${file}` : `${emPath}/${file}`;
+                const fullZenPath = `${zenPath}/${file}`;
+
+                try {
+                    const stat = FS.stat(fullEmPath);
+                    if (FS.isDir(stat.mode)) {
+                        if (!fs.existsSync(fullZenPath)) {
+                            fs.mkdirSync(fullZenPath);
+                        }
+                        syncBack(fullZenPath, fullEmPath);
+                    } else {
+                        const data = FS.readFile(fullEmPath);
+                        fs.writeFileSync(fullZenPath, new Uint8Array(data));
+                        console.log(`Synced back ${file} to ZenFS at ${fullZenPath}`);
+                    }
+                } catch (e) {
+                    // Skip if symlink or other error
+                }
+            }
+        };
+
+        syncBack(localPath, "/");
+
+        fs.umount(localPath);
+        console.log(`Unmounted ${localPath}`);
+    } catch (err) {
+        console.error("Error tearing down Emscripten FS:", err);
+        try { fs.umount(localPath); } catch (e) {}
     }
+}
+
+/**
+ * Preloads game data from the server into ZenFS.
+ * @param {string} targetDir - The ZenFS directory to save to.
+ * @param {string} sourceDir - The server directory to download from.
+ * @param {string[]} files - List of files to download.
+ * @param {Function} onFileStart - Callback when a file starts downloading.
+ */
+export async function preloadGameData(targetDir, sourceDir, files, onFileStart) {
+    for (const file of files) {
+        const targetPath = `${targetDir}${file}`;
+        let exists = false;
+        try {
+            fs.statSync(targetPath);
+            exists = true;
+        } catch (e) {}
+
+        if (exists) continue;
+
+        if (onFileStart) onFileStart(file);
+
+        try {
+            console.log(`Fetching ${sourceDir}${file}...`);
+            const response = await fetch(`${sourceDir}${file}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.arrayBuffer();
+            fs.writeFileSync(targetPath, new Uint8Array(data));
+            console.log(`Preloaded ${file} to ${targetPath}`);
+        } catch (err) {
+            console.error(`Failed to preload ${file}:`, err);
+        }
+    }
+}
+
+/**
+ * Sets up activity tracking for an iframe to prevent it from being seen as "inactive".
+ * @param {HTMLIFrameElement} iframe
+ * @param {Function} onActivity
+ */
+export function setupIframeInactivity(iframe, onActivity) {
+    if (!onActivity) return () => {};
+
+    const events = ['mousedown', 'keydown', 'touchstart'];
+    const handler = () => onActivity();
+
+    events.forEach(event => {
+        iframe.contentWindow?.addEventListener(event, handler);
+    });
+
+    return () => {
+        events.forEach(event => {
+            iframe.contentWindow?.removeEventListener(event, handler);
+        });
+    };
 }

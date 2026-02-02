@@ -25,6 +25,7 @@ export class PinballApp extends Application {
     this.iframe = null;
     this.isMounted = false;
     this.baseLocalPath = "/C:/Program Files/Pinball";
+    this.tempPath = "/C:/WINDOWS/Temp";
     this._boundHandleMessage = this._handleMessage.bind(this);
   }
 
@@ -47,11 +48,13 @@ export class PinballApp extends Application {
     iframe.style.height = "100%";
     iframe.style.border = "none";
 
-    win.$content.append(iframe);
-    this.iframe = iframe;
-    this.win = win;
+    // Set the inner HTML as in original to allow observation
+    win.$content.html(iframe.outerHTML);
+    this.iframe = win.$content.find("iframe")[0];
 
-    setupIframeInactivity(this.iframe);
+    setupIframeInactivity(this.iframe, () => {
+      this.win.bringToFront();
+    });
 
     return win;
   }
@@ -113,21 +116,12 @@ export class PinballApp extends Application {
 
   async _handleMessage(event) {
     if (event.data && event.data.type === "PINBALL_READY") {
-      this.isMounted = await setupEmscriptenFS(this.iframe, this.baseLocalPath);
-      if (this.isMounted) {
-        this._startGame();
-      }
-    }
-  }
-
-  _startGame() {
-    if (!this.iframe || !this.iframe.contentWindow) return;
-    const guestWindow = this.iframe.contentWindow;
-
-    if (typeof guestWindow.callMain === "function") {
-      guestWindow.callMain([]);
-    } else if (guestWindow.Module && guestWindow.Module.callMain) {
-      guestWindow.Module.callMain([]);
+      this.isMounted = await setupEmscriptenFS(
+        this.iframe,
+        this.baseLocalPath,
+        "/game_resources",
+        this.tempPath
+      );
     }
   }
 
@@ -178,6 +172,7 @@ export class PinballApp extends Application {
     window.removeEventListener("message", this._boundHandleMessage);
 
     if (this.isMounted) {
+      // Sync back high scores and other small files, but exclude the large data file
       await teardownEmscriptenFS(this.iframe, this.baseLocalPath, ["SpaceCadetPinball.data"]);
       this.isMounted = false;
     }

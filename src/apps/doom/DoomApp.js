@@ -48,7 +48,9 @@ export class DoomApp extends Application {
     this.iframe = iframe;
     this.win = win;
 
-    setupIframeInactivity(this.iframe);
+    setupIframeInactivity(this.iframe, () => {
+      this.win.bringToFront();
+    });
 
     return win;
   }

@@ -43,6 +43,9 @@ export async function initFileSystem(onProgress) {
         if (!fs.existsSync('/C:/WINDOWS')) {
             await fs.promises.mkdir('/C:/WINDOWS');
         }
+        if (!fs.existsSync('/C:/WINDOWS/Temp')) {
+            await fs.promises.mkdir('/C:/WINDOWS/Temp');
+        }
 
         // Ensure Program Files/Doom exists
         if (!fs.existsSync('/C:/Program Files')) {

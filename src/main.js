@@ -342,7 +342,7 @@ async function initializeOS() {
       const baseMsg = "Loading Pinball game data...";
       let logElement = startBootProcessStep(baseMsg);
       await preloadGameData(
-        "/C:/Program Files/Pinball/",
+        "/C:/WINDOWS/Temp/",
         "games/pinball/",
         ["SpaceCadetPinball.data"],
         (file) => {
