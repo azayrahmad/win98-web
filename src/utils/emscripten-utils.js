@@ -13,12 +13,26 @@ import { Emscripten } from "@zenfs/emscripten";
  * @returns {Promise<boolean>}
  */
 export async function setupEmscriptenFS(guestModule, localPath) {
-  if (!guestModule || !guestModule.FS) {
-    console.error("Guest module or FS not found");
+  if (!guestModule) {
+    console.error("Guest module not found");
     return false;
   }
 
-  const FS = guestModule.FS;
+  // Handle cases where FS might not be attached to Module yet
+  let FS = guestModule.FS;
+  if (!FS) {
+    console.warn("FS not found on Module, waiting...");
+    for (let i = 0; i < 10; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      FS = guestModule.FS;
+      if (FS) break;
+    }
+  }
+
+  if (!FS) {
+    console.error("Guest FS not found after waiting");
+    return false;
+  }
 
   // 1. Sync persistent files from host ZenFS to iframe MEMFS
   try {
