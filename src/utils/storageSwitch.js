@@ -2,6 +2,7 @@ import { fs, resolveMountConfig } from "@zenfs/core";
 import { IndexedDB, WebAccess } from "@zenfs/dom";
 import { ShowDialogWindow } from "../components/DialogWindow.js";
 import { saveLocalFolderHandle, clearLocalFolderHandle } from "./localFolderUtils.js";
+import { wrapWebAccess } from "./zenfs-init.js";
 import { ProgressBarDialogWindow } from "../apps/zenexplorer/interface/ProgressBarDialogWindow.js";
 import { joinPath, getParentPath } from "../apps/zenexplorer/navigation/PathUtils.js";
 
@@ -120,6 +121,7 @@ export async function switchToLocalFolder() {
             backend: WebAccess,
             handle: win98Handle,
         });
+        wrapWebAccess(targetFs);
         const TEMP_MOUNT = '/temp-migration-target';
         fs.mount(TEMP_MOUNT, targetFs);
 

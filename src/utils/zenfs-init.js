@@ -8,6 +8,38 @@ import { existsAsync } from "./zenfs-utils.js";
 
 let isInitialized = false;
 
+/**
+ * Wraps a WebAccess FS to escape filenames.
+ * This is necessary because the File System Access API blocks certain extensions (like .lnk).
+ * @param {FileSystem} fs
+ */
+export function wrapWebAccess(fs) {
+    const transformPath = (p) => {
+        if (!p || p === '/') return p;
+        return p.split('/').map(s => s ? s + '.z' : '').join('/');
+    };
+    const untransformSegment = (s) => (s && s.endsWith('.z')) ? s.slice(0, -2) : s;
+
+    // Wrap 'get' on the instance. It's used by almost all other methods.
+    if (typeof fs.get === 'function') {
+        const originalGet = fs.get.bind(fs);
+        fs.get = function(kind, path) {
+            return originalGet(kind, transformPath(path));
+        };
+    }
+
+    // Wrap 'readdir' to untransform the results
+    if (typeof fs.readdir === 'function') {
+        const originalReaddir = fs.readdir.bind(fs);
+        fs.readdir = async function(path, ...args) {
+            const entries = await originalReaddir(transformPath(path), ...args);
+            return entries.map(untransformSegment);
+        };
+    }
+
+    return fs;
+}
+
 export async function initFileSystem(onProgress, localFolderHandle = null) {
     if (isInitialized) return;
 
@@ -34,7 +66,8 @@ export async function initFileSystem(onProgress, localFolderHandle = null) {
                     backend: WebAccess,
                     handle: subfolderHandle,
                 });
-                console.log("C: drive mounted from local folder.");
+                wrapWebAccess(cDriveFs);
+                console.log("C: drive mounted from local folder (wrapped).");
             } catch (e) {
                 console.error("Failed to mount local folder, falling back to IndexedDB:", e);
                 cDriveFs = await resolveMountConfig({
