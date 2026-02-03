@@ -22,7 +22,8 @@ export function wrapWebAccess(fs) {
 
     const methodsToWrap = [
         'stat', 'readdir', 'open', 'unlink', 'rmdir', 'mkdir', '_mkdir',
-        'rename', 'read', 'write', 'writeFile', 'get', 'remove', 'touch', 'sync'
+        'rename', 'read', 'write', 'writeFile', 'get', 'remove', 'touch', 'sync',
+        'create', 'createFile', 'link', 'symlink', 'readlink', 'access', 'chown', 'chmod', 'utimes'
     ];
 
     for (const method of methodsToWrap) {
