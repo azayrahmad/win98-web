@@ -15,26 +15,35 @@ let isInitialized = false;
  */
 export function wrapWebAccess(fs) {
     const transformPath = (p) => {
-        if (!p || p === '/') return p;
-        return p.split('/').map(s => s ? s + '.z' : '').join('/');
+        if (typeof p !== 'string' || !p || p === '/' || p === '.') return p;
+        return p.split('/').map(s => (s && s !== '.' && s !== '..') ? s + '.z' : s).join('/');
     };
     const untransformSegment = (s) => (s && s.endsWith('.z')) ? s.slice(0, -2) : s;
 
-    // Wrap 'get' on the instance. It's used by almost all other methods.
-    if (typeof fs.get === 'function') {
-        const originalGet = fs.get.bind(fs);
-        fs.get = function(kind, path) {
-            return originalGet(kind, transformPath(path));
-        };
-    }
+    const methodsToWrap = [
+        'stat', 'readdir', 'open', 'unlink', 'rmdir', 'mkdir', '_mkdir',
+        'rename', 'read', 'write', 'writeFile', 'get', 'remove', 'touch', 'sync'
+    ];
 
-    // Wrap 'readdir' to untransform the results
-    if (typeof fs.readdir === 'function') {
-        const originalReaddir = fs.readdir.bind(fs);
-        fs.readdir = async function(path, ...args) {
-            const entries = await originalReaddir(transformPath(path), ...args);
-            return entries.map(untransformSegment);
-        };
+    for (const method of methodsToWrap) {
+        if (typeof fs[method] === 'function') {
+            const original = fs[method].bind(fs);
+            fs[method] = function(arg1, ...rest) {
+                if (method === 'rename') {
+                    return original(transformPath(arg1), transformPath(rest[0]), ...rest.slice(1));
+                }
+                if (method === 'readdir') {
+                    return (async () => {
+                        const entries = await original(transformPath(arg1), ...rest);
+                        return entries.map(untransformSegment);
+                    })();
+                }
+                if (typeof arg1 === 'string') {
+                    return original(transformPath(arg1), ...rest);
+                }
+                return original(arg1, ...rest);
+            };
+        }
     }
 
     return fs;
