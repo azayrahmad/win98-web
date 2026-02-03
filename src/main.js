@@ -35,6 +35,7 @@ import { initScreenManager } from "./utils/screenManager.js";
 import { fs, mounts } from "@zenfs/core";
 import { initFileSystem } from "./utils/zenfs-init.js";
 import { RecycleBinManager } from "./apps/zenexplorer/fileoperations/RecycleBinManager.js";
+import { getLocalFolderHandle } from "./utils/localFolderUtils.js";
 
 // Window Management System
 class WindowManagerSystem {
@@ -220,11 +221,32 @@ async function initializeOS() {
     await executeBootStep(async () => {
       const baseMsg = "Initializing file system...";
       let logElement = startBootProcessStep(baseMsg);
+
+      let localHandle = null;
+      try {
+        localHandle = await getLocalFolderHandle();
+        if (localHandle) {
+          if (await localHandle.queryPermission({ mode: 'readwrite' }) !== 'granted') {
+            finalizeBootProcessStep(logElement, "WAITING");
+            await promptToContinue("C: drive is linked to a local folder. Press any key to grant access...");
+            try {
+              await localHandle.requestPermission({ mode: 'readwrite' });
+            } catch (e) {
+              console.warn("Permission denied for local folder, falling back to IndexedDB", e);
+              localHandle = null;
+            }
+            logElement = startBootProcessStep(baseMsg);
+          }
+        }
+      } catch (e) {
+        console.error("Error checking local folder handle:", e);
+      }
+
       await initFileSystem((subStep) => {
         if (logElement && logElement.firstChild) {
           logElement.firstChild.nodeValue = `${baseMsg} ${subStep}`;
         }
-      });
+      }, localHandle);
       if (logElement && logElement.firstChild) {
         logElement.firstChild.nodeValue = baseMsg;
       }

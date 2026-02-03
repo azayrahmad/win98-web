@@ -64,19 +64,23 @@ function removeLastBlinkingCursor() {
     }
 }
 
-function promptToContinue() {
+function promptToContinue(customMessage) {
     return new Promise((resolve) => {
         removeLastBlinkingCursor();
         const bootLogEl = document.getElementById("boot-log");
         if (bootLogEl) {
             const promptEl = document.createElement("div");
             let countdown = 10;
-            promptEl.textContent = `Press any key to continue... ${countdown}`;
+            const updateText = () => {
+                const baseText = customMessage || "Press any key to continue...";
+                promptEl.textContent = `${baseText} ${countdown}`;
+            };
+            updateText();
             bootLogEl.appendChild(promptEl);
 
             const timer = setInterval(() => {
                 countdown--;
-                promptEl.textContent = `Press any key to continue... ${countdown}`;
+                updateText();
                 if (countdown <= 0) {
                     clearInterval(timer);
                     window.removeEventListener("keydown", continueHandler);

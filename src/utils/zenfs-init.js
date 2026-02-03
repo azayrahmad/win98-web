@@ -1,5 +1,5 @@
 import { resolveMountConfig, InMemory, fs } from "@zenfs/core";
-import { IndexedDB } from "@zenfs/dom";
+import { IndexedDB, WebAccess } from "@zenfs/dom";
 import { migrateToZenFS, PINNED_PATH, START_MENU_PATH, FAVORITES_PATH } from "./startMenuUtils.js";
 import startMenuConfig from "../config/startmenu.js";
 import { getStartupApps } from "./startupManager.js";
@@ -8,7 +8,7 @@ import { existsAsync } from "./zenfs-utils.js";
 
 let isInitialized = false;
 
-export async function initFileSystem(onProgress) {
+export async function initFileSystem(onProgress, localFolderHandle = null) {
     if (isInitialized) return;
 
     try {
@@ -25,10 +25,29 @@ export async function initFileSystem(onProgress) {
         fs.mount('/', rootFs);
 
         if (onProgress) onProgress("Mounting C: drive...");
-        const cDriveFs = await resolveMountConfig({
-            backend: IndexedDB,
-            name: "win98-c-drive",
-        });
+        let cDriveFs;
+        if (localFolderHandle) {
+            try {
+                // Try to get win98-c-drive subfolder handle
+                const subfolderHandle = await localFolderHandle.getDirectoryHandle('win98-c-drive', { create: true });
+                cDriveFs = await resolveMountConfig({
+                    backend: WebAccess,
+                    handle: subfolderHandle,
+                });
+                console.log("C: drive mounted from local folder.");
+            } catch (e) {
+                console.error("Failed to mount local folder, falling back to IndexedDB:", e);
+                cDriveFs = await resolveMountConfig({
+                    backend: IndexedDB,
+                    name: "win98-c-drive",
+                });
+            }
+        } else {
+            cDriveFs = await resolveMountConfig({
+                backend: IndexedDB,
+                name: "win98-c-drive",
+            });
+        }
         // Ensure C: mount point exists in root
         if (!(await existsAsync('/C:'))) {
             await fs.promises.mkdir('/C:');
