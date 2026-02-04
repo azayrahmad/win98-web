@@ -353,47 +353,53 @@ export class PropertiesManager {
    * @private
    */
   static async _addStorageSection(container) {
-      const separator = document.createElement("div");
-      separator.style.borderBottom = "1px solid #808080";
-      separator.style.margin = "15px 0 10px 0";
-      container.appendChild(separator);
+    const fieldset = document.createElement("fieldset");
+    fieldset.style.marginTop = "15px";
+    fieldset.style.padding = "10px";
+    fieldset.style.border = "1px solid #808080";
 
-      const title = document.createElement("div");
-      title.textContent = "Storage Settings";
-      title.style.fontWeight = "bold";
-      title.style.marginBottom = "10px";
-      title.style.fontSize = "11px";
-      container.appendChild(title);
+    const legend = document.createElement("legend");
+    legend.textContent = "Storage Settings";
+    legend.style.fontSize = "11px";
+    fieldset.appendChild(legend);
 
-      const storageInfo = document.createElement("div");
-      storageInfo.style.fontSize = "11px";
-      storageInfo.style.marginBottom = "10px";
+    const storageInfo = document.createElement("div");
+    storageInfo.style.fontSize = "11px";
+    storageInfo.style.marginBottom = "10px";
 
-      const handle = await getLocalFolderHandle();
-      const isLocal = !!handle;
+    const handle = await getLocalFolderHandle();
+    const isLocal = !!handle;
 
-      storageInfo.textContent = `Current storage: ${isLocal ? "Local Folder" : "IndexedDB (Browser)"}`;
-      container.appendChild(storageInfo);
+    storageInfo.textContent = `Current storage: ${isLocal ? "Local Folder" : "IndexedDB (Browser)"}`;
+    fieldset.appendChild(storageInfo);
 
-      if (isFileSystemAccessSupported()) {
-          const switchBtn = document.createElement("button");
-          switchBtn.textContent = isLocal ? "Switch to IndexedDB..." : "Switch to Local Folder...";
-          switchBtn.style.padding = "2px 10px";
-          switchBtn.onclick = async () => {
-              const { switchToLocalFolder, switchToIndexedDB } = await import("../../../utils/storageSwitch.js");
-              if (isLocal) {
-                  await switchToIndexedDB();
-              } else {
-                  await switchToLocalFolder();
-              }
-          };
-          container.appendChild(switchBtn);
-      } else {
-          const unsupported = document.createElement("div");
-          unsupported.textContent = "Local folder storage is not supported in this browser.";
-          unsupported.style.color = "#800000";
-          unsupported.style.fontSize = "10px";
-          container.appendChild(unsupported);
-      }
+    if (isFileSystemAccessSupported()) {
+      const switchBtn = document.createElement("button");
+      switchBtn.textContent = isLocal
+        ? "Switch to IndexedDB..."
+        : "Switch to Local Folder...";
+      switchBtn.style.padding = "2px 10px";
+      switchBtn.style.fontSize = "11px";
+      switchBtn.onclick = async () => {
+        const { switchToLocalFolder, switchToIndexedDB } = await import(
+          "../../../utils/storageSwitch.js"
+        );
+        if (isLocal) {
+          await switchToIndexedDB();
+        } else {
+          await switchToLocalFolder();
+        }
+      };
+      fieldset.appendChild(switchBtn);
+    } else {
+      const unsupported = document.createElement("div");
+      unsupported.textContent =
+        "Local folder storage is not supported in this browser.";
+      unsupported.style.color = "#800000";
+      unsupported.style.fontSize = "10px";
+      fieldset.appendChild(unsupported);
+    }
+
+    container.appendChild(fieldset);
   }
 }

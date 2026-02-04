@@ -8,46 +8,58 @@ import { existsAsync } from "./zenfs-utils.js";
 
 let isInitialized = false;
 
+const wrappingState = new WeakMap();
+
 /**
  * Wraps a WebAccess FS to escape filenames.
  * This is necessary because the File System Access API blocks certain extensions (like .lnk).
- * @param {FileSystem} fs
+ * @param {FileSystem} fsInstance
  */
-export function wrapWebAccess(fs) {
+export function wrapWebAccess(fsInstance) {
     const transformPath = (p) => {
         if (typeof p !== 'string' || !p || p === '/' || p === '.') return p;
         return p.split('/').map(s => (s && s !== '.' && s !== '..') ? s + '.z' : s).join('/');
     };
     const untransformSegment = (s) => (s && s.endsWith('.z')) ? s.slice(0, -2) : s;
 
-    const methodsToWrap = [
-        'stat', 'readdir', 'open', 'unlink', 'rmdir', 'mkdir', '_mkdir',
-        'rename', 'read', 'write', 'writeFile', 'get', 'remove', 'touch', 'sync',
-        'create', 'createFile', 'link', 'symlink', 'readlink', 'access', 'chown', 'chmod', 'utimes'
-    ];
+    const pathArgs = {
+        stat: [0], readdir: [0], open: [0], unlink: [0], rmdir: [0], mkdir: [0], _mkdir: [0],
+        rename: [0, 1], read: [0], write: [0], writeFile: [0], get: [1], remove: [0],
+        touch: [0], create: [0], createFile: [0], link: [0, 1], symlink: [0, 1],
+        readlink: [0], access: [0], chown: [0], chmod: [0], utimes: [0]
+    };
 
-    for (const method of methodsToWrap) {
-        if (typeof fs[method] === 'function') {
-            const original = fs[method].bind(fs);
-            fs[method] = function(arg1, ...rest) {
-                if (method === 'rename') {
-                    return original(transformPath(arg1), transformPath(rest[0]), ...rest.slice(1));
+    for (const method in pathArgs) {
+        if (typeof fsInstance[method] === 'function') {
+            const original = fsInstance[method].bind(fsInstance);
+            const indices = pathArgs[method];
+            fsInstance[method] = function(...args) {
+                if (wrappingState.get(fsInstance)) {
+                    return original(...args);
                 }
-                if (method === 'readdir') {
-                    return (async () => {
-                        const entries = await original(transformPath(arg1), ...rest);
-                        return entries.map(untransformSegment);
-                    })();
+
+                wrappingState.set(fsInstance, true);
+                try {
+                    const wrappedArgs = args.map((arg, i) => {
+                        if (indices.includes(i) && typeof arg === 'string') {
+                            return transformPath(arg);
+                        }
+                        return arg;
+                    });
+
+                    const result = original(...wrappedArgs);
+                    if (method === 'readdir' && result instanceof Promise) {
+                        return result.then(entries => entries.map(untransformSegment));
+                    }
+                    return result;
+                } finally {
+                    wrappingState.set(fsInstance, false);
                 }
-                if (typeof arg1 === 'string') {
-                    return original(transformPath(arg1), ...rest);
-                }
-                return original(arg1, ...rest);
             };
         }
     }
 
-    return fs;
+    return fsInstance;
 }
 
 export async function initFileSystem(onProgress, localFolderHandle = null) {
