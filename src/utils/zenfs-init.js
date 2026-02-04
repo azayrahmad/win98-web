@@ -22,33 +22,33 @@ function wrapWebAccess(backend) {
     }
 
     const wrapPath = (path) => {
-        if (!path || path === '/') return path;
+        if (typeof path !== 'string' || !path || path === '/') return path;
         return path.split('/')
             .map(segment => segment && segment !== '.' && segment !== '..' ? segment + '.z' : segment)
             .join('/');
     };
 
     const unwrapPath = (path) => {
-        if (!path) return path;
+        if (typeof path !== 'string' || !path) return path;
         return path.split('/')
             .map(segment => segment.endsWith('.z') ? segment.slice(0, -2) : segment)
             .join('/');
     };
 
+    const pathMethods = ['stat', 'statSync', 'open', 'openSync', 'replacems', 'replacemsSync',
+                       'mkdir', 'mkdirSync', 'rmdir', 'rmdirSync', 'unlink', 'unlinkSync',
+                       'link', 'linkSync', 'symlink', 'symlinkSync', 'readlink', 'readlinkSync',
+                       'chown', 'chownSync', 'chmod', 'chmodSync', 'utimes', 'utimesSync',
+                       'access', 'accessSync', 'readdir', 'readdirSync'];
+
     const proxy = new Proxy(backend, {
-        get(target, prop) {
-            const original = target[prop];
-            if (typeof original !== 'function') {
-                return original;
+        get(target, prop, receiver) {
+            const value = Reflect.get(target, prop, receiver);
+            if (typeof value !== 'function') {
+                return value;
             }
 
             return function (...args) {
-                // Intercept path-based methods
-                const pathMethods = ['stat', 'statSync', 'open', 'openSync', 'replacems', 'replacemsSync',
-                                   'mkdir', 'mkdirSync', 'rmdir', 'rmdirSync', 'unlink', 'unlinkSync',
-                                   'link', 'linkSync', 'symlink', 'symlinkSync', 'readlink', 'readlinkSync',
-                                   'chown', 'chownSync', 'chmod', 'chmodSync', 'utimes', 'utimesSync'];
-
                 if (pathMethods.includes(prop)) {
                     args[0] = wrapPath(args[0]);
                 }
@@ -58,7 +58,7 @@ function wrapWebAccess(backend) {
                     args[1] = wrapPath(args[1]);
                 }
 
-                const result = original.apply(target, args);
+                const result = Reflect.apply(value, receiver, args);
 
                 if (result instanceof Promise) {
                     return result.then(res => {

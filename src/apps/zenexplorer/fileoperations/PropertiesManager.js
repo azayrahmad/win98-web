@@ -405,7 +405,10 @@ export class PropertiesManager {
     try {
         let success = false;
         const { ProgressBarDialogWindow } = await import("../interface/ProgressBarDialogWindow.js");
-        const dialog = new ProgressBarDialogWindow("move", 0, 0); // We'll update it as we go
+
+        // Calculate total size for progress bar
+        const totalSize = await this._getRecursiveSize("/C:");
+        const dialog = new ProgressBarDialogWindow("move", 0, totalSize);
 
         let totalMigrated = 0;
         if (isToLocal) {
