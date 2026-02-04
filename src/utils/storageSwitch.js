@@ -1,7 +1,7 @@
 import { fs, resolveMountConfig } from "@zenfs/core";
 import { IndexedDB } from "@zenfs/dom";
 import { ShowDialogWindow } from "../components/DialogWindow.js";
-import { saveLocalFolderHandle, clearLocalFolderHandle, getLocalFolderHandle } from "./localFolderUtils.js";
+import { saveLocalFolderHandle, clearLocalFolderHandle, getLocalFolderHandle, escapeName, unescapeName } from "./localFolderUtils.js";
 import { ProgressBarDialogWindow } from "../apps/zenexplorer/interface/ProgressBarDialogWindow.js";
 import { joinPath, getParentPath } from "../apps/zenexplorer/navigation/PathUtils.js";
 
@@ -60,7 +60,7 @@ async function copyRecursiveToHandle(srcPath, destHandle, dialog) {
         for (const file of files) {
             const childSrcPath = joinPath(srcPath, file);
             const childStats = await fs.promises.stat(childSrcPath);
-            const escapedName = file + '.z';
+            const escapedName = escapeName(file);
 
             if (childStats.isDirectory()) {
                 const subHandle = await destHandle.getDirectoryHandle(escapedName, { create: true });
@@ -86,7 +86,7 @@ async function copyRecursiveFromHandle(srcHandle, destPath, dialog) {
     if (dialog && dialog.cancelled) return;
 
     for await (const entry of srcHandle.values()) {
-        const unescapedName = (entry.name.endsWith('.z')) ? entry.name.slice(0, -2) : entry.name;
+        const unescapedName = unescapeName(entry.name);
         const childDestPath = joinPath(destPath, unescapedName);
 
         if (entry.kind === 'directory') {

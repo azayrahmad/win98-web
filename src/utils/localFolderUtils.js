@@ -82,3 +82,58 @@ export async function isLocalFolderEnabled() {
 export function isFileSystemAccessSupported() {
     return 'showDirectoryPicker' in window;
 }
+
+const BLOCKED_EXTENSIONS = new Set([
+    'exe', 'com', 'bat', 'cmd', 'vbs', 'vbe', 'jse', 'ws', 'wsf', 'wsh',
+    'msc', 'cpl', 'inf', 'reg', 'url', 'scf', 'jar', 'msi', 'scr', 'pif'
+]);
+
+const BLOCKED_NAMES = new Set([
+    'CON', 'PRN', 'AUX', 'NUL',
+    'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+    'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+]);
+
+/**
+ * Escapes a filename for storage in a local folder to bypass browser restrictions.
+ * @param {string} name
+ * @returns {string}
+ */
+export function escapeName(name) {
+    if (!name || name === '.' || name === '..') return name;
+
+    const lowerName = name.toLowerCase();
+
+    // User specifically requested .lnk -> .lnk.json
+    if (lowerName.endsWith('.lnk')) {
+        return name + '.json';
+    }
+
+    const extMatch = lowerName.match(/\.([^.]+)$/);
+    const ext = extMatch ? extMatch[1] : '';
+
+    if (BLOCKED_EXTENSIONS.has(ext) || BLOCKED_NAMES.has(name.toUpperCase())) {
+        return name + '.z';
+    }
+
+    return name;
+}
+
+/**
+ * Unescapes a filename from local folder storage.
+ * @param {string} name
+ * @returns {string}
+ */
+export function unescapeName(name) {
+    if (!name || name === '.' || name === '..') return name;
+
+    if (name.toLowerCase().endsWith('.lnk.json')) {
+        return name.slice(0, -5);
+    }
+
+    if (name.toLowerCase().endsWith('.z')) {
+        return name.slice(0, -2);
+    }
+
+    return name;
+}

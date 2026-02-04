@@ -5,6 +5,7 @@ import startMenuConfig from "../config/startmenu.js";
 import { getStartupApps } from "./startupManager.js";
 import { apps } from "../config/apps.js";
 import { existsAsync } from "./zenfs-utils.js";
+import { escapeName, unescapeName } from "./localFolderUtils.js";
 
 let isInitialized = false;
 
@@ -18,9 +19,8 @@ const wrappingState = new WeakMap();
 export function wrapWebAccess(fsInstance) {
     const transformPath = (p) => {
         if (typeof p !== 'string' || !p || p === '/' || p === '.') return p;
-        return p.split('/').map(s => (s && s !== '.' && s !== '..') ? s + '.z' : s).join('/');
+        return p.split('/').map(s => escapeName(s)).join('/');
     };
-    const untransformSegment = (s) => (s && s.endsWith('.z')) ? s.slice(0, -2) : s;
 
     const pathArgs = {
         stat: [0], readdir: [0], open: [0], unlink: [0], rmdir: [0], mkdir: [0], _mkdir: [0],
@@ -49,7 +49,7 @@ export function wrapWebAccess(fsInstance) {
 
                     const result = original(...wrappedArgs);
                     if (method === 'readdir' && result instanceof Promise) {
-                        return result.then(entries => entries.map(untransformSegment));
+                        return result.then(entries => entries.map(unescapeName));
                     }
                     return result;
                 } finally {
