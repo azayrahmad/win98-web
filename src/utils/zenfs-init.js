@@ -6,6 +6,7 @@ import startMenuConfig from "../config/startmenu.js";
 import { getStartupApps } from "./startupManager.js";
 import { apps } from "../config/apps.js";
 import { existsAsync } from "./zenfs-utils.js";
+import { syncIconsToZenFS } from "./iconSync.js";
 
 let isInitialized = false;
 
@@ -48,6 +49,11 @@ export async function initFileSystem(onProgress) {
         // Ensure WINDOWS directory exists on C: for persistence
         if (!(await existsAsync('/C:/WINDOWS'))) {
             await fs.promises.mkdir('/C:/WINDOWS');
+        }
+
+        // Ensure WINDOWS/Icons directory exists
+        if (!(await existsAsync('/C:/WINDOWS/Icons'))) {
+            await fs.promises.mkdir('/C:/WINDOWS/Icons');
         }
 
         // Ensure Program Files/Doom exists
@@ -122,6 +128,9 @@ export async function initFileSystem(onProgress) {
                 await migrateToZenFS(favoritesConfig.submenu, FAVORITES_PATH);
             }
         }
+
+        if (onProgress) onProgress("Synchronizing icons...");
+        await syncIconsToZenFS(onProgress);
 
         isInitialized = true;
         console.log("ZenFS initialized successfully.");
