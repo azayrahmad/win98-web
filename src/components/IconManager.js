@@ -115,7 +115,8 @@ export class IconManager {
     return target === this.container ||
            target.id === "active-desktop-layer" ||
            target.classList.contains("active-desktop-wallpaper") ||
-           target.classList.contains("active-desktop-wallpaper-iframe");
+           target.classList.contains("active-desktop-wallpaper-iframe") ||
+           target.closest(".desk-mover-wrapper") && !target.classList.contains("desk-mover-iframe");
   }
 
   handleMouseDown(e) {

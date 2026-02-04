@@ -1,0 +1,33 @@
+html, body {
+    height: 100%;
+    user-select: none;
+    margin: 0;
+    overflow: hidden;
+    background-color: black;
+}
+
+.ActiveChannelItem {
+    display: block;
+    margin: 1px 1px -2px 1px;
+    width: 80px;
+    float: left;
+}
+
+.ActiveChannelItemImage {
+    border: solid 1px transparent;
+    margin-bottom: -2px;
+}
+
+.ActiveChannelItemImage:hover {
+    border-top-color: white;
+    border-left-color: white;
+    border-bottom-color: gray;
+    border-right-color: gray;
+}
+
+.ActiveChannelItemImage:hover:active {
+    border-bottom-color: white;
+    border-right-color: white;
+    border-top-color: gray;
+    border-left-color: gray;
+}
