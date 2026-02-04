@@ -62,6 +62,27 @@ export async function initFileSystem(onProgress) {
             await fs.promises.mkdir('/C:/WINDOWS/Desktop');
         }
 
+        // Ensure Active Desktop settings exist
+        if (!(await existsAsync('/C:/WINDOWS/activedesktop.json'))) {
+            const defaultSettings = {
+                enabled: false,
+                wallpaper: "",
+                items: [
+                  {
+                    id: "channel-bar",
+                    url: "activedesktop/ChannelBar.html",
+                    x: "calc(100% - 90px)",
+                    y: "50px",
+                    width: "84px",
+                    height: "471px",
+                    visible: true,
+                    style: "ad"
+                  }
+                ]
+            };
+            await fs.promises.writeFile('/C:/WINDOWS/activedesktop.json', JSON.stringify(defaultSettings, null, 2));
+        }
+
         // Add default shortcuts to Desktop
         const defaultShortcuts = [
             { name: "buggyprogram.lnk.json", appId: "buggyprogram" },

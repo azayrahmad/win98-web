@@ -23,6 +23,7 @@ import {
 } from "../../../utils/localStorage.js";
 import { launchApp } from "../../../utils/appManager.js";
 import ClipboardManager from "../fileoperations/ClipboardManager.js";
+import { activeDesktopManager } from "../../../utils/activeDesktopManager.js";
 
 export class DesktopContextMenuBuilder extends ContextMenuBuilder {
   buildBackgroundMenu(e) {
@@ -69,6 +70,28 @@ export class DesktopContextMenuBuilder extends ContextMenuBuilder {
     };
 
     const menuItems = [
+      {
+        label: "Active Desktop",
+        submenu: [
+          {
+            label: "View as Web Page",
+            checkbox: {
+              check: () => activeDesktopManager.settings.enabled,
+              toggle: () => activeDesktopManager.setEnabled(!activeDesktopManager.settings.enabled),
+            },
+          },
+          "MENU_DIVIDER",
+          {
+            label: "Customize my Desktop...",
+            action: () => launchApp("displayproperties"),
+          },
+          {
+            label: "Update Now",
+            action: () => activeDesktopManager.render(),
+          },
+        ],
+      },
+      "MENU_DIVIDER",
       {
         label: "Arrange Icons",
         submenu: [

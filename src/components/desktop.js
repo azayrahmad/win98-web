@@ -3,6 +3,7 @@
  */
 import { init as initTaskbar } from "./taskbar.js";
 import { launchApp } from "../utils/appManager.js";
+import { activeDesktopManager } from "../utils/activeDesktopManager.js";
 import {
   getItem,
   setItem,
@@ -390,7 +391,12 @@ async function refreshIcons() {
   const order = layout.order || [];
   const sortedInfos = sortFileInfos(fileInfos, sortBy, path, order);
 
+  // Preserve active desktop layer
+  const activeDesktopLayer = desktop.querySelector("#active-desktop-layer");
   desktop.innerHTML = "";
+  if (activeDesktopLayer) {
+    desktop.appendChild(activeDesktopLayer);
+  }
   desktopController.iconManager.clearSelection();
 
   if (layout.autoArrange) {
@@ -507,6 +513,7 @@ function applyMonitorType() {
 
 export async function initDesktop(profile = null) {
   console.log("Initializing Desktop Manager...");
+  await activeDesktopManager.init();
   await applyTheme();
   applyWallpaper();
   applyMonitorType();

@@ -111,8 +111,15 @@ export class IconManager {
     );
   }
 
+  isBackground(target) {
+    return target === this.container ||
+           target.id === "active-desktop-layer" ||
+           target.classList.contains("active-desktop-wallpaper") ||
+           target.classList.contains("active-desktop-wallpaper-iframe");
+  }
+
   handleMouseDown(e) {
-    if (e.target !== this.container) return; // Only start lasso on container itself
+    if (!this.isBackground(e.target)) return; // Only start lasso on container itself or active desktop background
     if (e.button !== 0) return; // Only for left click
 
     this.isLassoing = true;
@@ -184,7 +191,7 @@ export class IconManager {
       return;
     }
     if (
-      e.target === this.container &&
+      this.isBackground(e.target) &&
       !this.isLassoing &&
       !e.target.closest(this.iconSelector)
     ) {
@@ -193,7 +200,7 @@ export class IconManager {
   }
 
   handleContextMenu(e) {
-    if (e.target === this.container) {
+    if (this.isBackground(e.target)) {
       if (this.options.onBackgroundContext) {
         e.preventDefault();
         this.options.onBackgroundContext(e);

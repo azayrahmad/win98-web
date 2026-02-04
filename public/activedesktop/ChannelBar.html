@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Channel Bar</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 5px;
+            background-color: #000;
+            color: #fff;
+            font-family: "MS Sans Serif", "Segoe UI", sans-serif;
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .channel-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #ccc;
+            width: 100%;
+            text-align: center;
+        }
+        .channel-item:hover {
+            color: #fff;
+        }
+        .channel-icon {
+            width: 32px;
+            height: 32px;
+            background-color: #333;
+            margin-bottom: 2px;
+            border: 1px solid #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        .channel-item:hover .channel-icon {
+            border-color: #fff;
+        }
+        .guide {
+            color: #ffcc00;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="guide">channel guide</div>
+
+    <a href="#" class="channel-item">
+        <div class="channel-icon">N</div>
+        <span>news</span>
+    </a>
+    <a href="#" class="channel-item">
+        <div class="channel-icon">D</div>
+        <span>disney</span>
+    </a>
+    <a href="#" class="channel-item">
+        <div class="channel-icon">W</div>
+        <span>the wall street journal</span>
+    </a>
+    <a href="#" class="channel-item">
+        <div class="channel-icon">M</div>
+        <span>msn</span>
+    </a>
+</body>
+</html>

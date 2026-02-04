@@ -3,6 +3,7 @@ import "./styles/file-picker.css";
 import "./style.css";
 import "./styles/splash.css";
 import "./styles/shutdown-screen.css";
+import "./styles/active-desktop.css";
 
 import splashBg from "./assets/img/splash.png";
 import { themes } from "./config/themes.js";
@@ -37,6 +38,7 @@ import { fs, mounts } from "@zenfs/core";
 import { initFileSystem } from "./utils/zenfs-init.js";
 import { RecycleBinManager } from "./apps/zenexplorer/fileoperations/RecycleBinManager.js";
 import { appManager } from "./utils/appManager.js";
+import { activeDesktopManager } from "./utils/activeDesktopManager.js";
 
 // Window Management System
 class WindowManagerSystem {
@@ -386,6 +388,7 @@ async function initializeOS() {
     window.fs = fs;
     window.mounts = mounts;
     window.RecycleBinManager = RecycleBinManager;
+    window.activeDesktopManager = activeDesktopManager;
     window.System.launchApp = launchApp;
     window.System.appManager = appManager;
     console.log("azOS initialized");
