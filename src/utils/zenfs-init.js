@@ -1,15 +1,88 @@
 import { resolveMountConfig, InMemory, fs } from "@zenfs/core";
-import { IndexedDB } from "@zenfs/dom";
+import { IndexedDB, WebAccess } from "@zenfs/dom";
 import { migrateToZenFS, PINNED_PATH, START_MENU_PATH, FAVORITES_PATH } from "./startMenuUtils.js";
 import { migrateShortcuts } from "./migrateShortcuts.js";
 import startMenuConfig from "../config/startmenu.js";
 import { getStartupApps } from "./startupManager.js";
 import { apps } from "../config/apps.js";
 import { existsAsync } from "./zenfs-utils.js";
+import { getStoredHandle } from "./storageSwitch.js";
 
 let isInitialized = false;
 
-export async function initFileSystem(onProgress) {
+const wrappedBackends = new WeakMap();
+
+/**
+ * Wraps a WebAccess backend to append .z to all filenames on the host filesystem.
+ * This bypasses browser/OS restrictions on reserved filenames like CON, PRN, or .lnk.
+ */
+function wrapWebAccess(backend) {
+    if (wrappedBackends.has(backend)) {
+        return wrappedBackends.get(backend);
+    }
+
+    const wrapPath = (path) => {
+        if (!path || path === '/') return path;
+        return path.split('/')
+            .map(segment => segment && segment !== '.' && segment !== '..' ? segment + '.z' : segment)
+            .join('/');
+    };
+
+    const unwrapPath = (path) => {
+        if (!path) return path;
+        return path.split('/')
+            .map(segment => segment.endsWith('.z') ? segment.slice(0, -2) : segment)
+            .join('/');
+    };
+
+    const proxy = new Proxy(backend, {
+        get(target, prop) {
+            const original = target[prop];
+            if (typeof original !== 'function') {
+                return original;
+            }
+
+            return function (...args) {
+                // Intercept path-based methods
+                const pathMethods = ['stat', 'statSync', 'open', 'openSync', 'replacems', 'replacemsSync',
+                                   'mkdir', 'mkdirSync', 'rmdir', 'rmdirSync', 'unlink', 'unlinkSync',
+                                   'link', 'linkSync', 'symlink', 'symlinkSync', 'readlink', 'readlinkSync',
+                                   'chown', 'chownSync', 'chmod', 'chmodSync', 'utimes', 'utimesSync'];
+
+                if (pathMethods.includes(prop)) {
+                    args[0] = wrapPath(args[0]);
+                }
+
+                if (prop === 'rename' || prop === 'renameSync') {
+                    args[0] = wrapPath(args[0]);
+                    args[1] = wrapPath(args[1]);
+                }
+
+                const result = original.apply(target, args);
+
+                if (result instanceof Promise) {
+                    return result.then(res => {
+                        if (prop === 'readdir') {
+                            return res.map(unwrapPath);
+                        }
+                        return res;
+                    });
+                }
+
+                if (prop === 'readdirSync') {
+                    return result.map(unwrapPath);
+                }
+
+                return result;
+            };
+        }
+    });
+
+    wrappedBackends.set(backend, proxy);
+    return proxy;
+}
+
+export async function initFileSystem(onProgress, localFolderHandle = null) {
     if (isInitialized) return;
 
     try {
@@ -26,10 +99,29 @@ export async function initFileSystem(onProgress) {
         fs.mount('/', rootFs);
 
         if (onProgress) onProgress("Mounting C: drive...");
-        const cDriveFs = await resolveMountConfig({
-            backend: IndexedDB,
-            name: "win98-c-drive",
-        });
+        let cDriveFs;
+
+        if (localFolderHandle) {
+            try {
+                // Re-request permission. This needs a user gesture if not already granted.
+                const permission = await localFolderHandle.requestPermission({ mode: 'readwrite' });
+                if (permission === 'granted') {
+                    const webAccessFs = await WebAccess.create({ handle: localFolderHandle });
+                    cDriveFs = wrapWebAccess(webAccessFs);
+                    console.log("C: drive mounted using Local Folder.");
+                }
+            } catch (err) {
+                console.warn("Failed to mount Local Folder, falling back to IndexedDB:", err);
+            }
+        }
+
+        if (!cDriveFs) {
+            cDriveFs = await resolveMountConfig({
+                backend: IndexedDB,
+                name: "win98-c-drive",
+            });
+            console.log("C: drive mounted using IndexedDB.");
+        }
         // Ensure C: mount point exists in root
         if (!(await existsAsync('/C:'))) {
             await fs.promises.mkdir('/C:');

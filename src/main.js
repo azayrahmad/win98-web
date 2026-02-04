@@ -213,10 +213,17 @@ async function initializeOS() {
       finalizeBootProcessStep(logElement, "OK");
     });
 
+    let localFolderHandle = null;
     await executeBootStep(async () => {
       let logElement = startBootProcessStep("Connecting to network...");
       await new Promise((resolve) => setTimeout(resolve, 1000));
       finalizeBootProcessStep(logElement, navigator.onLine ? "OK" : "FAILED");
+    });
+
+    await executeBootStep(async () => {
+      const { getStoredHandle } = await import("./utils/storageSwitch.js");
+      localFolderHandle = await getStoredHandle();
+      await promptToContinue();
     });
 
     await executeBootStep(async () => {
@@ -226,7 +233,7 @@ async function initializeOS() {
         if (logElement && logElement.firstChild) {
           logElement.firstChild.nodeValue = `${baseMsg} ${subStep}`;
         }
-      });
+      }, localFolderHandle);
       if (logElement && logElement.firstChild) {
         logElement.firstChild.nodeValue = baseMsg;
       }
@@ -305,10 +312,6 @@ async function initializeOS() {
       await new Promise((resolve) => setTimeout(resolve, 50));
       loadCustomApps();
       finalizeBootProcessStep(logElement, "OK");
-    });
-
-    await executeBootStep(async () => {
-      await promptToContinue();
     });
 
     await executeBootStep(async () => {

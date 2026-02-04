@@ -11,6 +11,7 @@ import {
 import { getIconForFile } from "../interface/FileIconRenderer.js";
 import { RecycleBinManager } from "./RecycleBinManager.js";
 import { ShellManager } from "../extensions/ShellManager.js";
+import { getStoredHandle, migrateToLocalFolder, migrateToIndexedDB } from "../../../utils/storageSwitch.js";
 
 /**
  * PropertiesManager - Handles showing properties for files and folders in ZenExplorer
@@ -84,6 +85,9 @@ export class PropertiesManager {
     const modified = formatDate(stats.mtime);
     const accessed = formatDate(stats.atime);
 
+    const storageHandle = isUserDrive && path === "/C:" ? await getStoredHandle() : null;
+    const storageType = storageHandle ? "Local Folder" : "IndexedDB";
+
     const { container, sizeEl, containsEl } = this._createPropertiesUI({
       iconUrl,
       name,
@@ -95,6 +99,8 @@ export class PropertiesManager {
       created,
       modified,
       accessed,
+      isCDrive: path === "/C:",
+      storageType
     });
 
     const win = ShowDialogWindow({
@@ -338,8 +344,104 @@ export class PropertiesManager {
       addRow("Accessed", data.accessed);
     }
 
+    if (data.isCDrive) {
+      const separator = document.createElement("div");
+      separator.style.gridColumn = "span 2";
+      separator.style.borderBottom = "1px solid #808080";
+      separator.style.margin = "10px 0";
+      details.appendChild(separator);
+
+      const storageLabel = document.createElement("div");
+      storageLabel.textContent = "Storage:";
+      details.appendChild(storageLabel);
+
+      const storageContainer = document.createElement("div");
+      storageContainer.style.display = "flex";
+      storageContainer.style.justifyContent = "space-between";
+      storageContainer.style.alignItems = "center";
+
+      const storageText = document.createElement("span");
+      storageText.textContent = data.storageType;
+      storageContainer.appendChild(storageText);
+
+      const changeBtn = document.createElement("button");
+      changeBtn.textContent = "Change...";
+      changeBtn.style.padding = "2px 10px";
+      changeBtn.onclick = () => PropertiesManager._handleChangeStorage(data.storageType);
+      storageContainer.appendChild(changeBtn);
+
+      details.appendChild(storageContainer);
+    }
+
     container.appendChild(details);
 
     return { container, sizeEl, containsEl };
+  }
+
+  /**
+   * Handle storage backend change
+   * @private
+   */
+  static async _handleChangeStorage(currentType) {
+    const isToLocal = currentType === "IndexedDB";
+    const title = isToLocal ? "Switch to Local Folder" : "Switch to IndexedDB";
+    const text = isToLocal
+      ? "Switching to a local folder will move all your data from IndexedDB to a folder on your computer. Your browser will ask for permission each time you boot. Proceed?"
+      : "Switching to IndexedDB will move all your data from the local folder back to the browser's internal storage. Proceed?";
+
+    const confirmed = await new Promise(resolve => {
+        ShowDialogWindow({
+            title,
+            text,
+            buttons: [
+                { label: "Yes", action: (win) => { win.close(); resolve(true); } },
+                { label: "No", action: (win) => { win.close(); resolve(false); } }
+            ]
+        });
+    });
+
+    if (!confirmed) return;
+
+    try {
+        let success = false;
+        const { ProgressBarDialogWindow } = await import("../interface/ProgressBarDialogWindow.js");
+        const dialog = new ProgressBarDialogWindow("move", 0, 0); // We'll update it as we go
+
+        let totalMigrated = 0;
+        if (isToLocal) {
+            const handle = await window.showDirectoryPicker();
+            success = await migrateToLocalFolder(handle, (bytes) => {
+                totalMigrated += bytes;
+                dialog.update("Migrating...", "IndexedDB", handle.name, totalMigrated);
+            });
+        } else {
+            success = await migrateToIndexedDB((bytes) => {
+                totalMigrated += bytes;
+                dialog.update("Migrating...", "Local Folder", "IndexedDB", totalMigrated);
+            });
+        }
+
+        dialog.close();
+
+        if (success) {
+            ShowDialogWindow({
+                title: "Restart Required",
+                text: "The storage backend has been changed. Please restart the system to apply changes.",
+                buttons: [
+                    { label: "Restart Now", action: () => window.location.reload() },
+                    { label: "Later", action: (win) => win.close() }
+                ]
+            });
+        }
+    } catch (e) {
+        if (e.name !== 'AbortError') {
+            console.error("Storage migration failed:", e);
+            ShowDialogWindow({
+                title: "Migration Failed",
+                text: "An error occurred during migration: " + e.message,
+                buttons: [{ label: "OK" }]
+            });
+        }
+    }
   }
 }
