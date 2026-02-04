@@ -32,6 +32,8 @@ Experience Windows 98 Web Edition live: **[Windows 98 Web Edition](https://azayr
 
 - **Progressive Web App**: Install it on your machine as a desktop application.
 
+- **Active Desktop**: Integrate web content directly onto your desktop. Add interactive "Web Items" and HTML wallpapers that sit behind your icons. See [Active Desktop README](./ACTIVEDESKTOP_README.md) for more details.
+
 - **Free**: Use it, download the source, fork it, add your own themes and apps and games, make it your own. I don't really care. Credit and attribution are nice though.
 
 ## Featured Applications
