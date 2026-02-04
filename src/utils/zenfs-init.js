@@ -6,7 +6,8 @@ import startMenuConfig from "../config/startmenu.js";
 import { getStartupApps } from "./startupManager.js";
 import { apps } from "../config/apps.js";
 import { existsAsync } from "./zenfs-utils.js";
-import { syncIconsToZenFS } from "./iconSync.js";
+import { syncIcons } from "./iconSync.js";
+import { syncSystemFiles } from "./systemSync.js";
 
 let isInitialized = false;
 
@@ -130,7 +131,10 @@ export async function initFileSystem(onProgress) {
         }
 
         if (onProgress) onProgress("Synchronizing icons...");
-        await syncIconsToZenFS(onProgress);
+        await syncIcons(onProgress);
+
+        if (onProgress) onProgress("Synchronizing system files...");
+        await syncSystemFiles();
 
         isInitialized = true;
         console.log("ZenFS initialized successfully.");

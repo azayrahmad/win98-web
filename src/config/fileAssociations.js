@@ -10,7 +10,7 @@ export const fileAssociations = {
   js: {
     name: "JScript Script File",
     appId: "notepad",
-    icon: ICONS.textFile,
+    icon: ICONS.rnaui,
   },
   json: {
     name: "JSON File",
