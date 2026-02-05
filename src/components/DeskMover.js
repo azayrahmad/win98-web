@@ -1,10 +1,9 @@
 /**
  * DeskMover - Recreates the Windows 98 Active Desktop item behavior
- * Handles moving, resizing, and the hoverable frame.
  */
 export class DeskMover {
     constructor(item, container, options = {}) {
-        this.item = item; // { id, url, x, y, width, height, style }
+        this.item = item;
         this.container = container;
         this.options = options;
         this.onUpdate = options.onUpdate || (() => {});

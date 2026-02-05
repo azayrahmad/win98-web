@@ -395,85 +395,77 @@
     border-image: var(--preview-button-normal-border-image);
 }
 
-.web-tab {
+#web-tab {
     display: flex;
     flex-direction: column;
-}
-
-.web-tab .preview-area {
-    height: 140px;
-    background-color: var(--AppWorkspace);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 5px;
-}
-
-.web-tab .active-desktop-toggle {
-    margin-bottom: 5px;
-}
-
-.web-tab .web-items-fieldset {
-    margin-top: 5px;
-}
-
-.web-tab .web-items-container {
-    display: flex;
+    height: 100%;
     gap: 10px;
 }
 
-.web-tab .web-items-list-wrapper {
-    flex-grow: 1;
-    height: 100px;
-    background-color: white;
-    overflow-y: auto;
-}
-
-.web-tab .web-items-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.web-tab .web-items-list li {
-    padding: 2px 5px;
+.active-desktop-preview-container {
     display: flex;
-    align-items: center;
-    gap: 5px;
-    cursor: default;
-    white-space: nowrap;
-    color: black;
-}
-
-.web-tab .web-items-list li.selected {
-    background-color: var(--Hilight);
-    color: var(--HilightText);
-}
-
-.web-tab .web-items-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.web-tab .web-items-buttons button {
-    min-width: 80px;
-}
-
-.web-tab .folder-options-container {
-    margin-top: 5px;
-    display: flex;
-    justify-content: flex-end;
+    justify-content: center;
+    padding: 10px 0;
 }
 
 .active-desktop-preview {
-    position: relative;
     width: 152px;
     height: 112px;
     background-color: var(--Background);
+    border: 1px solid #000;
+    position: relative;
     overflow: hidden;
 }
 
-.active-desktop-preview .item-preview {
+.web-content-options {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.web-items-section {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+    height: 100px;
+}
+
+#web-items-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    flex-grow: 1;
+    background-color: #fff;
+}
+
+#web-items-list li {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 5px;
+    cursor: default;
+    white-space: nowrap;
+}
+
+#web-items-list li.selected {
+    background-color: var(--Highlight);
+    color: var(--HighlightText);
+}
+
+.web-item-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.web-footer-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: auto;
+}
+
+.item-preview {
     pointer-events: none;
 }

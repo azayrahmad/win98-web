@@ -5,7 +5,7 @@ export const webTab = {
   init(win, app) {
     this.win = win;
     this.app = app;
-    this.settings = { ...activeDesktopManager.settings };
+    this.settings = JSON.parse(JSON.stringify(activeDesktopManager.settings));
 
     this.$content = win.$content.find("#web");
     this.$enableCheckbox = this.$content.find("#enable-active-desktop");
@@ -38,7 +38,7 @@ export const webTab = {
                     width: (parseInt(item.width) * 0.19) + 'px',
                     height: (parseInt(item.height) * 0.19) + 'px',
                 });
-                if (item.x.includes('calc')) {
+                if (item.x && typeof item.x === 'string' && item.x.includes('calc')) {
                     $itemPreview.css('left', '80%');
                 }
                 this.$preview.append($itemPreview);

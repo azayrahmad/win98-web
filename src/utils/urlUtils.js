@@ -30,6 +30,7 @@ export function getWebUrl(url, retroMode = true) {
   if (!url) return "";
   let finalUrl = url.trim();
 
+  // Internal sites
   if (finalUrl.includes("azay.rahmad")) {
     let page = "home.html";
     if (finalUrl.includes("about.html") || finalUrl.endsWith("/about")) {
@@ -43,8 +44,6 @@ export function getWebUrl(url, retroMode = true) {
     ) {
       page = "404.html";
     }
-    // Note: In apps, this might need a different base path depending on execution context
-    // For now, keeping it as is or returning absolute-ish path
     return `./azay.rahmad/${page}`;
   }
 
@@ -55,7 +54,7 @@ export function getWebUrl(url, retroMode = true) {
     finalUrl.startsWith("file:") ||
     finalUrl.startsWith("data:") ||
     finalUrl.startsWith("activedesktop/") ||
-    finalUrl.includes("activedesktop/previews/") ||
+    finalUrl.includes("activedesktop/channels-en/") ||
     finalUrl.includes("localhost") ||
     finalUrl.includes("127.0.0.1");
 
@@ -68,6 +67,7 @@ export function getWebUrl(url, retroMode = true) {
     finalUrl = `https://${finalUrl}`;
   }
 
+  // Apply Wayback Machine redirection for remote URLs in retro mode
   if (retroMode && !isLocal) {
     return `https://web.archive.org/web/1998/${finalUrl}`;
   }

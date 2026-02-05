@@ -3,7 +3,7 @@ import "./styles/file-picker.css";
 import "./style.css";
 import "./styles/splash.css";
 import "./styles/shutdown-screen.css";
-import "./styles/active-desktop.css";
+import "./utils/activeDesktop.css";
 
 import splashBg from "./assets/img/splash.png";
 import { themes } from "./config/themes.js";
@@ -388,9 +388,9 @@ async function initializeOS() {
     window.fs = fs;
     window.mounts = mounts;
     window.RecycleBinManager = RecycleBinManager;
-    window.activeDesktopManager = activeDesktopManager;
     window.System.launchApp = launchApp;
     window.System.appManager = appManager;
+    window.System.activeDesktopManager = activeDesktopManager;
     console.log("azOS initialized");
 
     let inactivityTimer;

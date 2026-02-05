@@ -1,7 +1,6 @@
 import { fs } from "@zenfs/core";
 import { existsAsync } from "./zenfs-utils.js";
 import { DeskMover } from "../components/DeskMover.js";
-import { getWebUrl } from "./urlUtils.js";
 
 const SETTINGS_PATH = "/C:/WINDOWS/activedesktop.json";
 
@@ -73,7 +72,7 @@ class ActiveDesktopManager {
       this.layer.id = "active-desktop-layer";
       this.layer.className = "active-desktop-layer";
 
-      // Inject as first child of .desktop
+      // Inject as first child of .desktop to be behind icons
       desktop.insertBefore(this.layer, desktop.firstChild);
     } else {
       this.layer = document.getElementById("active-desktop-layer");
@@ -97,7 +96,7 @@ class ActiveDesktopManager {
     document.body.classList.add("active-desktop-enabled");
 
     let wallpaperHtml = "";
-    if (wallpaper && (wallpaper.endsWith(".html") || wallpaper.endsWith(".htm") || wallpaper.startsWith("http"))) {
+    if (wallpaper) {
         wallpaperHtml = `<iframe src="${wallpaper}" class="active-desktop-wallpaper-iframe"></iframe>`;
     }
 
@@ -116,34 +115,13 @@ class ActiveDesktopManager {
 
   async renderItem(item, container) {
     new DeskMover(item, container, {
-        onUpdate: (id, changes) => this.updateItem(id, changes),
+        onUpdate: (id, changes, skipRender) => this.updateItem(id, changes, skipRender),
         onClose: (id) => this.removeItem(id)
     });
   }
 
   async setEnabled(enabled) {
     this.settings.enabled = enabled;
-    await this.saveSettings();
-    this.render();
-  }
-
-  async setWallpaper(url) {
-    this.settings.wallpaper = url;
-    await this.saveSettings();
-    this.render();
-  }
-
-  async addItem(item) {
-    if (item.url) {
-        item.url = getWebUrl(item.url);
-    }
-    this.settings.items.push(item);
-    await this.saveSettings();
-    this.render();
-  }
-
-  async removeItem(id) {
-    this.settings.items = this.settings.items.filter(i => i.id !== id);
     await this.saveSettings();
     this.render();
   }
@@ -157,6 +135,18 @@ class ActiveDesktopManager {
         this.render();
       }
     }
+  }
+
+  async removeItem(id) {
+    this.settings.items = this.settings.items.filter(i => i.id !== id);
+    await this.saveSettings();
+    this.render();
+  }
+
+  async addItem(item) {
+    this.settings.items.push(item);
+    await this.saveSettings();
+    this.render();
   }
 }
 
