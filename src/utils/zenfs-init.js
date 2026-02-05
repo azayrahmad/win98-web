@@ -67,15 +67,19 @@ export async function initFileSystem(onProgress) {
             { name: "buggyprogram.lnk.json", appId: "buggyprogram" },
             { name: "sheep.lnk.json", appId: "esheep" },
             { name: "Winamp.lnk.json", appId: "webamp" },
+            { name: "songs.lnk.json", targetPath: "/C:/My Documents/songs" },
         ];
 
         for (const shortcut of defaultShortcuts) {
             const lnkPath = `/C:/WINDOWS/Desktop/${shortcut.name}`;
             if (!(await existsAsync(lnkPath))) {
-                await fs.promises.writeFile(lnkPath, JSON.stringify({
+                const lnkContent = {
                     type: "shortcut",
-                    appId: shortcut.appId,
-                }, null, 2));
+                };
+                if (shortcut.appId) lnkContent.appId = shortcut.appId;
+                if (shortcut.targetPath) lnkContent.targetPath = shortcut.targetPath;
+
+                await fs.promises.writeFile(lnkPath, JSON.stringify(lnkContent, null, 2));
             }
         }
 
@@ -112,6 +116,11 @@ export async function initFileSystem(onProgress) {
         // Ensure My Documents directory exists
         if (!(await existsAsync('/C:/My Documents'))) {
             await fs.promises.mkdir('/C:/My Documents');
+        }
+
+        // Ensure My Documents/songs directory exists
+        if (!(await existsAsync('/C:/My Documents/songs'))) {
+            await fs.promises.mkdir('/C:/My Documents/songs');
         }
 
         if (onProgress) onProgress("Initializing Start Menu...");
