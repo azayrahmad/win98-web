@@ -37,7 +37,7 @@ class DisplayPropertiesApp extends Application {
     return new window.$Window({
       title: "Display Properties",
       outerWidth: this.width,
-      outerHeight: this.height,
+      // outerHeight: this.height,
       resizable: this.resizable,
       icons: this.icon,
       id: this.id,

@@ -1,5 +1,6 @@
 import { activeDesktopManager } from "../../../utils/activeDesktopManager.js";
 import { getWebUrl } from "../../../utils/urlUtils.js";
+import { ShowDialogWindow } from "../../../components/DialogWindow.js";
 
 export const webTab = {
   init(win, app) {
@@ -25,25 +26,25 @@ export const webTab = {
     this.$preview.empty();
 
     if (this.settings.enabled) {
-        this.settings.items.forEach(item => {
-            if (item.visible) {
-                const $itemPreview = $('<div class="item-preview"></div>');
-                $itemPreview.css({
-                    position: 'absolute',
-                    border: '1px solid #fff',
-                    background: '#ccc',
-                    // Scale down for preview (approx 152x112 preview area vs 800x600 screen)
-                    left: (parseInt(item.x) * 0.19) + 'px',
-                    top: (parseInt(item.y) * 0.19) + 'px',
-                    width: (parseInt(item.width) * 0.19) + 'px',
-                    height: (parseInt(item.height) * 0.19) + 'px',
-                });
-                if (item.x.includes('calc')) {
-                    $itemPreview.css('left', '80%');
-                }
-                this.$preview.append($itemPreview);
-            }
-        });
+      this.settings.items.forEach(item => {
+        if (item.visible) {
+          const $itemPreview = $('<div class="item-preview"></div>');
+          $itemPreview.css({
+            position: 'absolute',
+            border: '1px solid #fff',
+            background: '#ccc',
+            // Scale down for preview (approx 152x112 preview area vs 800x600 screen)
+            left: (parseInt(item.x) * 0.19) + 'px',
+            top: (parseInt(item.y) * 0.19) + 'px',
+            width: (parseInt(item.width) * 0.19) + 'px',
+            height: (parseInt(item.height) * 0.19) + 'px',
+          });
+          if (item.x.includes('calc')) {
+            $itemPreview.css('left', '80%');
+          }
+          this.$preview.append($itemPreview);
+        }
+      });
     }
 
     this.settings.items.forEach((item) => {
@@ -62,8 +63,8 @@ export const webTab = {
       });
 
       $li.find("input").on("change", (e) => {
-          item.visible = e.target.checked;
-          this.app._enableApplyButton(this.win);
+        item.visible = e.target.checked;
+        this.app._enableApplyButton(this.win);
       });
 
       this.$itemsList.append($li);
@@ -82,7 +83,7 @@ export const webTab = {
       const $input = $('<input type="text" style="width: 100%; margin-top: 10px;">');
       $content.append($input);
 
-      window.System.ShowDialogWindow({
+      ShowDialogWindow({
         title: "New Active Desktop Item",
         content: $content[0],
         modal: true,
@@ -111,22 +112,22 @@ export const webTab = {
           },
           {
             label: "Cancel",
-            action: () => {},
+            action: () => { },
           },
         ],
       });
     });
 
     this.$deleteButton.on("click", () => {
-        const $selected = this.$itemsList.find("li.selected");
-        if ($selected.length) {
-            const index = $selected.index();
-            this.settings.items.splice(index, 1);
-            this.render();
-            this.app._enableApplyButton(this.win);
-            this.$deleteButton.prop("disabled", true);
-            this.$propertiesButton.prop("disabled", true);
-        }
+      const $selected = this.$itemsList.find("li.selected");
+      if ($selected.length) {
+        const index = $selected.index();
+        this.settings.items.splice(index, 1);
+        this.render();
+        this.app._enableApplyButton(this.win);
+        this.$deleteButton.prop("disabled", true);
+        this.$propertiesButton.prop("disabled", true);
+      }
     });
   },
 
