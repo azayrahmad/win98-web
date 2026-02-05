@@ -14,34 +14,34 @@
     <a class="ActiveChannelItem" data-url="https://web.archive.org/web/19991013143537id_/http://microsoft.com/windows/ie/ie40/gallery/" title="Channel Guide">
         <img class="ActiveChannelItemImage" src="channels-en/chang_sl.gif">
     </a>
-    <a class="ActiveChannelItem" data-url="https://www.msnbc.com/" title="News">
+    <a class="ActiveChannelItem" data-preview="previews/news.html" title="News">
         <img class="ActiveChannelItemImage" src="channels-en/news_sl.gif">
     </a>
-    <a class="ActiveChannelItem" data-url="https://www.espn.com/" title="Sports">
+    <a class="ActiveChannelItem" data-preview="previews/sports.html" title="Sports">
         <img class="ActiveChannelItemImage" src="channels-en/sport_sl.gif">
     </a>
-    <a class="ActiveChannelItem" data-url="https://www.wsj.com/" title="Business">
+    <a class="ActiveChannelItem" data-preview="previews/business.html" title="Business">
         <img class="ActiveChannelItemImage" src="channels-en/biz_sl.gif">
     </a>
-    <a class="ActiveChannelItem" data-url="https://www.eonline.com/" title="Entertainment">
+    <a class="ActiveChannelItem" data-preview="previews/entertainment.html" title="Entertainment">
         <img class="ActiveChannelItemImage" src="channels-en/ent_sl.gif">
     </a>
-    <a class="ActiveChannelItem" data-url="https://www.travelchannel.com/" title="Lifestyle and Travel">
+    <a class="ActiveChannelItem" data-preview="previews/lifestyle.html" title="Lifestyle and Travel">
         <img class="ActiveChannelItemImage" src="channels-en/life_sl.gif">
     </a>
-    <a class="ActiveChannelItem" data-url="https://www.nbc.com/" title="Broadcast">
+    <a class="ActiveChannelItem" data-preview="previews/broadcast.html" title="Broadcast">
         <img class="ActiveChannelItemImage" src="channels-en/CCBPC_SL.GIF">
     </a>
-    <a class="ActiveChannelItem" data-url="https://www.msn.com/" title="MSN">
+    <a class="ActiveChannelItem" data-preview="previews/msn.html" title="MSN">
         <img class="ActiveChannelItemImage" src="channels-en/msn_sl.gif">
     </a>
-    <a class="ActiveChannelItem" data-url="https://www.disney.com/" title="Disney">
+    <a class="ActiveChannelItem" data-preview="previews/disney.html" title="Disney">
         <img class="ActiveChannelItemImage" src="channels-en/disny_sl.gif">
     </a>
-    <a class="ActiveChannelItem" data-url="https://www.warnerbros.com/" title="Warner Bros">
+    <a class="ActiveChannelItem" data-preview="previews/warnerbros.html" title="Warner Bros">
         <img class="ActiveChannelItemImage" src="channels-en/wbros_sl.gif">
     </a>
-    <a class="ActiveChannelItem" data-url="https://www.aol.com/" title="AOL">
+    <a class="ActiveChannelItem" data-preview="previews/aol.html" title="AOL">
         <img class="ActiveChannelItemImage" src="channels-en/aol_sl.gif">
     </a>
     <script>
@@ -50,12 +50,16 @@
             activeChannelItem.addEventListener('click', function (e) {
                 e.preventDefault();
                 let url = this.dataset.url;
-
-                // If it's a remote URL and not already a Wayback link, let Explorer handle the Wayback logic
-                // But for now we just pass it to Explorer
+                let preview = this.dataset.preview;
 
                 if (window.parent && window.parent.System && window.parent.System.launchApp) {
-                    window.parent.System.launchApp('explorer', url);
+                    if (preview) {
+                        // Resolve relative path using URL constructor for robustness
+                        const absolutePreviewUrl = new URL(preview, window.location.href).href;
+                        window.parent.System.launchApp('explorer', absolutePreviewUrl);
+                    } else if (url) {
+                        window.parent.System.launchApp('explorer', url);
+                    }
                 }
             });
         }

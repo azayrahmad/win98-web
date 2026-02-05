@@ -466,14 +466,8 @@
     justify-content: flex-end;
 }
 
-.web-tab .web-items-list-wrapper {
-    max-width: 250px;
-}
-
 .active-desktop-preview {
     position: relative;
-    top: 17px;
-    left: 16px;
     width: 152px;
     height: 112px;
     background-color: var(--Background);

@@ -55,6 +55,7 @@ export function getWebUrl(url, retroMode = true) {
     finalUrl.startsWith("file:") ||
     finalUrl.startsWith("data:") ||
     finalUrl.startsWith("activedesktop/") ||
+    finalUrl.includes("activedesktop/previews/") ||
     finalUrl.includes("localhost") ||
     finalUrl.includes("127.0.0.1");
 

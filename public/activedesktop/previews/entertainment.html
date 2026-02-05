@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>E! Online</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="preview.css">
+</head>
+<body>
+    <img src="../channels-en/ent_sl.gif" class="channel-logo" style="transform: scale(2);">
+    <div class="channel-title">E! Online</div>
+    <div class="channel-description">
+        The latest celebrity news, photos, and entertainment gossip.
+    </div>
+    <div class="actions">
+        <button class="primary" onclick="connect()">Connect to Channel</button>
+        <button onclick="addToDesktop()">Add to Active Desktop</button>
+    </div>
+
+    <script>
+        function connect() {
+            if (window.parent && window.parent.System && window.parent.System.launchApp) {
+                window.parent.System.launchApp('explorer', 'https://www.eonline.com/');
+            }
+        }
+
+        function addToDesktop() {
+            if (window.parent && window.parent.System && window.parent.System.activeDesktopManager) {
+                window.parent.System.activeDesktopManager.addItem({
+                    id: 'entertainment-ticker',
+                    url: 'https://www.eonline.com/',
+                    x: '50px',
+                    y: '50px',
+                    width: '400px',
+                    height: '300px',
+                    visible: true,
+                    style: 'ad'
+                });
+                alert('E! Online added to your Active Desktop!');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Warner Bros</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="preview.css">
+</head>
+<body>
+    <img src="../channels-en/warnerbros_sl.gif" class="channel-logo" style="transform: scale(2);">
+    <div class="channel-title">Warner Bros</div>
+    <div class="channel-description">
+        Enter the world of Warner Bros movies, television, and entertainment.
+    </div>
+    <div class="actions">
+        <button class="primary" onclick="connect()">Connect to Channel</button>
+        <button onclick="addToDesktop()">Add to Active Desktop</button>
+    </div>
+
+    <script>
+        function connect() {
+            if (window.parent && window.parent.System && window.parent.System.launchApp) {
+                window.parent.System.launchApp('explorer', 'https://www.warnerbros.com/');
+            }
+        }
+
+        function addToDesktop() {
+            if (window.parent && window.parent.System && window.parent.System.activeDesktopManager) {
+                window.parent.System.activeDesktopManager.addItem({
+                    id: 'warnerbros-ticker',
+                    url: 'https://www.warnerbros.com/',
+                    x: '50px',
+                    y: '50px',
+                    width: '400px',
+                    height: '300px',
+                    visible: true,
+                    style: 'ad'
+                });
+                alert('Warner Bros added to your Active Desktop!');
+            }
+        }
+    </script>
+</body>
+</html>
