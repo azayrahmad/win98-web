@@ -25,20 +25,20 @@ export function getThemedIconObj(specialType, isEmpty = true) {
 
   switch (specialType) {
     case "computer":
-      return scheme.myComputer || defaultScheme.myComputer || ICONS.computer;
+      return scheme["my-computer"] || defaultScheme["my-computer"] || ICONS["my-computer"];
     case "recycle":
       return isEmpty
-        ? scheme.recycleBinEmpty ||
-            defaultScheme.recycleBinEmpty ||
-            ICONS.recycleBinEmpty
-        : scheme.recycleBinFull ||
-            defaultScheme.recycleBinFull ||
-            ICONS.recycleBinFull;
+        ? scheme["recycle-bin-empty"] ||
+            defaultScheme["recycle-bin-empty"] ||
+            ICONS["recycle-bin-empty"]
+        : scheme["recycle-bin-full"] ||
+            defaultScheme["recycle-bin-full"] ||
+            ICONS["recycle-bin-full"];
     case "network":
       return (
-        scheme.networkNeighborhood ||
-        defaultScheme.networkNeighborhood ||
-        ICONS.networkNeighborhood
+        scheme["network-neighborhood"] ||
+        defaultScheme["network-neighborhood"] ||
+        ICONS["network-neighborhood"]
       );
     default:
       return null;

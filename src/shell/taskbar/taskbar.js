@@ -178,7 +178,7 @@ class Taskbar {
         {
           label: "Task Manager",
           action: () => {
-            launchApp("taskmanager");
+            launchApp("task-manager");
           },
         },
       ];

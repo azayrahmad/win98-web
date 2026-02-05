@@ -6,7 +6,7 @@ export class SimCity2000App extends IFrameApplication {
     id: "sim-city-2000",
     title: "SimCity 2000 Demo",
     description: "Play the SimCity 2000 demo.",
-    icon: ICONS.simcity2000,
+    icon: ICONS["sim-city-2000"],
     gameUrl: "games/dos/simcity2000/index.html",
     width: 640,
     height: 480,

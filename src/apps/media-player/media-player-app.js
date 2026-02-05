@@ -11,7 +11,7 @@ export class MediaPlayerApp extends Application {
     id: "media-player",
     title: "Media Player",
     description: "Play audio and video files.",
-    icon: ICONS.mediaPlayer,
+    icon: ICONS["media-player"],
     width: 480,
     height: 360,
     resizable: true,

@@ -55,7 +55,7 @@ const systemApps = [
     title: "My Computer",
     description: "Browse the files and folders on your computer.",
     get icon() {
-      return getIcon("myComputer");
+      return getIcon("my-computer");
     },
     action: {
       type: "function",
@@ -106,8 +106,8 @@ const systemApps = [
     get icon() {
       const items = getRecycleBinItems();
       return items.length > 0
-        ? getIcon("recycleBinFull")
-        : getIcon("recycleBinEmpty");
+        ? getIcon("recycle-bin-full")
+        : getIcon("recycle-bin-empty");
     },
     action: {
       type: "function",
@@ -166,7 +166,7 @@ const systemApps = [
     title: "Network Neighborhood",
     description: "Browse network resources.",
     get icon() {
-      return getIcon("networkNeighborhood");
+      return getIcon("network-neighborhood");
     },
     action: {
       type: "function",
@@ -200,7 +200,7 @@ const systemApps = [
     title: "Control Panel",
     description: "Access system settings and utilities.",
     get icon() {
-      return getIcon("controlPanel");
+      return getIcon("control-panel");
     },
     action: {
       type: "function",

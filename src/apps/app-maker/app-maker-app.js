@@ -16,7 +16,7 @@ export class AppMakerApp extends Application {
         id: "app-maker",
         title: "App Maker",
         description: "Create your own applications.",
-        icon: ICONS.appmaker,
+        icon: ICONS["app-maker"],
         width: 600,
         height: 500,
         resizable: true,
@@ -92,11 +92,11 @@ export class AppMakerApp extends Application {
                 <div style="display: flex; flex-direction: column; gap: 5px;">
                     <div class="field-row">
                         <label for="appWidth" style="flex: 1;">Width (px):</label>
-                        <input type="number" id="appmaker-width" value="${this.appWidth}" style="width: 60px;">
+                        <input type="number" id="app-maker-width" value="${this.appWidth}" style="width: 60px;">
                     </div>
                     <div class="field-row">
                         <label for="appHeight" style="flex: 1;">Height (px):</label>
-                        <input type="number" id="appmaker-height" value="${this.appHeight}" style="width: 60px;">
+                        <input type="number" id="app-maker-height" value="${this.appHeight}" style="width: 60px;">
                     </div>
                 </div>
             `,
@@ -104,8 +104,8 @@ export class AppMakerApp extends Application {
                 {
                     label: 'OK',
                     action: (win) => {
-                        const widthInput = win.$content.find('#appmaker-width')[0];
-                        const heightInput = win.$content.find('#appmaker-height')[0];
+                        const widthInput = win.$content.find('#app-maker-width')[0];
+                        const heightInput = win.$content.find('#app-maker-height')[0];
                         this.appWidth = parseInt(widthInput.value, 10) || 400;
                         this.appHeight = parseInt(heightInput.value, 10) || 300;
                     },
@@ -119,7 +119,7 @@ export class AppMakerApp extends Application {
     }
 
     _onLaunch() {
-        const container = this.win.$content.find('.appmaker-container')[0];
+        const container = this.win.$content.find('.app-maker-container')[0];
         container.innerHTML = this._getHTML();
 
         this.appNameInput = container.querySelector('#appName');

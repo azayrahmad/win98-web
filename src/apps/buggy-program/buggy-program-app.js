@@ -8,10 +8,10 @@ import html2canvas from "html2canvas";
 export class BuggyProgramApp extends Application {
   static config = {
     id: "buggy-program",
-    title: "buggyprogram.exe",
+    title: "buggy-program.exe",
     description:
       "An intentionally buggy program that leaves trails when moved.",
-    icon: ICONS.shell,
+    icon: ICONS["buggy-program"],
     width: 450,
     height: 200,
     resizable: false,
@@ -48,7 +48,7 @@ export class BuggyProgramApp extends Application {
 
     const okButton = win.$content.find(".ok-button")[0];
     okButton.addEventListener("click", () => {
-      launchApp("buggyprogram");
+      launchApp("buggy-program");
     });
 
     setTimeout(() => {
@@ -129,7 +129,7 @@ export class BuggyProgramApp extends Application {
     }, 100);
 
     win.on("close", () => {
-      launchApp("buggyprogram");
+      launchApp("buggy-program");
     });
     return win;
   }

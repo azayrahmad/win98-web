@@ -9,7 +9,7 @@ export class PrinceOfPersiaApp extends Application {
   static config = {
     id: "prince-of-persia",
     title: "Prince of Persia",
-    icon: ICONS.princeofpersia,
+    icon: ICONS["prince-of-persia"],
     width: 640,
     height: 420,
     resizable: true,

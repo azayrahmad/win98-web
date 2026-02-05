@@ -237,7 +237,7 @@ export class DesktopContextMenuBuilder extends ContextMenuBuilder {
       "MENU_DIVIDER",
       {
         label: "Properties",
-        action: () => launchApp("displayproperties"),
+        action: () => launchApp("display-properties"),
       },
     ];
 

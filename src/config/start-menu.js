@@ -222,7 +222,7 @@ const startMenuConfig = [
     submenu: [
       {
         label: "Control Panel",
-        icon: ICONS.controlPanel[16],
+        icon: ICONS["control-panel"][16],
         action: () => launchApp("control-panel"),
       },
     ],

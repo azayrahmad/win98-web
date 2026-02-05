@@ -28,13 +28,13 @@ const createIcon = (path) => {
 
 export const iconSchemes = {
   default: {
-    myComputer: ICONS.computer,
-    recycleBinFull: ICONS.recycleBinFull,
-    recycleBinEmpty: ICONS.recycleBinEmpty,
-    networkNeighborhood: ICONS.networkNeighborhood,
+    "my-computer": ICONS["my-computer"],
+    "recycle-bin-full": ICONS["recycle-bin-full"],
+    "recycle-bin-empty": ICONS["recycle-bin-empty"],
+    "network-neighborhood": ICONS["network-neighborhood"],
   },
   "dangerous-creatures": {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/Dangerous Creatures My Computer-16.png",
         import.meta.url,
@@ -44,7 +44,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/Dangerous Creatures Recycle Empty-16.png",
         import.meta.url,
@@ -54,7 +54,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/Dangerous Creatures Recycle Full-16.png",
         import.meta.url,
@@ -64,7 +64,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/Dangerous Creatures Network Neighborhood-16.png",
         import.meta.url,
@@ -76,7 +76,7 @@ export const iconSchemes = {
     },
   },
   "inside-your-computer": {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/Inside your Computer My Computer-16.png",
         import.meta.url,
@@ -86,7 +86,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/Inside your Computer Recycle Empty-16.png",
         import.meta.url,
@@ -96,7 +96,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/Inside your Computer Recycle Full-16.png",
         import.meta.url,
@@ -106,7 +106,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/Inside your Computer Network Neighborhood-16.png",
         import.meta.url,
@@ -118,7 +118,7 @@ export const iconSchemes = {
     },
   },
   "leonardo-da-vinci": {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/Leonardo da Vinci My Computer-16.png",
         import.meta.url,
@@ -128,7 +128,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/Leonardo da Vinci Recycle Empty-16.png",
         import.meta.url,
@@ -138,7 +138,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/Leonardo da Vinci Recycle Full-16.png",
         import.meta.url,
@@ -148,7 +148,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/Leonardo da Vinci Network Neighborhood-16.png",
         import.meta.url,
@@ -160,7 +160,7 @@ export const iconSchemes = {
     },
   },
   "more-windows": {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/More Windows My Computer-16.png",
         import.meta.url,
@@ -170,7 +170,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/More Windows Recycle Empty-16.png",
         import.meta.url,
@@ -180,7 +180,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/More Windows Recycle Full-16.png",
         import.meta.url,
@@ -190,7 +190,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/More Windows Network Neighborhood-16.png",
         import.meta.url,
@@ -202,7 +202,7 @@ export const iconSchemes = {
     },
   },
   mystery: {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/Mystery My Computer-16.png",
         import.meta.url,
@@ -212,7 +212,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/Mystery Recycle Empty-16.png",
         import.meta.url,
@@ -222,7 +222,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/Mystery Recycle Full-16.png",
         import.meta.url,
@@ -232,7 +232,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/Mystery Network Neighborhood-16.png",
         import.meta.url,
@@ -244,7 +244,7 @@ export const iconSchemes = {
     },
   },
   nature: {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/Nature My Computer-16.png",
         import.meta.url,
@@ -254,7 +254,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/Nature Recycle Empty-16.png",
         import.meta.url,
@@ -264,7 +264,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/Nature Recycle Full-16.png",
         import.meta.url,
@@ -274,7 +274,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/Nature Network Neighborhood-16.png",
         import.meta.url,
@@ -286,7 +286,7 @@ export const iconSchemes = {
     },
   },
   science: {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/Science My Computer-16.png",
         import.meta.url,
@@ -296,7 +296,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/Science Recycle Empty-16.png",
         import.meta.url,
@@ -306,7 +306,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/Science Recycle Full-16.png",
         import.meta.url,
@@ -316,7 +316,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/Science Network Neighborhood-16.png",
         import.meta.url,
@@ -328,7 +328,7 @@ export const iconSchemes = {
     },
   },
   sports: {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/Sports My Computer-16.png",
         import.meta.url,
@@ -338,7 +338,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/Sports Recycle Empty-16.png",
         import.meta.url,
@@ -348,7 +348,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/Sports Recycle Full-16.png",
         import.meta.url,
@@ -358,7 +358,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/Sports Network Neighborhood-16.png",
         import.meta.url,
@@ -370,7 +370,7 @@ export const iconSchemes = {
     },
   },
   "60s-usa": {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/The 60's USA My Computer-16.png",
         import.meta.url,
@@ -380,7 +380,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/The 60's USA Recycle Empty-16.png",
         import.meta.url,
@@ -390,7 +390,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/The 60's USA Recycle Full-16.png",
         import.meta.url,
@@ -400,7 +400,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/The 60's USA Network Neighborhood-16.png",
         import.meta.url,
@@ -412,7 +412,7 @@ export const iconSchemes = {
     },
   },
   "the-golden-era": {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/The Golden Era My Computer-16.png",
         import.meta.url,
@@ -422,7 +422,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/The Golden Era Recycle Empty-16.png",
         import.meta.url,
@@ -432,7 +432,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/The Golden Era Recycle Full-16.png",
         import.meta.url,
@@ -442,7 +442,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/The Golden Era Network Neighborhood-16.png",
         import.meta.url,
@@ -454,7 +454,7 @@ export const iconSchemes = {
     },
   },
   travel: {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/Travel My Computer-16.png",
         import.meta.url,
@@ -464,7 +464,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/Travel Recycle Empty-16.png",
         import.meta.url,
@@ -474,7 +474,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/Travel Recycle Full-16.png",
         import.meta.url,
@@ -484,7 +484,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/Travel Network Neighborhood-16.png",
         import.meta.url,
@@ -496,7 +496,7 @@ export const iconSchemes = {
     },
   },
   "windows-98": {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/Windows 98 My Computer-16.png",
         import.meta.url,
@@ -506,7 +506,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/Windows 98 Recycle Empty-16.png",
         import.meta.url,
@@ -516,7 +516,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/Windows 98 Recycle Full-16.png",
         import.meta.url,
@@ -526,7 +526,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/Windows 98 Network Neighborhood-16.png",
         import.meta.url,
@@ -538,7 +538,7 @@ export const iconSchemes = {
     },
   },
   baseball: {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/Baseball My Computer-16.png",
         import.meta.url,
@@ -548,7 +548,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/Baseball Recycle Empty-16.png",
         import.meta.url,
@@ -558,7 +558,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/Baseball Recycle Full-16.png",
         import.meta.url,
@@ -568,7 +568,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/Baseball Network Neighborhood-16.png",
         import.meta.url,
@@ -580,7 +580,7 @@ export const iconSchemes = {
     },
   },
   jungle: {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/Jungle My Computer-16.png",
         import.meta.url,
@@ -590,7 +590,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/Jungle Recycle Empty-16.png",
         import.meta.url,
@@ -600,7 +600,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/Jungle Recycle Full-16.png",
         import.meta.url,
@@ -610,7 +610,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/Jungle Network Neighborhood-16.png",
         import.meta.url,
@@ -622,7 +622,7 @@ export const iconSchemes = {
     },
   },
   space: {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/Space My Computer-16.png",
         import.meta.url,
@@ -632,7 +632,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/Space Recycle Empty-16.png",
         import.meta.url,
@@ -642,7 +642,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/Space Recycle Full-16.png",
         import.meta.url,
@@ -652,7 +652,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/Space Network Neighborhood-16.png",
         import.meta.url,
@@ -664,7 +664,7 @@ export const iconSchemes = {
     },
   },
   underwater: {
-    myComputer: {
+    "my-computer": {
       16: new URL(
         "../assets/icons/theme-icons/Underwater My Computer-16.png",
         import.meta.url,
@@ -674,7 +674,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinEmpty: {
+    "recycle-bin-empty": {
       16: new URL(
         "../assets/icons/theme-icons/Underwater Recycle Empty-16.png",
         import.meta.url,
@@ -684,7 +684,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    recycleBinFull: {
+    "recycle-bin-full": {
       16: new URL(
         "../assets/icons/theme-icons/Underwater Recycle Full-16.png",
         import.meta.url,
@@ -694,7 +694,7 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-    networkNeighborhood: {
+    "network-neighborhood": {
       16: new URL(
         "../assets/icons/theme-icons/Underwater Network Neighborhood-16.png",
         import.meta.url,

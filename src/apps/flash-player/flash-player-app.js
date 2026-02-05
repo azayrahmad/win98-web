@@ -1,14 +1,14 @@
 import { Application } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
-import "./flashplayer.css";
+import "./flash-player.css";
 import { isZenFSPath, getZenFSFileAsBlob } from '../../system/zenfs-utils.js';
 
 export class FlashPlayerApp extends Application {
   static config = {
     id: "flash-player",
     title: "Flash Player",
-    icon: ICONS.flashPlayer,
+    icon: ICONS["flash-player"],
     width: 550,
     height: 400,
     resizable: true,
@@ -32,10 +32,10 @@ export class FlashPlayerApp extends Application {
     this.win.setMenuBar(menuBar);
 
     const container = document.createElement("div");
-    container.className = "flashplayer-container";
+    container.className = "flash-player-container";
 
     const loadingMessage = document.createElement("div");
-    loadingMessage.className = "flashplayer-loading-message";
+    loadingMessage.className = "flash-player-loading-message";
     loadingMessage.textContent = "Please Wait...";
     loadingMessage.style.display = "none"; // Initially hidden
     container.appendChild(loadingMessage);
@@ -95,9 +95,9 @@ export class FlashPlayerApp extends Application {
       return;
     }
 
-    const container = this.win.element.querySelector(".flashplayer-container");
+    const container = this.win.element.querySelector(".flash-player-container");
     const loadingMessage = container.querySelector(
-      ".flashplayer-loading-message"
+      ".flash-player-loading-message"
     );
     loadingMessage.style.display = "block";
 

@@ -162,35 +162,35 @@ export const fileAssociations = {
   // PDF files
   pdf: {
     name: "PDF Document",
-    appId: "pdfviewer",
+    appId: "pdf-viewer",
     icon: ICONS.pdf,
   },
   // Audio files
   mp3: {
     name: "MP3 Audio File",
     appId: "media-player",
-    icon: ICONS.mediaPlayerFile,
+    icon: ICONS["media-player"]File,
   },
   wav: {
     name: "Wave Sound",
     appId: "media-player",
-    icon: ICONS.mediaPlayerFile,
+    icon: ICONS["media-player"]File,
   },
   ogg: {
     name: "OGG Audio File",
     appId: "media-player",
-    icon: ICONS.mediaPlayerFile,
+    icon: ICONS["media-player"]File,
   },
   // Video files
   mp4: {
     name: "MPEG-4 Video File",
     appId: "media-player",
-    icon: ICONS.mediaPlayerFile,
+    icon: ICONS["media-player"]File,
   },
   webm: {
     name: "WebM Video File",
     appId: "media-player",
-    icon: ICONS.mediaPlayerFile,
+    icon: ICONS["media-player"]File,
   },
   m3u: {
     name: "M3U Playlist",
@@ -200,7 +200,7 @@ export const fileAssociations = {
   // Flash files
   swf: {
     name: "Shockwave Flash Movie",
-    appId: "flashplayer",
+    appId: "flash-player",
     icon: ICONS.swfFile,
   },
   // Default

@@ -11,7 +11,7 @@ export class SoundSchemeExplorerApp extends Application {
     id: "sound-scheme-explorer",
     title: "Sound Scheme Explorer",
     description: "Explore and listen to sound schemes.",
-    icon: ICONS.soundschemeexplorer,
+    icon: ICONS["sound-scheme-explorer"],
     width: 400,
     height: 300,
     resizable: true,

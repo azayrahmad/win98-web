@@ -5,7 +5,7 @@ export const profiles = {
     startup: [
       "clippy",
       {
-        appId: "pdfviewer",
+        appId: "pdf-viewer",
         data: "files/Resume.pdf",
       },
     ],

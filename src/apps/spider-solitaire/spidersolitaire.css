@@ -137,13 +137,13 @@
     width: 71px;
 }
 
-#spidersolitaire .menu-bar {
+#spider-solitaire .menu-bar {
     display: flex;
     background: silver;
     border-bottom: 1px solid white;
 }
 
-#spidersolitaire .menu-button {
+#spider-solitaire .menu-button {
     padding: 2px 6px;
     position: relative;
 }

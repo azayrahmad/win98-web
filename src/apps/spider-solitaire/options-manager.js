@@ -1,11 +1,11 @@
 import { getItem, setItem } from '../../system/local-storage.js';
 
 const OPTIONS_KEYS = {
-  ANIMATE_DEALING: "spidersolitaire.options.animateDealing",
-  AUTO_SAVE_ON_EXIT: "spidersolitaire.options.autoSaveOnExit",
-  AUTO_OPEN_ON_STARTUP: "spidersolitaire.options.autoOpenOnStartup",
-  PROMPT_ON_SAVE: "spidersolitaire.options.promptOnSave",
-  PROMPT_ON_OPEN: "spidersolitaire.options.promptOnOpen",
+  ANIMATE_DEALING: "spider-solitaire.options.animateDealing",
+  AUTO_SAVE_ON_EXIT: "spider-solitaire.options.autoSaveOnExit",
+  AUTO_OPEN_ON_STARTUP: "spider-solitaire.options.autoOpenOnStartup",
+  PROMPT_ON_SAVE: "spider-solitaire.options.promptOnSave",
+  PROMPT_ON_OPEN: "spider-solitaire.options.promptOnOpen",
 };
 
 const DEFAULTS = {

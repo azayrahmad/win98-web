@@ -1,8 +1,8 @@
-#princeofpersia .window-content {
+#prince-of-persia .window-content {
   display: flex;
   flex-direction: column;
 }
 
-#princeofpersia iframe {
+#prince-of-persia iframe {
   flex-grow: 1;
 }

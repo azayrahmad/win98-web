@@ -70,7 +70,7 @@ export function registerCustomApp(appInfo) {
     const newApp = {
         id: appInfo.id,
         title: appInfo.title,
-        icon: appInfo.icon ? { 16: appInfo.icon, 32: appInfo.icon } : ICONS.appmaker,
+        icon: appInfo.icon ? { 16: appInfo.icon, 32: appInfo.icon } : ICONS["app-maker"],
         appClass: CustomApp,
         width: appInfo.width || 400,
         height: appInfo.height || 300,

@@ -14,7 +14,7 @@ export class ControlPanelExtension {
       {
         id: "display",
         name: "Display",
-        appId: "displayproperties",
+        appId: "display-properties",
         description: "Customize your display settings.",
       },
       {
@@ -26,19 +26,19 @@ export class ControlPanelExtension {
       {
         id: "sounds",
         name: "Sound",
-        appId: "soundschemeexplorer",
+        appId: "sound-scheme-explorer",
         description: "Explore and listen to sound schemes.",
       },
       {
-        id: "themetocss",
+        id: "theme-to-css",
         name: "Theme to CSS",
-        appId: "themetocss",
+        appId: "theme-to-css",
         description: "Convert a Windows theme file to CSS.",
       },
       {
         id: "mouse",
         name: "Mouse",
-        appId: "cursorexplorer",
+        appId: "cursor-explorer",
         description: "Explore and preview cursor schemes.",
       },
     ];
@@ -94,7 +94,7 @@ export class ControlPanelExtension {
    */
   getIconObj(path) {
     if (path === this.path) {
-      return ICONS.controlPanel;
+      return ICONS["control-panel"];
     }
 
     const name = getPathName(path);

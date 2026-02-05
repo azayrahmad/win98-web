@@ -1,9 +1,9 @@
-.flashplayer-container {
+.flash-player-container {
     width: 100%;
     height: 100%;
 }
 
-.flashplayer-loading-message {
+.flash-player-loading-message {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -12,7 +12,7 @@
   color: #333;
 }
 
-.flashplayer-container > ruffle-player {
+.flash-player-container > ruffle-player {
     width: 100%;
     height: 100%;
 }

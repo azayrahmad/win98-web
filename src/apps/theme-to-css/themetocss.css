@@ -1,16 +1,16 @@
-.themetocss-main-container {
+.theme-to-css-main-container {
     display: flex;
     height: 100%;
 }
 
-.themetocss-editor-container {
+.theme-to-css-editor-container {
     flex: 1;
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
-.themetocss-swatch-container {
+.theme-to-css-swatch-container {
     flex: 1;
     padding: 5px;
     overflow-y: auto;

@@ -27,7 +27,7 @@ export class StatusBar {
     });
 
     const myComputerIcon = window.os_gui_utils.E("img", {
-      src: ICONS.computer[16],
+      src: ICONS["my-computer"][16],
       style: "width: 16px; height: 16px;",
     });
 

@@ -3,7 +3,7 @@ import { fs } from "@zenfs/core";
 import { ShowFilePicker } from '../../shared/utils/file-picker.js';
 import { getZenFSFileAsText } from '../../system/zenfs-utils.js';
 import { NotepadEditor } from '../../apps/notepad/notepad-editor.js';
-import "./themetocss.css";
+import "./theme-to-css.css";
 import { ICONS } from '../../config/icons.js';
 
 export class ThemeToCssApp extends Application {
@@ -11,7 +11,7 @@ export class ThemeToCssApp extends Application {
     id: "theme-to-css",
     title: "Theme to CSS",
     description: "Convert a Windows theme file to CSS.",
-    icon: ICONS.themetocss,
+    icon: ICONS["theme-to-css"],
     width: 700,
     height: 350,
     resizable: true,
@@ -30,18 +30,18 @@ export class ThemeToCssApp extends Application {
       outerHeight: this.height,
       resizable: this.resizable,
       icons: this.icon,
-      className: "themetocss-app",
+      className: "theme-to-css-app",
     });
 
     const menuBar = this._createMenuBar(win);
     win.setMenuBar(menuBar);
 
     const mainContainer = document.createElement("div");
-    mainContainer.className = "themetocss-main-container";
+    mainContainer.className = "theme-to-css-main-container";
     win.$content.append(mainContainer);
 
     const editorContainer = document.createElement("div");
-    editorContainer.className = "themetocss-editor-container";
+    editorContainer.className = "theme-to-css-editor-container";
     mainContainer.appendChild(editorContainer);
 
     this.editor = new NotepadEditor(editorContainer, { win });
@@ -49,7 +49,7 @@ export class ThemeToCssApp extends Application {
     this.editor.setValue("/* Open a .theme file to see the CSS output */");
 
     this.swatchContainer = document.createElement("div");
-    this.swatchContainer.className = "themetocss-swatch-container";
+    this.swatchContainer.className = "theme-to-css-swatch-container";
     mainContainer.appendChild(this.swatchContainer);
 
     return win;

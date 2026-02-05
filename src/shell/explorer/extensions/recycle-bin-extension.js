@@ -45,7 +45,7 @@ export class RecycleBinExtension {
                 size: 0,
                 mtime: new Date(),
                 isVirtual: true,
-                icon: isEmpty ? ICONS.recycleBinEmpty : ICONS.recycleBinFull
+                icon: isEmpty ? ICONS["recycle-bin-empty"] : ICONS["recycle-bin-full"]
             });
         }
 

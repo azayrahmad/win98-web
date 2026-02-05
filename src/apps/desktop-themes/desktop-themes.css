@@ -1,9 +1,9 @@
-.desktopthemes-app .window-body {
+.desktop-themes-app .window-body {
     display: flex;
     flex-direction: column;
 }
 
-#desktopthemes .main-container {
+#desktop-themes .main-container {
     display: flex;
     flex-direction: row;
     flex-grow: 1;
@@ -11,34 +11,34 @@
     gap: 10px;
 }
 
-#desktopthemes .left-panel {
+#desktop-themes .left-panel {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-#desktopthemes .controls {
+#desktop-themes .controls {
     display: flex;
     align-items: center;
     gap: 7px;
 }
 
-#desktopthemes .controls label {
+#desktop-themes .controls label {
     grid-column: 1 / 2;
 }
 
-#desktopthemes .controls select {
+#desktop-themes .controls select {
     grid-column: 2 / 3;
     width: 100%;
 }
 
-#desktopthemes .controls button {
+#desktop-themes .controls button {
     min-width: 65px;
     min-height: 22px;
     font-size: var(--font-size-base);
 }
 
-#desktopthemes .preview-container {
+#desktop-themes .preview-container {
     flex-grow: 1;
     width: 394px;
     min-height: 355px; /* Important for flexbox shrinking */
@@ -52,50 +52,50 @@
     justify-content: flex-start;
 }
 
-#desktopthemes .right-panel {
+#desktop-themes .right-panel {
     display: flex;
     flex-direction: column;
     gap: 10px;
     width: 220px;
 }
 
-#desktopthemes .right-panel fieldset {
+#desktop-themes .right-panel fieldset {
     padding: 10px;
 }
 
-#desktopthemes .right-panel .previews-fieldset {
+#desktop-themes .right-panel .previews-fieldset {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-#desktopthemes .right-panel .previews-fieldset button {
+#desktop-themes .right-panel .previews-fieldset button {
     width: 100%;
     font-size: var(--font-size-base);
     min-height: 22px;
 }
 
-#desktopthemes .right-panel .settings-fieldset {
+#desktop-themes .right-panel .settings-fieldset {
     flex-grow: 1;
 }
 
-#desktopthemes .right-panel .settings-fieldset p {
+#desktop-themes .right-panel .settings-fieldset p {
     margin: 0 0 10px 0;
 }
 
-#desktopthemes .actions {
+#desktop-themes .actions {
     padding: 10px;
     display: flex !important;
     justify-content: flex-end;
     gap: 5px;
 }
 
-#desktopthemes .actions button {
+#desktop-themes .actions button {
     padding: 2px;
     min-width: 80px;
 }
 
-#desktopthemes .preview-label {
+#desktop-themes .preview-label {
     background-color: var(--preview-button-face);
     padding: 3px;
     border: 1px solid var(--preview-button-shadow);
@@ -104,7 +104,7 @@
     font-size: 11px;
 }
 
-#desktopthemes .desktop-icons-preview {
+#desktop-themes .desktop-icons-preview {
     position: absolute;
     top: 10px;
     left: 10px;
@@ -113,7 +113,7 @@
     gap: 15px;
 }
 
-#desktopthemes .desktop-icon-preview {
+#desktop-themes .desktop-icon-preview {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -123,12 +123,12 @@
     color: white; /* Default icon text color */
 }
 
-#desktopthemes .desktop-icon-preview img {
+#desktop-themes .desktop-icon-preview img {
     width: 32px;
     height: 32px;
 }
 
-#desktopthemes .desktop-icon-preview span {
+#desktop-themes .desktop-icon-preview span {
     background-color: transparent;
     border: 1px dotted transparent;
     padding: 1px 2px;
@@ -137,7 +137,7 @@
     color: var(--preview-hilight-text);
 }
 
-#desktopthemes .preview-window {
+#desktop-themes .preview-window {
     box-sizing: border-box;
     border: 1px solid;
     border-color: var(--preview-button-highlight)
@@ -147,7 +147,7 @@
     padding: 1px;
 }
 
-#desktopthemes .inactive-window-preview {
+#desktop-themes .inactive-window-preview {
     position: absolute;
     bottom: 24px;
     right: 24px;
@@ -156,7 +156,7 @@
     z-index: 1;
 }
 
-#desktopthemes .active-window-preview {
+#desktop-themes .active-window-preview {
     position: absolute;
     right: 2px;
     bottom: 20px;
@@ -165,7 +165,7 @@
     z-index: 2;
 }
 
-#desktopthemes .message-box-preview {
+#desktop-themes .message-box-preview {
     position: absolute;
     right: 60px;
     bottom: 6px;
@@ -174,7 +174,7 @@
     z-index: 3;
 }
 
-#desktopthemes .message-box-preview .window-body {
+#desktop-themes .message-box-preview .window-body {
     display: flex;
     flex-direction: column;
     justify-content: center; /* Center content vertically */
@@ -182,12 +182,12 @@
     gap: 5px; /* Space between text and button */
 }
 
-#desktopthemes .message-box-preview .window-body span {
+#desktop-themes .message-box-preview .window-body span {
     text-align: left; /* Center the message text within the flex item */
     width: 100%; /* Make span take full width to center text within itself */
 }
 
-#desktopthemes .preview-window .title-bar {
+#desktop-themes .preview-window .title-bar {
     padding: 2px 4px;
     display: flex;
     justify-content: space-between;
@@ -195,18 +195,18 @@
     font-weight: bold;
 }
 
-#desktopthemes .preview-window .title-bar .title-bar-text {
+#desktop-themes .preview-window .title-bar .title-bar-text {
     font-family: var(--preview-font-family-title);
     font-size: var(--preview-font-size-title);
 }
 
-#desktopthemes .active-window-preview .menu-bar {
+#desktop-themes .active-window-preview .menu-bar {
     font-family: var(--preview-font-family-menu);
     font-size: var(--preview-font-size-menu);
 }
 
-#desktopthemes .active-window-preview .title-bar,
-#desktopthemes .message-box-preview .title-bar {
+#desktop-themes .active-window-preview .title-bar,
+#desktop-themes .message-box-preview .title-bar {
     background: linear-gradient(
         to right,
         var(--preview-active-title-bar-bg) 0%,
@@ -215,7 +215,7 @@
     color: var(--preview-active-title-bar-text, #fff);
 }
 
-#desktopthemes .inactive-window-preview .title-bar {
+#desktop-themes .inactive-window-preview .title-bar {
     background: linear-gradient(
         to right,
         var(--preview-inactive-title-bar-bg, #7f7f7f) 0%,
@@ -224,7 +224,7 @@
     color: var(--preview-inactive-title-bar-text, #c0c0c0);
 }
 
-#desktopthemes .active-window-preview .window-body {
+#desktop-themes .active-window-preview .window-body {
     padding: 0;
     margin: 1px;
     display: flex;
@@ -232,7 +232,7 @@
     height: 100%;
 }
 
-#desktopthemes .active-window-preview .menu-bar {
+#desktop-themes .active-window-preview .menu-bar {
     background-color: var(--preview-button-face);
     color: var(--preview-window-text);
     padding: 2px 4px;
@@ -240,24 +240,24 @@
     gap: 8px;
 }
 
-#desktopthemes .active-window-preview .menu-bar .selected {
+#desktop-themes .active-window-preview .menu-bar .selected {
     background-color: var(--preview-active-title-bar-bg);
     color: var(--preview-active-title-bar-text);
     padding: 0 2px;
 }
 
-#desktopthemes .active-window-preview .main-content {
+#desktop-themes .active-window-preview .main-content {
     background-color: var(--preview-window-bg);
     color: var(--preview-window-text);
     flex-grow: 1;
     margin: 1px;
 }
 
-#desktopthemes .preview-window .title-bar-controls {
+#desktop-themes .preview-window .title-bar-controls {
     display: flex;
 }
 
-#desktopthemes .preview-window .title-bar-controls button {
+#desktop-themes .preview-window .title-bar-controls button {
     width: 16px;
     height: 14px;
     min-width: 0;
@@ -269,17 +269,17 @@
     background: var(--preview-button-face);
 }
 
-#desktopthemes .preview-window .window-body {
+#desktop-themes .preview-window .window-body {
     background: var(--preview-button-face, #c0c0c0);
     color: var(--preview-window-text, #000);
     margin: 1px;
 }
 
-#desktopthemes .preview-window .window-body p {
+#desktop-themes .preview-window .window-body p {
     margin: 0 0 12px;
 }
 
-#desktopthemes .preview-window .window-body button {
+#desktop-themes .preview-window .window-body button {
     min-width: 70px;
     height: 22px;
     border: 1px solid;

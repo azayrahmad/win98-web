@@ -1,5 +1,5 @@
 export const ICONS = {
-  appmaker: {
+  "app-maker": {
     16: new URL("../assets/icons/appwizard-0.png", import.meta.url).href,
     32: new URL("../assets/icons/appwizard-2.png", import.meta.url).href,
   },
@@ -39,11 +39,11 @@ export const ICONS = {
     16: new URL("../assets/icons/kodak_imaging-0.png", import.meta.url).href,
     32: new URL("../assets/icons/kodak_imaging-0.png", import.meta.url).href,
   },
-  imageViewer: {
+  "image-viewer": {
     16: new URL("../assets/icons/image_viewer-0.png", import.meta.url).href,
     32: new URL("../assets/icons/image_viewer-0.png", import.meta.url).href,
   },
-  computer: {
+  "my-computer": {
     16: new URL("../assets/icons/computer_explorer-0.png", import.meta.url)
       .href,
     32: new URL("../assets/icons/computer_explorer-32.png", import.meta.url)
@@ -133,7 +133,7 @@ export const ICONS = {
     16: new URL("../assets/icons/desktop-4.png", import.meta.url).href,
     32: new URL("../assets/icons/desktop-1.png", import.meta.url).href,
   },
-  themetocss: {
+  "theme-to-css": {
     16: new URL("../assets/icons/word_001-16.png", import.meta.url).href,
     32: new URL("../assets/icons/word_001-32.png", import.meta.url).href,
   },
@@ -169,7 +169,7 @@ export const ICONS = {
     16: new URL("../assets/icons/SHELL32_45-16.png", import.meta.url).href,
     32: new URL("../assets/icons/SHELL32_45-32.png", import.meta.url).href,
   },
-  windowsUpdate: {
+  "windows-update": {
     16: new URL("../assets/icons/SHELL32_47-16.png", import.meta.url).href,
     32: new URL("../assets/icons/SHELL32_47-32.png", import.meta.url).href,
   },
@@ -177,15 +177,15 @@ export const ICONS = {
     16: new URL("../assets/icons/SHELL32_37-16.png", import.meta.url).href,
     32: new URL("../assets/icons/SHELL32_37-32.png", import.meta.url).href,
   },
-  soundschemeexplorer: {
+  "sound-scheme-explorer": {
     16: new URL("../assets/icons/MMSYS_110-16.png", import.meta.url).href,
     32: new URL("../assets/icons/MMSYS_110-32.png", import.meta.url).href,
   },
-  desktopthemes: {
+  "desktop-themes": {
     16: new URL("../assets/icons/themes-2.png", import.meta.url).href,
     32: new URL("../assets/icons/themes-2.png", import.meta.url).href,
   },
-  recycleBinEmpty: {
+  "recycle-bin-empty": {
     16: new URL(
       "../assets/icons/theme-icons/recycle_bin_empty-4.png",
       import.meta.url,
@@ -195,7 +195,7 @@ export const ICONS = {
       import.meta.url,
     ).href,
   },
-  recycleBinFull: {
+  "recycle-bin-full": {
     16: new URL(
       "../assets/icons/theme-icons/recycle_bin_full-4.png",
       import.meta.url,
@@ -213,7 +213,7 @@ export const ICONS = {
     16: new URL("../assets/icons/SolitaireWin31Icon.png", import.meta.url).href,
     32: new URL("../assets/icons/SolitaireWin31Icon.png", import.meta.url).href,
   },
-  princeofpersia: {
+  "prince-of-persia": {
     16: new URL("../assets/icons/pop-16.png", import.meta.url).href,
     32: new URL("../assets/icons/pop-32.png", import.meta.url).href,
   },
@@ -221,15 +221,15 @@ export const ICONS = {
     16: new URL("../assets/icons/Paint-16.png", import.meta.url).href,
     32: new URL("../assets/icons/Paint-32.png", import.meta.url).href,
   },
-  simcity2000: {
+  "sim-city-2000": {
     16: new URL("../assets/icons/games/SIMCITY_2.ico", import.meta.url).href,
     32: new URL("../assets/icons/games/SIMCITY_2.ico", import.meta.url).href,
   },
-  displayProperties: {
+  "display-properties": {
     16: new URL("../assets/icons/Display-16.png", import.meta.url).href,
     32: new URL("../assets/icons/Display-32.png", import.meta.url).href,
   },
-  networkNeighborhood: {
+  "network-neighborhood": {
     16: new URL("../assets/icons/SHELL32_18-16.png", import.meta.url).href,
     32: new URL("../assets/icons/SHELL32_18-32.png", import.meta.url).href,
   },
@@ -277,7 +277,7 @@ export const ICONS = {
     16: new URL("../assets/icons/games/doom.png", import.meta.url).href,
     32: new URL("../assets/icons/games/doom.png", import.meta.url).href,
   },
-  mediaPlayer: {
+  "media-player": {
     16: new URL("../assets/icons/MPLAYER2_110-16.png", import.meta.url).href,
     32: new URL("../assets/icons/MPLAYER2_110-32.png", import.meta.url).href,
   },
@@ -287,7 +287,7 @@ export const ICONS = {
     32: new URL("../assets/icons/media_player_file-0.png", import.meta.url)
       .href,
   },
-  flashPlayer: {
+  "flash-player": {
     16: new URL("../assets/icons/Fl-player6.webp", import.meta.url).href,
     32: new URL("../assets/icons/Fl-player6.webp", import.meta.url).href,
   },
@@ -305,19 +305,19 @@ export const ICONS = {
     16: new URL("../assets/icons/briefcase-5.png", import.meta.url).href,
     32: new URL("../assets/icons/briefcase-3.png", import.meta.url).href,
   },
-  windowsExplorer: {
+  explorer: {
     16: new URL("../assets/icons/directory_explorer-3.png", import.meta.url)
       .href,
     32: new URL("../assets/icons/directory_explorer-4.png", import.meta.url)
       .href,
   },
-  windowsUpdate: {
+  "windows-update-large": {
     16: new URL("../assets/icons/windows_update_large-3.png", import.meta.url)
       .href,
     32: new URL("../assets/icons/windows_update_large-4.png", import.meta.url)
       .href,
   },
-  controlPanel: {
+  "control-panel": {
     16: new URL(
       "../assets/icons/directory_control_panel-1.png",
       import.meta.url,
@@ -397,7 +397,7 @@ export const ICONS = {
     16: new URL("../assets/icons/quake-16.png", import.meta.url).href,
     32: new URL("../assets/icons/quake-32.png", import.meta.url).href,
   },
-  spidersolitaire: {
+  "spider-solitaire": {
     16: new URL("../assets/icons/spider-16.png", import.meta.url).href,
     32: new URL("../assets/icons/spider-32.png", import.meta.url).href,
   },
@@ -405,7 +405,7 @@ export const ICONS = {
     16: new URL("../assets/icons/game_freecell-2.png", import.meta.url).href,
     32: new URL("../assets/icons/game_freecell-2.png", import.meta.url).href,
   },
-  buggyprogram: {
+  "buggy-program": {
     16: new URL("../assets/icons/msg_warning-0.png", import.meta.url).href,
     32: new URL("../assets/icons/msg_warning-0.png", import.meta.url).href,
   },

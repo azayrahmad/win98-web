@@ -64,7 +64,7 @@ export async function initFileSystem(onProgress) {
 
         // Add default shortcuts to Desktop
         const defaultShortcuts = [
-            { name: "buggyprogram.lnk.json", appId: "buggyprogram" },
+            { name: "buggyprogram.lnk.json", appId: "buggy-program" },
             { name: "sheep.lnk.json", appId: "esheep" },
             { name: "Winamp.lnk.json", appId: "webamp" },
         ];
@@ -89,14 +89,14 @@ export async function initFileSystem(onProgress) {
             { name: "Space Cadet Pinball.lnk.json", appId: "pinball" },
             { name: "Minesweeper.lnk.json", appId: "minesweeper" },
             { name: "Solitaire.lnk.json", appId: "solitaire" },
-            { name: "Spider Solitaire.lnk.json", appId: "spidersolitaire" },
+            { name: "Spider Solitaire.lnk.json", appId: "spider-solitaire" },
             { name: "FreeCell.lnk.json", appId: "freecell" },
             { name: "Commander Keen.lnk.json", appId: "keen" },
             { name: "Doom.lnk.json", appId: "doom" },
-            { name: "SimCity 2000.lnk.json", appId: "simcity2000" },
+            { name: "SimCity 2000.lnk.json", appId: "sim-city-2000" },
             { name: "Diablo.lnk.json", appId: "diablo" },
             { name: "Quake.lnk.json", appId: "quake" },
-            { name: "Prince of Persia.lnk.json", appId: "princeofpersia" },
+            { name: "Prince of Persia.lnk.json", appId: "prince-of-persia" },
         ];
 
         for (const game of games) {

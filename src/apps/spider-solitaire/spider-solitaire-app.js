@@ -6,11 +6,11 @@ import { getItem, setItem, removeItem } from '../../system/local-storage.js';
 import { findBestDropTarget } from '../../apps/solitaire/solitaire-helper.js';
 import { Statistics } from './statistics.js';
 import { options, getAllOptions, setAllOptions } from './options-manager.js';
-import "./spidersolitaire.css";
+import "./spider-solitaire.css";
 import "../solitaire/solitaire-shared.css";
 
-const STYLE_KEY = "spidersolitaire.use98style";
-const SAVE_KEY = "spidersolitaire-saved-game";
+const STYLE_KEY = "spider-solitaire.use98style";
+const SAVE_KEY = "spider-solitaire-saved-game";
 
 export class SpiderSolitaireApp extends Application {
   static config = {
@@ -19,7 +19,7 @@ export class SpiderSolitaireApp extends Application {
     width: 880,
     height: 550,
     resizable: true,
-    icon: ICONS.spidersolitaire,
+    icon: ICONS["spider-solitaire"],
   };
 
   async _createWindow() {

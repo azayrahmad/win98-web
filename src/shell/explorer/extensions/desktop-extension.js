@@ -13,7 +13,7 @@ export class DesktopExtension {
     this.virtualItems = [
       {
         name: "My Computer",
-        icon: ICONS.computer,
+        icon: ICONS["my-computer"],
         target: "/",
         isDirectory: true,
       },
@@ -30,13 +30,13 @@ export class DesktopExtension {
       },
       {
         name: "Network Neighborhood",
-        icon: ICONS.networkNeighborhood,
+        icon: ICONS["network-neighborhood"],
         target: "/Network Neighborhood",
         isDirectory: true,
       },
       {
         name: "Recycle Bin",
-        icon: ICONS.recycleBinEmpty,
+        icon: ICONS["recycle-bin-empty"],
         target: "/Recycle Bin",
         isDirectory: true,
       },

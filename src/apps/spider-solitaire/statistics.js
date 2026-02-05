@@ -1,6 +1,6 @@
 import { getItem, setItem } from '../../system/local-storage.js';
 
-const STATS_KEY = "spidersolitaire-statistics";
+const STATS_KEY = "spider-solitaire-statistics";
 
 export class Statistics {
   constructor() {

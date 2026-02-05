@@ -34,7 +34,7 @@ export class DesktopThemesApp extends Application {
     id: "desktop-themes",
     title: "Desktop Themes",
     description: "Customize your desktop's appearance.",
-    icon: ICONS.desktopthemes,
+    icon: ICONS["desktop-themes"],
     width: 550,
     height: 500,
     resizable: false,
@@ -608,9 +608,9 @@ export class DesktopThemesApp extends Application {
       '[data-icon="recycle-bin"] img',
     );
 
-    if (computerIcon) computerIcon.src = getIconPath("myComputer");
-    if (networkIcon) networkIcon.src = getIconPath("networkNeighborhood");
-    if (recycleBinIcon) recycleBinIcon.src = getIconPath("recycleBinEmpty");
+    if (computerIcon) computerIcon.src = getIconPath("my-computer");
+    if (networkIcon) networkIcon.src = getIconPath("network-neighborhood");
+    if (recycleBinIcon) recycleBinIcon.src = getIconPath("recycle-bin-empty");
   }
 
   async previewTheme(themeId) {

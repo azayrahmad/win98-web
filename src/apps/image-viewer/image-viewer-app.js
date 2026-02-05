@@ -11,7 +11,7 @@ export class ImageViewerApp extends Application {
     id: "image-viewer",
     title: "Image Viewer",
     description: "View images.",
-    icon: ICONS.imageViewer,
+    icon: ICONS["image-viewer"],
     width: 400,
     height: 300,
     resizable: true,

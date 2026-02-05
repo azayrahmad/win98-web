@@ -5,9 +5,9 @@ import { screensaverTab } from './screensaver/screensaver.js';
 import { settingsTab } from './settings/settings.js';
 import { appearanceTab } from './appearance/appearance.js';
 
-import "./displayproperties.css";
+import "./display-properties.css";
 import "./color-spectrum.css";
-import contentHtml from "./displayproperties.html?raw";
+import contentHtml from "./display-properties.html?raw";
 import backgroundHtml from "./background/background.html?raw";
 import screensaverHtml from "./screensaver/screensaver.html?raw";
 import settingsHtml from "./settings/settings.html?raw";
@@ -20,7 +20,7 @@ class DisplayPropertiesApp extends Application {
     id: "display-properties",
     title: "Display",
     description: "Customize your display settings.",
-    icon: ICONS.displayProperties,
+    icon: ICONS["display-properties"],
     width: 404,
     height: 448,
     resizable: false,

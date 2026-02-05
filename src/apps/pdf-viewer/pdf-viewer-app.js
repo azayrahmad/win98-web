@@ -1,5 +1,5 @@
 import { Application } from '../../system/application.js';
-import { createPdfViewerContent } from './pdfviewer.js';
+import { createPdfViewerContent } from './pdf-viewer.js';
 import { ICONS } from '../../config/icons.js';
 import { isZenFSPath, getZenFSFileAsBlob } from '../../system/zenfs-utils.js';
 

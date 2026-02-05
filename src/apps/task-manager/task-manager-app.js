@@ -1,7 +1,7 @@
 import { Application } from '../../system/application.js';
 import { ShowComingSoonDialog } from '../../shared/components/dialog-window.js';
 import { appManager } from '../../system/app-manager.js';
-import "./taskmanager.css";
+import "./task-manager.css";
 import { ICONS } from '../../config/icons.js';
 
 export class TaskManagerApp extends Application {
@@ -36,7 +36,7 @@ export class TaskManagerApp extends Application {
     const runningApps = appManager.getRunningApps();
 
     for (const [instanceKey, appInstance] of Object.entries(runningApps)) {
-      if (appInstance.id === "taskmanager") continue;
+      if (appInstance.id === "task-manager") continue;
 
       const appConfig = appManager.getAppConfig(appInstance.id);
       const title = appInstance.win ? appInstance.win.title() : appConfig.title;

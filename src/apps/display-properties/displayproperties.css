@@ -177,7 +177,7 @@
 }
 
 /**** PREVIEW STYLES ****/
-#displayproperties .preview-container {
+#display-properties .preview-container {
     flex-grow: 1;
     border: 2px inset var(--border-color, #fff);
     overflow: hidden;
@@ -189,50 +189,50 @@
     justify-content: flex-start;
 }
 
-#displayproperties .right-panel {
+#display-properties .right-panel {
     display: flex;
     flex-direction: column;
     gap: 10px;
     width: 220px;
 }
 
-#displayproperties .right-panel fieldset {
+#display-properties .right-panel fieldset {
     padding: 10px;
 }
 
-#displayproperties .right-panel .previews-fieldset {
+#display-properties .right-panel .previews-fieldset {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-#displayproperties .right-panel .previews-fieldset button {
+#display-properties .right-panel .previews-fieldset button {
     width: 100%;
     font-size: var(--font-size-base);
     min-height: 22px;
 }
 
-#displayproperties .right-panel .settings-fieldset {
+#display-properties .right-panel .settings-fieldset {
     flex-grow: 1;
 }
 
-#displayproperties .right-panel .settings-fieldset p {
+#display-properties .right-panel .settings-fieldset p {
     margin: 0 0 10px 0;
 }
 
-#displayproperties .actions {
+#display-properties .actions {
     padding: 10px;
     display: flex !important;
     justify-content: flex-end;
     gap: 5px;
 }
 
-#displayproperties .actions button {
+#display-properties .actions button {
     padding: 2px;
     min-width: 80px;
 }
 
-#displayproperties .preview-label {
+#display-properties .preview-label {
     background-color: var(--preview-button-face);
     padding: 3px;
     border: 1px solid var(--preview-button-shadow);
@@ -241,7 +241,7 @@
     font-size: var(--font-size-base);
 }
 
-#displayproperties .preview-window {
+#display-properties .preview-window {
     box-sizing: border-box;
     border: 1px solid;
     border-color: var(--preview-button-highlight)
@@ -251,7 +251,7 @@
     padding: 1px;
 }
 
-#displayproperties .inactive-window-preview {
+#display-properties .inactive-window-preview {
     position: absolute;
     bottom: 24px;
     right: 24px;
@@ -260,7 +260,7 @@
     z-index: 1;
 }
 
-#displayproperties .active-window-preview {
+#display-properties .active-window-preview {
     position: absolute;
     right: 2px;
     bottom: 20px;
@@ -269,7 +269,7 @@
     z-index: 2;
 }
 
-#displayproperties .message-box-preview {
+#display-properties .message-box-preview {
     position: absolute;
     right: 60px;
     bottom: 6px;
@@ -278,7 +278,7 @@
     z-index: 3;
 }
 
-#displayproperties .message-box-preview .window-body {
+#display-properties .message-box-preview .window-body {
     display: flex;
     flex-direction: column;
     justify-content: center; /* Center content vertically */
@@ -286,12 +286,12 @@
     gap: 5px; /* Space between text and button */
 }
 
-#displayproperties .message-box-preview .window-body span {
+#display-properties .message-box-preview .window-body span {
     text-align: left; /* Center the message text within the flex item */
     width: 100%; /* Make span take full width to center text within itself */
 }
 
-#displayproperties .preview-window .title-bar {
+#display-properties .preview-window .title-bar {
     padding: 2px 4px;
     display: flex;
     justify-content: space-between;
@@ -299,18 +299,18 @@
     font-weight: bold;
 }
 
-#displayproperties .preview-window .title-bar .title-bar-text {
+#display-properties .preview-window .title-bar .title-bar-text {
     font-family: var(--preview-font-family-title);
     font-size: var(--preview-font-size-title);
 }
 
-#displayproperties .active-window-preview .menu-bar {
+#display-properties .active-window-preview .menu-bar {
     font-family: var(--preview-font-family-menu);
     font-size: var(--preview-font-size-menu);
 }
 
-#displayproperties .active-window-preview .title-bar,
-#displayproperties .message-box-preview .title-bar {
+#display-properties .active-window-preview .title-bar,
+#display-properties .message-box-preview .title-bar {
     background: linear-gradient(
         to right,
         var(--preview-active-title-bar-bg) 0%,
@@ -319,7 +319,7 @@
     color: var(--preview-active-title-bar-text, #fff);
 }
 
-#displayproperties .inactive-window-preview .title-bar {
+#display-properties .inactive-window-preview .title-bar {
     background: linear-gradient(
         to right,
         var(--preview-inactive-title-bar-bg, #7f7f7f) 0%,
@@ -328,7 +328,7 @@
     color: var(--preview-inactive-title-bar-text, #c0c0c0);
 }
 
-#displayproperties .active-window-preview .window-body {
+#display-properties .active-window-preview .window-body {
     padding: 0;
     margin: 1px;
     display: flex;
@@ -336,7 +336,7 @@
     height: 100%;
 }
 
-#displayproperties .active-window-preview .menu-bar {
+#display-properties .active-window-preview .menu-bar {
     background-color: var(--preview-button-face);
     color: var(--preview-window-text);
     padding: 2px 4px;
@@ -344,24 +344,24 @@
     gap: 8px;
 }
 
-#displayproperties .active-window-preview .menu-bar .selected {
+#display-properties .active-window-preview .menu-bar .selected {
     background-color: var(--preview-active-title-bar-bg);
     color: var(--preview-active-title-bar-text);
     padding: 0 2px;
 }
 
-#displayproperties .active-window-preview .main-content {
+#display-properties .active-window-preview .main-content {
     background-color: var(--preview-window-bg);
     color: var(--preview-window-text);
     flex-grow: 1;
     margin: 1px;
 }
 
-#displayproperties .preview-window .title-bar-controls {
+#display-properties .preview-window .title-bar-controls {
     display: flex;
 }
 
-#displayproperties .preview-window .title-bar-controls button {
+#display-properties .preview-window .title-bar-controls button {
     width: 16px;
     height: 14px;
     min-width: 0;
@@ -373,17 +373,17 @@
     background: var(--preview-button-face);
 }
 
-#displayproperties .preview-window .window-body {
+#display-properties .preview-window .window-body {
     background: var(--preview-button-face, #c0c0c0);
     color: var(--preview-window-text, #000);
     margin: 1px;
 }
 
-#displayproperties .preview-window .window-body p {
+#display-properties .preview-window .window-body p {
     margin: 0 0 12px;
 }
 
-#displayproperties .preview-window .window-body button {
+#display-properties .preview-window .window-body button {
     min-width: 70px;
     height: 22px;
     border: 1px solid;
