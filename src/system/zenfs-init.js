@@ -64,7 +64,7 @@ export async function initFileSystem(onProgress) {
 
         // Add default shortcuts to Desktop
         const defaultShortcuts = [
-            { name: "buggyprogram.lnk.json", appId: "buggy-program" },
+            { name: "buggy-program.lnk.json", appId: "buggy-program" },
             { name: "sheep.lnk.json", appId: "esheep" },
             { name: "Winamp.lnk.json", appId: "webamp" },
         ];
