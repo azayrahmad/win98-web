@@ -1,4 +1,5 @@
 import { activeDesktopManager } from "../../../utils/activeDesktopManager.js";
+import { getWebUrl } from "../../../utils/urlUtils.js";
 
 export const webTab = {
   init(win, app) {
@@ -76,22 +77,44 @@ export const webTab = {
     });
 
     this.$newButton.on("click", () => {
-      const url = prompt("Enter the URL of the Active Desktop item you want to add:");
-      if (url) {
-        const newItem = {
-          id: `item-${Date.now()}`,
-          url: url,
-          x: "50px",
-          y: "50px",
-          width: "400px",
-          height: "300px",
-          visible: true,
-          style: "ad"
-        };
-        this.settings.items.push(newItem);
-        this.render();
-        this.app._enableApplyButton(this.win);
-      }
+      const $content = $("<div>");
+      $content.text("Enter the URL of the Active Desktop item you want to add:");
+      const $input = $('<input type="text" style="width: 100%; margin-top: 10px;">');
+      $content.append($input);
+
+      window.System.ShowDialogWindow({
+        title: "New Active Desktop Item",
+        content: $content[0],
+        modal: true,
+        buttons: [
+          {
+            label: "OK",
+            isDefault: true,
+            action: () => {
+              const url = $input.val();
+              if (url) {
+                const newItem = {
+                  id: `item-${Date.now()}`,
+                  url: getWebUrl(url),
+                  x: "50px",
+                  y: "50px",
+                  width: "400px",
+                  height: "300px",
+                  visible: true,
+                  style: "ad",
+                };
+                this.settings.items.push(newItem);
+                this.render();
+                this.app._enableApplyButton(this.win);
+              }
+            },
+          },
+          {
+            label: "Cancel",
+            action: () => {},
+          },
+        ],
+      });
     });
 
     this.$deleteButton.on("click", () => {

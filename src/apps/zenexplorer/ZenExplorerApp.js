@@ -34,6 +34,7 @@ import { RecycleBinExtension } from "./extensions/RecycleBinExtension.js";
 import { NetworkNeighborhoodExtension } from "./extensions/NetworkNeighborhoodExtension.js";
 import { InternetExplorerExtension } from "./extensions/InternetExplorerExtension.js";
 import { isZenFSPath, getZenFSFileUrl } from "../../utils/zenfs-utils.js";
+import { isWebPath, getWebUrl } from "../../utils/urlUtils.js";
 import "./explorer.css";
 
 // Initialize Shell Extensions
@@ -45,30 +46,7 @@ ShellManager.registerExtension(new InternetExplorerExtension());
 
 export class ZenExplorerApp extends Application {
   isWebPath(path) {
-    if (!path) return false;
-    const p = path.toLowerCase();
-    if (
-      p.startsWith("http://") ||
-      p.startsWith("https://") ||
-      p.includes("azay.rahmad")
-    ) {
-      return true;
-    }
-    // Domain-like: contains a dot, doesn't start with a slash or drive letter, and no spaces
-    if (
-      !path.startsWith("/") &&
-      !/^[A-Z]:/i.test(path) &&
-      path.includes(".") &&
-      !path.includes(" ")
-    ) {
-      return true;
-    }
-    // Local HTML: must start with a slash to be considered a "web path" within the shell
-    // This allows unnormalized local paths (like C:\index.html) to be normalized first
-    if (path.startsWith("/") && (p.endsWith(".html") || p.endsWith(".htm"))) {
-      return true;
-    }
-    return false;
+    return isWebPath(path);
   }
 
   static config = {
@@ -1026,40 +1004,8 @@ export class ZenExplorerApp extends Application {
   }
 
   async _loadWebUrl(url) {
-    if (url.includes("azay.rahmad")) {
-      let page = "home.html";
-      if (url.includes("about.html") || url.endsWith("/about")) {
-        page = "about.html";
-      } else if (url.includes("home.html")) {
-        page = "home.html";
-      } else if (
-        url !== "azay.rahmad" &&
-        url !== "http://azay.rahmad/" &&
-        url !== "http://azay.rahmad"
-      ) {
-        page = "404.html";
-      }
-      this.iframe.src = `./azay.rahmad/${page}`;
-      return;
-    }
-
-    let finalUrl = url.trim();
-
+    const finalUrl = url.trim();
     const isZenFS = isZenFSPath(finalUrl);
-    const isLocal =
-      isZenFS ||
-      finalUrl.startsWith("blob:") ||
-      finalUrl.startsWith("file:") ||
-      finalUrl.includes("localhost") ||
-      finalUrl.includes("127.0.0.1");
-
-    if (
-      !isLocal &&
-      !finalUrl.startsWith("http://") &&
-      !finalUrl.startsWith("https://")
-    ) {
-      finalUrl = `https://${finalUrl}`;
-    }
 
     const loadIframe = async (target) => {
       if (this.blobUrl) {
@@ -1082,10 +1028,7 @@ export class ZenExplorerApp extends Application {
           this.statusBar.setText("Failed to load local file.");
         });
     } else {
-      const targetUrl =
-        this.retroMode && !isLocal
-          ? `https://web.archive.org/web/1998/${finalUrl}`
-          : finalUrl;
+      const targetUrl = getWebUrl(finalUrl, this.retroMode);
       loadIframe(targetUrl);
     }
   }

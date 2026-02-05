@@ -74,6 +74,7 @@ export class DeskMover {
 
     setupEvents() {
         this.titleBar.addEventListener("mousedown", (e) => {
+            e.stopPropagation(); // Prevent desktop lasso
             if (e.target.classList.contains("desk-mover-close")) {
                 this.options.onClose && this.options.onClose(this.item.id);
                 return;
@@ -83,6 +84,7 @@ export class DeskMover {
 
         this.element.querySelectorAll(".desk-mover-resize-handle").forEach(handle => {
             handle.addEventListener("mousedown", (e) => {
+                e.stopPropagation(); // Prevent desktop lasso
                 this.startResize(e, handle.dataset.dir);
             });
         });
@@ -103,7 +105,7 @@ export class DeskMover {
                     y: this.element.style.top,
                     width: this.element.style.width,
                     height: this.element.style.height
-                });
+                }, true);
             }
         });
     }

@@ -1,6 +1,7 @@
 import { fs } from "@zenfs/core";
 import { existsAsync } from "./zenfs-utils.js";
 import { DeskMover } from "../components/DeskMover.js";
+import { getWebUrl } from "./urlUtils.js";
 
 const SETTINGS_PATH = "/C:/WINDOWS/activedesktop.json";
 
@@ -133,6 +134,9 @@ class ActiveDesktopManager {
   }
 
   async addItem(item) {
+    if (item.url) {
+        item.url = getWebUrl(item.url);
+    }
     this.settings.items.push(item);
     await this.saveSettings();
     this.render();
@@ -144,12 +148,14 @@ class ActiveDesktopManager {
     this.render();
   }
 
-  async updateItem(id, changes) {
+  async updateItem(id, changes, skipRender = false) {
     const item = this.settings.items.find(i => i.id === id);
     if (item) {
       Object.assign(item, changes);
       await this.saveSettings();
-      this.render();
+      if (!skipRender) {
+        this.render();
+      }
     }
   }
 }

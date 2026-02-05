@@ -20,8 +20,8 @@ test.describe('Desktop Component', () => {
     await myComputerIcon.dblclick();
 
     // It should launch ZenExplorer at /
-    await page.waitForSelector('.window[data-app-id="zenexplorer"]');
-    const addressBar = page.locator('.window[data-app-id="zenexplorer"] .address-bar input');
+    await page.waitForSelector('.window[data-app-id="explorer"]');
+    const addressBar = page.locator('.window[data-app-id="explorer"] .address-bar input');
     await expect(addressBar).toHaveValue('My Computer');
   });
 
@@ -29,6 +29,7 @@ test.describe('Desktop Component', () => {
     await page.click('.desktop', { button: 'right' });
 
     // Verify system items in context menu
+    await expect(page.locator('.menu-item:has-text("Active Desktop")').first()).toBeVisible();
     await expect(page.locator('.menu-item:has-text("Wallpaper")').first()).toBeVisible();
     await expect(page.locator('.menu-item:has-text("Theme")').first()).toBeVisible();
     await expect(page.locator('.menu-item:has-text("Monitor Type")').first()).toBeVisible();
