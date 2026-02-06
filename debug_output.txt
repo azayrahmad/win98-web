@@ -1,0 +1,17 @@
+Navigating to http://localhost:5173
+CONSOLE: Clippy.js Extensions v1.0.0 loaded successfully!
+CONSOLE: Available methods: [speakAndAnimate, speakWithRepeatingAnimation, speakWithIdleAnimation, randomAnimation, gestureDirection, animationSequence, speakWithEmotion, whisper, announce, setPersonality, greetWithPersonality, farewellWithPersonality, contextualResponse, performSequence, getAnimationInfo, isBusy, getQueueLength, showError, showSuccess, showLoading, showWarning, getGoodbyeAnimation]
+CONSOLE: [vite] connecting...
+CONSOLE: [vite] connected.
+CONSOLE: [HelpApp] Available JSON modules: [/src/apps/calculator/help.json]
+Taking initial screenshot
+CONSOLE: ZenFS initialized successfully.
+CONSOLE: Failed to preload asset: Event
+Pressed Enter on boot screen
+Waiting for .desktop
+Found .desktop
+CONSOLE: Initializing Taskbar...
+CONSOLE: Initializing StartMenu...
+CONSOLE: Initializing Desktop Manager...
+CONSOLE: Taskbar already initialized
+CONSOLE: azOS initialized

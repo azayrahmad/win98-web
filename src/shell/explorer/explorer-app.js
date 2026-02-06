@@ -1,39 +1,40 @@
-import { Application, openApps } from '../../system/application.js';
+import { Application, openApps } from "../../system/application.js";
 import { mounts } from "@zenfs/core";
-import { ICONS } from '../../config/icons.js';
-import { getAssociation } from '../../system/directory.js';
-import { launchApp } from '../../system/app-manager.js';
-import { IconManager } from '../../shell/desktop/icon-manager.js';
-import { AddressBar } from '../../shell/explorer/components/address-bar.js';
-import { StatusBar } from '../../shared/components/status-bar.js';
-import { AnimatedLogo } from '../../shared/components/animated-logo.js';
+import { ICONS } from "../../config/icons.js";
+import { getAssociation } from "../../system/directory.js";
+import { launchApp } from "../../system/app-manager.js";
+import { IconManager } from "../../shell/desktop/icon-manager.js";
+import { AddressBar } from "../../shell/explorer/components/address-bar.js";
+import { StatusBar } from "../../shared/components/status-bar.js";
+import { AnimatedLogo } from "../../shared/components/animated-logo.js";
 import browseUiIcons from "../../assets/icons/browse-ui-icons.png";
 import browseUiIconsGrayscale from "../../assets/icons/browse-ui-icons-grayscale.png";
 
 // Reorganized modules
-import { Sidebar } from './interface/sidebar.js';
-import { FileOperations } from './file-operations/file-operations.js';
-import { MenuBarBuilder } from './interface/menu-bar-builder.js';
-import { NavigationController } from './navigation/navigation-controller.js';
-import { DirectoryView } from './interface/directory-view.js';
-import { DriveManager } from './drives/drive-manager.js';
-import { ContextMenuBuilder } from './interface/context-menu-builder.js';
-import { KeyboardHandler } from './interface/keyboard-handler.js';
-import { RecycleBinManager } from './file-operations/recycle-bin-manager.js';
-import { PropertiesManager } from './file-operations/properties-manager.js';
-import DragDropManager from './file-operations/drag-drop-manager.js';
-import LayoutManager from './interface/layout-manager.js';
-import { ShellManager } from './extensions/shell-manager.js';
-import { joinPath, getDisplayName } from './navigation/path-utils.js';
-import { getToolbarItems } from './interface/toolbar-builder.js';
-import { sortFileInfos } from './file-operations/sort-utils.js';
-import { getThemedIconObj } from './interface/file-icon-renderer.js';
-import { ControlPanelExtension } from './extensions/control-panel-extension.js';
-import { DesktopExtension } from './extensions/desktop-extension.js';
-import { RecycleBinExtension } from './extensions/recycle-bin-extension.js';
-import { NetworkNeighborhoodExtension } from './extensions/network-neighborhood-extension.js';
-import { InternetExplorerExtension } from './extensions/internet-explorer-extension.js';
-import { isZenFSPath, getZenFSFileUrl } from '../../system/zenfs-utils.js';
+import { Sidebar } from "./interface/sidebar.js";
+import { FileOperations } from "./file-operations/file-operations.js";
+import { MenuBarBuilder } from "./interface/menu-bar-builder.js";
+import { NavigationController } from "./navigation/navigation-controller.js";
+import { DirectoryView } from "./interface/directory-view.js";
+import { DriveManager } from "./drives/drive-manager.js";
+import { ContextMenuBuilder } from "./interface/context-menu-builder.js";
+import { KeyboardHandler } from "./interface/keyboard-handler.js";
+import { RecycleBinManager } from "./file-operations/recycle-bin-manager.js";
+import { PropertiesManager } from "./file-operations/properties-manager.js";
+import DragDropManager from "./file-operations/drag-drop-manager.js";
+import LayoutManager from "./interface/layout-manager.js";
+import { ShellManager } from "./extensions/shell-manager.js";
+import { joinPath, getDisplayName } from "./navigation/path-utils.js";
+import { getToolbarItems } from "./interface/toolbar-builder.js";
+import { sortFileInfos } from "./file-operations/sort-utils.js";
+import { getThemedIconObj } from "./interface/file-icon-renderer.js";
+import { ControlPanelExtension } from "./extensions/control-panel-extension.js";
+import { DesktopExtension } from "./extensions/desktop-extension.js";
+import { RecycleBinExtension } from "./extensions/recycle-bin-extension.js";
+import { NetworkNeighborhoodExtension } from "./extensions/network-neighborhood-extension.js";
+import { InternetExplorerExtension } from "./extensions/internet-explorer-extension.js";
+import { isZenFSPath, getZenFSFileUrl } from "../../system/zenfs-utils.js";
+import { isWebPath, getWebUrl } from "../../system/urlUtils.js";
 import "./explorer.css";
 
 // Initialize Shell Extensions
@@ -45,30 +46,7 @@ ShellManager.registerExtension(new InternetExplorerExtension());
 
 export class ZenExplorerApp extends Application {
   isWebPath(path) {
-    if (!path) return false;
-    const p = path.toLowerCase();
-    if (
-      p.startsWith("http://") ||
-      p.startsWith("https://") ||
-      p.includes("azay.rahmad")
-    ) {
-      return true;
-    }
-    // Domain-like: contains a dot, doesn't start with a slash or drive letter, and no spaces
-    if (
-      !path.startsWith("/") &&
-      !/^[A-Z]:/i.test(path) &&
-      path.includes(".") &&
-      !path.includes(" ")
-    ) {
-      return true;
-    }
-    // Local HTML: must start with a slash to be considered a "web path" within the shell
-    // This allows unnormalized local paths (like C:\index.html) to be normalized first
-    if (path.startsWith("/") && (p.endsWith(".html") || p.endsWith(".htm"))) {
-      return true;
-    }
-    return false;
+    return isWebPath(path);
   }
 
   static config = {
@@ -223,12 +201,21 @@ export class ZenExplorerApp extends Application {
         const desktopExt = ShellManager.getExtensionForPath("/Desktop");
         if (desktopExt) {
           for (const vItem of desktopExt.virtualItems) {
-            const vPath = vItem.target && !vItem.target.startsWith("launch:") ? vItem.target : joinPath("/Desktop", vItem.name);
+            const vPath =
+              vItem.target && !vItem.target.startsWith("launch:")
+                ? vItem.target
+                : joinPath("/Desktop", vItem.name);
             let iconObj = vItem.icon;
             if (!iconObj) {
-              if (vItem.name === "My Computer") iconObj = getThemedIconObj("computer");
-              else if (vItem.name === "Recycle Bin") iconObj = getThemedIconObj("recycle", await RecycleBinManager.isEmpty("/Recycle Bin"));
-              else if (vItem.name === "Network Neighborhood") iconObj = getThemedIconObj("network");
+              if (vItem.name === "My Computer")
+                iconObj = getThemedIconObj("computer");
+              else if (vItem.name === "Recycle Bin")
+                iconObj = getThemedIconObj(
+                  "recycle",
+                  await RecycleBinManager.isEmpty("/Recycle Bin"),
+                );
+              else if (vItem.name === "Network Neighborhood")
+                iconObj = getThemedIconObj("network");
             }
             if (!iconObj) iconObj = ICONS.folder;
 
@@ -239,16 +226,25 @@ export class ZenExplorerApp extends Application {
               const drives = await ShellManager.readdir("/");
               for (const drive of drives) {
                 const drivePath = joinPath("/", drive);
-                const driveIcon = drive === "A:" ? ICONS.disketteDrive : (drive === "E:" ? ICONS.cdDrive : ICONS.drive);
+                const driveIcon =
+                  drive === "A:"
+                    ? ICONS.disketteDrive
+                    : drive === "E:"
+                      ? ICONS.cdDrive
+                      : ICONS.drive;
                 addItem(getDisplayName(drivePath), drivePath, driveIcon, 2);
 
                 // 4. If current path is under this drive, show ancestry
                 if (currentPath.startsWith(drivePath)) {
-                  const relativePath = currentPath.substring(drivePath.length).split("/").filter(Boolean);
+                  const relativePath = currentPath
+                    .substring(drivePath.length)
+                    .split("/")
+                    .filter(Boolean);
                   let tempPath = drivePath;
                   for (let i = 0; i < relativePath.length; i++) {
                     tempPath = joinPath(tempPath, relativePath[i]);
-                    const icon = ShellManager.getIconObj(tempPath) || ICONS.folderClosed;
+                    const icon =
+                      ShellManager.getIconObj(tempPath) || ICONS.folderClosed;
                     addItem(relativePath[i], tempPath, icon, 3 + i);
                   }
                 }
@@ -258,7 +254,9 @@ export class ZenExplorerApp extends Application {
 
           // 5. Folders in C:\WINDOWS\Desktop
           try {
-            const desktopFiles = await fs.promises.readdir("/C:/WINDOWS/Desktop");
+            const desktopFiles = await fs.promises.readdir(
+              "/C:/WINDOWS/Desktop",
+            );
             for (const file of desktopFiles) {
               if (file === ".zen_layout.json") continue;
               const fullPath = joinPath("/C:/WINDOWS/Desktop", file);
@@ -267,12 +265,23 @@ export class ZenExplorerApp extends Application {
                 addItem(file, fullPath, ICONS.folderClosed, 1);
 
                 // 6. If current path is under this folder
-                if (currentPath.startsWith(fullPath) && currentPath !== fullPath) {
-                  const relativePath = currentPath.substring(fullPath.length).split("/").filter(Boolean);
+                if (
+                  currentPath.startsWith(fullPath) &&
+                  currentPath !== fullPath
+                ) {
+                  const relativePath = currentPath
+                    .substring(fullPath.length)
+                    .split("/")
+                    .filter(Boolean);
                   let tempPath = fullPath;
                   for (let i = 0; i < relativePath.length; i++) {
                     tempPath = joinPath(tempPath, relativePath[i]);
-                    addItem(relativePath[i], tempPath, ICONS.folderClosed, 2 + i);
+                    addItem(
+                      relativePath[i],
+                      tempPath,
+                      ICONS.folderClosed,
+                      2 + i,
+                    );
                   }
                 }
               }
@@ -280,7 +289,7 @@ export class ZenExplorerApp extends Application {
           } catch (e) {}
         }
         return items;
-      }
+      },
     });
     win.$content.append(this.addressBar.element);
 
@@ -470,7 +479,10 @@ export class ZenExplorerApp extends Application {
     // Handle .lnk files
     if (name.endsWith(".lnk.json") || name.endsWith(".lnk")) {
       try {
-        const content = await fs.promises.readFile(ShellManager.getRealPath(fullPath), "utf8");
+        const content = await fs.promises.readFile(
+          ShellManager.getRealPath(fullPath),
+          "utf8",
+        );
         const data = JSON.parse(content);
         if (data.type === "shortcut") {
           if (data.appId) {
@@ -484,7 +496,10 @@ export class ZenExplorerApp extends Application {
               const targetName = data.targetPath.split("/").pop();
               const association = getAssociation(targetName);
               if (association.appId) {
-                launchApp(association.appId, ShellManager.getRealPath(data.targetPath));
+                launchApp(
+                  association.appId,
+                  ShellManager.getRealPath(data.targetPath),
+                );
               } else {
                 alert(`Cannot open file: ${targetName} (No association)`);
               }
@@ -542,10 +557,7 @@ export class ZenExplorerApp extends Application {
     this._recycleBinHandler = () => {
       this.navigateTo(this.currentPath, true, true);
     };
-    document.addEventListener(
-      "recycle-bin-change",
-      this._recycleBinHandler,
-    );
+    document.addEventListener("recycle-bin-change", this._recycleBinHandler);
   }
 
   /**
@@ -637,14 +649,22 @@ export class ZenExplorerApp extends Application {
     const fileInfos = [];
     for (const file of files) {
       if (file === ".zen_layout.json") continue;
-      if (RecycleBinManager.isRecycleBinPath(this.currentPath) && file === ".metadata.json") continue;
+      if (
+        RecycleBinManager.isRecycleBinPath(this.currentPath) &&
+        file === ".metadata.json"
+      )
+        continue;
 
       const fullPath = joinPath(this.currentPath, file);
       try {
         const stat = await ShellManager.stat(fullPath);
         fileInfos.push({ name: file, stat, isDirectory: stat.isDirectory() });
       } catch (e) {
-        fileInfos.push({ name: file, stat: { size: 0, mtime: new Date(0) }, isDirectory: false });
+        fileInfos.push({
+          name: file,
+          stat: { size: 0, mtime: new Date(0) },
+          isDirectory: false,
+        });
       }
     }
 
@@ -653,7 +673,7 @@ export class ZenExplorerApp extends Application {
 
     if (this.autoArrange) {
       // Update order for grid view
-      layout.order = sortedInfos.map(info => info.name);
+      layout.order = sortedInfos.map((info) => info.name);
       layout.positions = {};
     } else {
       // Update absolute positions in a grid
@@ -668,15 +688,19 @@ export class ZenExplorerApp extends Application {
         const y = Math.floor(index / cols) * gridY + 10;
         layout.positions[info.name] = { x, y };
       });
-      layout.order = sortedInfos.map(info => info.name);
+      layout.order = sortedInfos.map((info) => info.name);
     }
 
-    await LayoutManager.saveLayout(this.currentPath, layout, this.win.element.id);
+    await LayoutManager.saveLayout(
+      this.currentPath,
+      layout,
+      this.win.element.id,
+    );
     this.directoryView.renderDirectoryContents(this.currentPath);
   }
 
   get autoArrange() {
-    if (this.viewMode === 'list' || this.viewMode === 'details') {
+    if (this.viewMode === "list" || this.viewMode === "details") {
       return true;
     }
     return this._autoArrange;
@@ -721,7 +745,11 @@ export class ZenExplorerApp extends Application {
         };
       });
     }
-    await LayoutManager.saveLayout(this.currentPath, layout, this.win.element.id);
+    await LayoutManager.saveLayout(
+      this.currentPath,
+      layout,
+      this.win.element.id,
+    );
     // Refresh the view to apply changes (e.g., add/remove classes and absolute positioning)
     this.directoryView.renderDirectoryContents(this.currentPath);
   }
@@ -734,7 +762,9 @@ export class ZenExplorerApp extends Application {
       // Free-form placement
       sourcePaths.forEach((path, index) => {
         const name = path.split("/").pop();
-        const offset = offsets ? offsets[index] : { x: index * 10, y: index * 10 };
+        const offset = offsets
+          ? offsets[index]
+          : { x: index * 10, y: index * 10 };
         // Use adjusted coordinates directly
         layout.positions[name] = {
           x: x + offset.x,
@@ -786,7 +816,11 @@ export class ZenExplorerApp extends Application {
       layout.order = newOrder;
     }
 
-    await LayoutManager.saveLayout(this.currentPath, layout, this.win.element.id);
+    await LayoutManager.saveLayout(
+      this.currentPath,
+      layout,
+      this.win.element.id,
+    );
     this.directoryView.renderDirectoryContents(this.currentPath);
   }
 
@@ -939,10 +973,7 @@ export class ZenExplorerApp extends Application {
       this.resizeObserver.disconnect();
     }
     if (this._clipboardHandler) {
-      document.removeEventListener(
-        "clipboard-change",
-        this._clipboardHandler,
-      );
+      document.removeEventListener("clipboard-change", this._clipboardHandler);
     }
     if (this._floppyHandler) {
       document.removeEventListener("floppy-change", this._floppyHandler);
@@ -1026,40 +1057,8 @@ export class ZenExplorerApp extends Application {
   }
 
   async _loadWebUrl(url) {
-    if (url.includes("azay.rahmad")) {
-      let page = "home.html";
-      if (url.includes("about.html") || url.endsWith("/about")) {
-        page = "about.html";
-      } else if (url.includes("home.html")) {
-        page = "home.html";
-      } else if (
-        url !== "azay.rahmad" &&
-        url !== "http://azay.rahmad/" &&
-        url !== "http://azay.rahmad"
-      ) {
-        page = "404.html";
-      }
-      this.iframe.src = `./azay.rahmad/${page}`;
-      return;
-    }
-
-    let finalUrl = url.trim();
-
+    const finalUrl = url.trim();
     const isZenFS = isZenFSPath(finalUrl);
-    const isLocal =
-      isZenFS ||
-      finalUrl.startsWith("blob:") ||
-      finalUrl.startsWith("file:") ||
-      finalUrl.includes("localhost") ||
-      finalUrl.includes("127.0.0.1");
-
-    if (
-      !isLocal &&
-      !finalUrl.startsWith("http://") &&
-      !finalUrl.startsWith("https://")
-    ) {
-      finalUrl = `https://${finalUrl}`;
-    }
 
     const loadIframe = async (target) => {
       if (this.blobUrl) {
@@ -1082,10 +1081,7 @@ export class ZenExplorerApp extends Application {
           this.statusBar.setText("Failed to load local file.");
         });
     } else {
-      const targetUrl =
-        this.retroMode && !isLocal
-          ? `https://web.archive.org/web/1998/${finalUrl}`
-          : finalUrl;
+      const targetUrl = getWebUrl(finalUrl, this.retroMode);
       loadIframe(targetUrl);
     }
   }

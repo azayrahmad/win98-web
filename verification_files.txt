@@ -1,0 +1,9 @@
+/home/jules/verification/active_desktop_enabled.png
+/home/jules/verification/channel_preview.png
+/home/jules/verification/desktop_with_channel_bar.png
+/home/jules/verification/desktop_with_two_items.png
+/home/jules/verification/display_properties_web_tab.png
+/home/jules/verification/error.png
+/home/jules/verification/failed_right_click.png
+/home/jules/verification/fixed_active_desktop.png
+/home/jules/verification/overlap_test.png

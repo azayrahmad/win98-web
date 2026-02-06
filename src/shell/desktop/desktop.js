@@ -1,28 +1,29 @@
 /**
  * Win98DesktopManager - Handles desktop icons and desktop interactions using ZenExplorer logic
  */
-import { init as initTaskbar } from '../taskbar/taskbar.js';
-import { launchApp } from '../../system/app-manager.js';
+import { init as initTaskbar } from "../taskbar/taskbar.js";
+import { launchApp } from "../../system/app-manager.js";
+import { activeDesktopManager } from "../../system/activeDesktopManager.js";
 import {
   getItem,
   setItem,
   removeItem,
   LOCAL_STORAGE_KEYS,
-} from '../../system/local-storage.js';
-import { getActiveTheme, applyTheme } from '../../system/theme-manager.js';
-import { IconManager } from './icon-manager.js';
+} from "../../system/local-storage.js";
+import { getActiveTheme, applyTheme } from "../../system/theme-manager.js";
+import { IconManager } from "./icon-manager.js";
 import { fs } from "@zenfs/core";
-import { ShellManager } from '../../shell/explorer/extensions/shell-manager.js';
-import { renderFileIcon } from '../../shell/explorer/interface/file-icon-renderer.js';
-import { FileOperations } from '../../shell/explorer/file-operations/file-operations.js';
-import { DesktopContextMenuBuilder } from '../../shell/explorer/interface/desktop-context-menu-builder.js';
-import DragDropManager from '../../shell/explorer/file-operations/drag-drop-manager.js';
-import LayoutManager from '../../shell/explorer/interface/layout-manager.js';
-import { sortFileInfos } from '../../shell/explorer/file-operations/sort-utils.js';
-import { joinPath } from '../../shell/explorer/navigation/path-utils.js';
-import ClipboardManager from '../../shell/explorer/file-operations/clipboard-manager.js';
-import screensaver from '../../system/screensaver-utils.js';
-import { getStartupApps } from '../../system/startup-manager.js';
+import { ShellManager } from "../../shell/explorer/extensions/shell-manager.js";
+import { renderFileIcon } from "../../shell/explorer/interface/file-icon-renderer.js";
+import { FileOperations } from "../../shell/explorer/file-operations/file-operations.js";
+import { DesktopContextMenuBuilder } from "../../shell/explorer/interface/desktop-context-menu-builder.js";
+import DragDropManager from "../../shell/explorer/file-operations/drag-drop-manager.js";
+import LayoutManager from "../../shell/explorer/interface/layout-manager.js";
+import { sortFileInfos } from "../../shell/explorer/file-operations/sort-utils.js";
+import { joinPath } from "../../shell/explorer/navigation/path-utils.js";
+import ClipboardManager from "../../shell/explorer/file-operations/clipboard-manager.js";
+import screensaver from "../../system/screensaver-utils.js";
+import { getStartupApps } from "../../system/startup-manager.js";
 
 let desktopController;
 let isRefreshing = false;
@@ -250,10 +251,13 @@ class DesktopController {
     const label = icon.querySelector(".icon-label");
     const fullPath = path;
     const oldName = fullPath.split("/").pop();
-    const isShortcut = oldName.endsWith(".lnk.json") || oldName.endsWith(".lnk");
+    const isShortcut =
+      oldName.endsWith(".lnk.json") || oldName.endsWith(".lnk");
     const textarea = document.createElement("textarea");
     textarea.className = "icon-label-input";
-    textarea.value = isShortcut ? oldName.replace(".lnk.json", "").replace(".lnk", "") : oldName;
+    textarea.value = isShortcut
+      ? oldName.replace(".lnk.json", "").replace(".lnk", "")
+      : oldName;
     textarea.spellcheck = false;
 
     // Hide label and add textarea as sibling
@@ -285,14 +289,19 @@ class DesktopController {
       this._isRenaming = false;
 
       let newName = textarea.value.trim();
-      if (isShortcut && newName && !newName.endsWith(".lnk.json") && !newName.endsWith(".lnk")) {
+      if (
+        isShortcut &&
+        newName &&
+        !newName.endsWith(".lnk.json") &&
+        !newName.endsWith(".lnk")
+      ) {
         newName += ".lnk.json";
       }
-      
+
       // Clean up UI immediately
       textarea.remove();
       label.style.display = "";
-      
+
       if (save && newName && newName !== oldName) {
         // Optimistic update
         label.textContent = newName;
@@ -310,7 +319,9 @@ class DesktopController {
         } finally {
           await refreshIcons();
           document.dispatchEvent(
-            new CustomEvent("fs-change", { detail: { sourceAppId: "desktop" } }),
+            new CustomEvent("fs-change", {
+              detail: { sourceAppId: "desktop" },
+            }),
           );
         }
       } else {
@@ -342,7 +353,10 @@ class DesktopController {
     const name = path.split("/").pop();
     if (name.endsWith(".lnk.json") || name.endsWith(".lnk")) {
       try {
-        const content = await fs.promises.readFile(ShellManager.getRealPath(path), "utf8");
+        const content = await fs.promises.readFile(
+          ShellManager.getRealPath(path),
+          "utf8",
+        );
         const data = JSON.parse(content);
         if (data.type === "shortcut") {
           if (data.appId) {
@@ -354,10 +368,14 @@ class DesktopController {
               launchApp("explorer", data.targetPath);
             } else {
               const targetName = data.targetPath.split("/").pop();
-              const { getAssociation } = await import('../../system/directory.js');
+              const { getAssociation } =
+                await import("../../system/directory.js");
               const association = getAssociation(targetName);
               if (association.appId) {
-                launchApp(association.appId, ShellManager.getRealPath(data.targetPath));
+                launchApp(
+                  association.appId,
+                  ShellManager.getRealPath(data.targetPath),
+                );
               } else {
                 alert(`Cannot open file: ${targetName} (No association)`);
               }
@@ -374,7 +392,7 @@ class DesktopController {
     if (stat.isDirectory()) {
       launchApp("explorer", path);
     } else {
-      const { getAssociation } = await import('../../system/directory.js');
+      const { getAssociation } = await import("../../system/directory.js");
       const association = getAssociation(path.split("/").pop());
       if (association.appId) {
         launchApp(association.appId, ShellManager.getRealPath(path));
@@ -435,7 +453,12 @@ async function refreshIcons() {
   const order = layout.order || [];
   const sortedInfos = sortFileInfos(fileInfos, sortBy, path, order);
 
+  // Preserve active desktop layer
+  const activeDesktopLayer = desktop.querySelector("#active-desktop-layer");
   desktop.innerHTML = "";
+  if (activeDesktopLayer) {
+    desktop.appendChild(activeDesktopLayer);
+  }
   desktopController.iconManager.clearSelection();
 
   if (layout.autoArrange) {
@@ -552,6 +575,7 @@ function applyMonitorType() {
 
 export async function initDesktop(profile = null) {
   console.log("Initializing Desktop Manager...");
+  await activeDesktopManager.init();
   await applyTheme();
   applyWallpaper();
   applyMonitorType();
@@ -578,9 +602,8 @@ export async function initDesktop(profile = null) {
       new window.ContextMenu(menuItems, e);
     },
     onBackgroundContext: (e) => {
-      const menuItems = desktopController.contextMenuBuilder.buildBackgroundMenu(
-        e,
-      );
+      const menuItems =
+        desktopController.contextMenuBuilder.buildBackgroundMenu(e);
       new window.ContextMenu(menuItems, e);
     },
     onSelectionChange: () => {

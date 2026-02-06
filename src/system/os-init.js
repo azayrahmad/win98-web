@@ -1,39 +1,40 @@
 import splashBg from "../assets/img/splash.png";
-import { initDesktop } from '../shell/desktop/desktop.js';
-import { getItem, LOCAL_STORAGE_KEYS } from './local-storage.js';
-import { registerCustomApp } from './custom-app-manager.js';
-import { taskbar } from '../shell/taskbar/taskbar.js';
-import { ShowDialogWindow } from '../shared/components/dialog-window.js';
-import { playSound } from './sound-manager.js';
-import { setTheme, getCurrentTheme, setColorScheme } from './theme-manager.js';
-import { profiles } from '../config/profiles.js';
+import { initDesktop } from "../shell/desktop/desktop.js";
+import { getItem, LOCAL_STORAGE_KEYS } from "./local-storage.js";
+import { registerCustomApp } from "./custom-app-manager.js";
+import { taskbar } from "../shell/taskbar/taskbar.js";
+import { ShowDialogWindow } from "../shared/components/dialog-window.js";
+import { playSound } from "./sound-manager.js";
+import { setTheme, getCurrentTheme, setColorScheme } from "./theme-manager.js";
+import { profiles } from "../config/profiles.js";
 import {
   hideBootScreen,
   startBootProcessStep,
   finalizeBootProcessStep,
   promptToContinue,
   showSetupScreen,
-} from './boot-screen.js';
-import { preloadThemeAssets } from './asset-preloader.js';
-import { launchApp } from './app-manager.js';
-import { createMainUI } from '../shell/ui.js';
-import { initColorModeManager } from './color-mode-manager.js';
-import screensaver from './screensaver-utils.js';
-import { initScreenManager } from './screen-manager.js';
+} from "./boot-screen.js";
+import { preloadThemeAssets } from "./asset-preloader.js";
+import { launchApp } from "./app-manager.js";
+import { createMainUI } from "../shell/ui.js";
+import { initColorModeManager } from "./color-mode-manager.js";
+import screensaver from "./screensaver-utils.js";
+import { initScreenManager } from "./screen-manager.js";
 import { fs, mounts } from "@zenfs/core";
-import { initFileSystem } from './zenfs-init.js';
-import { RecycleBinManager } from '../shell/explorer/file-operations/recycle-bin-manager.js';
-import { appManager } from './app-manager.js';
-import { WindowManager } from './window-manager.js';
+import { initFileSystem } from "./zenfs-init.js";
+import { RecycleBinManager } from "../shell/explorer/file-operations/recycle-bin-manager.js";
+import { appManager } from "./app-manager.js";
+import { WindowManager } from "./window-manager.js";
+import { activeDesktopManager } from "./activeDesktopManager.js";
 
 export async function initializeOS() {
   // Initialize Window Management System
   window.System = new WindowManager();
 
   const path = window.location.pathname;
-  const profileName = path.startsWith('/win98-web/')
-    ? path.substring('/win98-web/'.length).split('/')[0]
-    : '';
+  const profileName = path.startsWith("/win98-web/")
+    ? path.substring("/win98-web/".length).split("/")[0]
+    : "";
 
   window.activeProfile = null;
   if (profileName && profiles[profileName]) {
@@ -183,7 +184,10 @@ export async function initializeOS() {
     await executeBootStep(async () => {
       const baseMsg = "Preloading default theme assets...";
       let logElement = startBootProcessStep(baseMsg);
-      const { onAssetStart, onAssetFinish } = createAssetLogCallbacks(logElement, baseMsg);
+      const { onAssetStart, onAssetFinish } = createAssetLogCallbacks(
+        logElement,
+        baseMsg,
+      );
 
       await preloadThemeAssets("default", onAssetStart, onAssetFinish);
 
@@ -198,13 +202,12 @@ export async function initializeOS() {
       if (currentTheme !== "default") {
         const baseMsg = `Preloading ${currentTheme} theme assets...`;
         let logElement = startBootProcessStep(baseMsg);
-        const { onAssetStart, onAssetFinish } = createAssetLogCallbacks(logElement, baseMsg);
-
-        await preloadThemeAssets(
-          currentTheme,
-          onAssetStart,
-          onAssetFinish,
+        const { onAssetStart, onAssetFinish } = createAssetLogCallbacks(
+          logElement,
+          baseMsg,
         );
+
+        await preloadThemeAssets(currentTheme, onAssetStart, onAssetFinish);
 
         if (logElement && logElement.firstChild) {
           logElement.firstChild.nodeValue = baseMsg;
@@ -255,7 +258,10 @@ export async function initializeOS() {
             }
             const response = await fetch(baseRemotePath + file);
             const buffer = await response.arrayBuffer();
-            await fs.promises.writeFile(baseLocalPath + file, new Uint8Array(buffer));
+            await fs.promises.writeFile(
+              baseLocalPath + file,
+              new Uint8Array(buffer),
+            );
           }
         }
         if (logElement && logElement.firstChild) {
@@ -301,6 +307,7 @@ export async function initializeOS() {
     window.RecycleBinManager = RecycleBinManager;
     window.System.launchApp = launchApp;
     window.System.appManager = appManager;
+    window.System.activeDesktopManager = activeDesktopManager;
     console.log("azOS initialized");
 
     let inactivityTimer;

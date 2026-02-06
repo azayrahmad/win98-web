@@ -394,3 +394,78 @@
     color: var(--preview-button-text);
     border-image: var(--preview-button-normal-border-image);
 }
+
+#web-tab {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 10px;
+}
+
+.active-desktop-preview-container {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.active-desktop-preview {
+    width: 152px;
+    height: 112px;
+    background-color: var(--Background);
+    border: 1px solid #000;
+    position: relative;
+    overflow: hidden;
+}
+
+.web-content-options {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.web-items-section {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+    height: 100px;
+}
+
+#web-items-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    flex-grow: 1;
+    background-color: #fff;
+}
+
+#web-items-list li {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 5px;
+    cursor: default;
+    white-space: nowrap;
+}
+
+#web-items-list li.selected {
+    background-color: var(--Highlight);
+    color: var(--HighlightText);
+}
+
+.web-item-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.web-footer-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: auto;
+}
+
+.item-preview {
+    pointer-events: none;
+}
