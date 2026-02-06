@@ -4,7 +4,6 @@ import {
   LOCAL_STORAGE_KEYS,
 } from '../../system/local-storage.js';
 import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
-import { findItemByPath } from './directory.js';
 
 /**
  * Handles files dropped onto a target element.
@@ -12,10 +11,14 @@ import { findItemByPath } from './directory.js';
  * @param {string} targetPath - The virtual path where files are being dropped.
  * @param {function} onDropComplete - Callback function to execute after processing files.
  */
-export function handleDroppedFiles(files, targetPath, onDropComplete) {
-  const existingFiles = getItem(LOCAL_STORAGE_KEYS.DROPPED_FILES) || [];
-  const validFiles = [];
-  const oversizedFiles = [];
+export function handleDroppedFiles(
+  files: FileList,
+  targetPath: string,
+  onDropComplete?: (newFiles: any[]) => void
+): void {
+  const existingFiles = (getItem(LOCAL_STORAGE_KEYS.DROPPED_FILES) as any[]) || [];
+  const validFiles: File[] = [];
+  const oversizedFiles: string[] = [];
 
   Array.from(files).forEach((file) => {
     // 5MB size limit
@@ -41,13 +44,13 @@ export function handleDroppedFiles(files, targetPath, onDropComplete) {
   }
 
   const fileReadPromises = validFiles.map((file) => {
-    return new Promise((resolve, reject) => {
+    return new Promise<any>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         resolve({
           id: `dropped-${Date.now()}-${Math.random()}`,
           name: file.name,
-          content: e.target.result,
+          content: e.target?.result,
           type: file.type,
           path: targetPath, // Assign the path to the file
         });
@@ -66,12 +69,14 @@ export function handleDroppedFiles(files, targetPath, onDropComplete) {
   });
 }
 
-export function createDragGhost(icon, e) {
-    const dragImage = icon.cloneNode(true);
+export function createDragGhost(icon: HTMLElement, e: DragEvent): HTMLElement {
+    const dragImage = icon.cloneNode(true) as HTMLElement;
     dragImage.style.position = "absolute";
     dragImage.style.top = "-1000px";
     dragImage.style.opacity = "0.5";
     document.body.appendChild(dragImage);
-    e.dataTransfer.setDragImage(dragImage, 0, 0);
+    if (e.dataTransfer) {
+        e.dataTransfer.setDragImage(dragImage, 0, 0);
+    }
     return dragImage;
 }

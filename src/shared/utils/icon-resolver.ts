@@ -7,11 +7,11 @@ import { ICONS } from '../../config/icons.js';
  * Falls back to the default scheme's icon if the current scheme has no specific icon.
  *
  * @param {string} iconIdentifier - The identifier for the icon (e.g., "myComputer").
- * @returns {object} The icon object with 16 and 32 pixel versions, or null if not found.
+ * @returns {any} The icon object with 16 and 32 pixel versions, or null if not found.
  */
-export function getIcon(iconIdentifier) {
+export function getIcon(iconIdentifier: string): any {
   const iconSchemeName = getIconSchemeName() || "default";
-  const scheme = iconSchemes[iconSchemeName] || iconSchemes["default"];
+  const scheme = (iconSchemes as any)[iconSchemeName] || iconSchemes["default"];
 
-  return scheme[iconIdentifier] || ICONS[iconIdentifier] || ICONS.file;
+  return scheme[iconIdentifier] || (ICONS as any)[iconIdentifier] || ICONS.file;
 }

@@ -1,13 +1,19 @@
-// tooltip.js - A simple tooltip component
+// tooltip.ts - A simple tooltip component
+
+declare var marked: any;
+
 export class Tooltip {
-  constructor(text, targetElement) {
+  private text: string;
+  private targetElement: HTMLElement;
+  private element: HTMLElement | null = null;
+
+  constructor(text: string, targetElement: HTMLElement) {
     this.text = text;
     this.targetElement = targetElement;
-    this.element = null;
     this._create();
   }
 
-  _create() {
+  private _create(): void {
     this.element = document.createElement('div');
     this.element.className = 'tooltip';
     if (this.text) {
@@ -25,7 +31,8 @@ export class Tooltip {
     }, 0);
   }
 
-  _position() {
+  private _position(): void {
+    if (!this.element) return;
     const targetRect = this.targetElement.getBoundingClientRect();
     const tooltipRect = this.element.getBoundingClientRect();
 
@@ -44,7 +51,7 @@ export class Tooltip {
     this.element.style.top = `${top}px`;
   }
 
-  _close() {
+  private _close(): void {
     if (this.element && this.element.parentNode) {
       this.element.parentNode.removeChild(this.element);
     }

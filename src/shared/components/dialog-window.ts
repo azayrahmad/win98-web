@@ -1,35 +1,16 @@
 import { playSound } from '../../system/sound-manager.js';
 
 /**
- * @typedef {object} DialogButton
- * @property {string} label - The text to display on the button.
- * @property {() => void} action - The function to call when the button is clicked.
- * @property {boolean} [isDefault] - Whether this button is the default action.
- */
-
-/**
- * @typedef {object} DialogOptions
- * @property {string} title - The title of the dialog window.
- * @property {string} [titleIconUrl] - Optional URL for an icon in the title bar.
- * @property {string} [contentIconUrl] - Optional URL for an icon in the content area.
- * @property {string} text - The main text content of the dialog.
- * @property {DialogButton[]} [buttons] - The buttons to display in the dialog.
- * @property {string} [soundEvent] - The name of the sound event to play.
- * @property {boolean} [modal=false] - Whether the dialog should be modal.
- * @property {boolean} [showOverlay=false] - Whether to show the visual overlay for modal dialogs.
- */
-
-/**
  * Creates and shows a dialog window.
  * @param {DialogOptions} options
  */
-function ShowDialogWindow(options) {
+export function ShowDialogWindow(options: DialogOptions): OSGUI$Window {
   const {
     title,
     titleIconUrl,
     contentIconUrl,
     text,
-    content, // Added content property
+    content,
     buttons = [{ label: "OK", action: () => {}, isDefault: true }],
     soundEvent,
     modal = false,
@@ -37,15 +18,14 @@ function ShowDialogWindow(options) {
     parentWindow,
   } = options;
 
-  const winOptions = {
+  const winOptions: OSGUIWindowOptions = {
     title: title || "Dialog",
     toolWindow: false,
     resizable: false,
-    minimizeButton: false,
-    maximizeButton: false,
-    width: 400,
-    height: "auto",
-    parentWindow: parentWindow || null,
+    minimizable: false,
+    maximizable: false,
+    outerWidth: 400,
+    parentWindow: parentWindow ?? undefined,
   };
 
   if (titleIconUrl) {
@@ -76,7 +56,7 @@ function ShowDialogWindow(options) {
 
     const textEl = document.createElement("div");
     textEl.className = "dialog-content-text";
-    textEl.innerHTML = text;
+    textEl.innerHTML = text || "";
     contentContainer.appendChild(textEl);
   }
 
@@ -109,7 +89,7 @@ function ShowDialogWindow(options) {
   win.center();
 
   // Handle modality
-  let modalOverlay = null;
+  let modalOverlay: HTMLDivElement | null = null;
   if (modal) {
     const screen = document.getElementById("screen");
     modalOverlay = document.createElement("div");
@@ -125,15 +105,17 @@ function ShowDialogWindow(options) {
     // Use a high z-index, but relative to the window manager's current z-index
     // This should be just below the dialog window itself.
     win.css("z-index", $Window.Z_INDEX + 1);
-    modalOverlay.style.zIndex = $Window.Z_INDEX;
+    modalOverlay.style.zIndex = String($Window.Z_INDEX);
     $Window.Z_INDEX += 2; // Increment for both overlay and window
 
-    screen.appendChild(modalOverlay);
-    win.onClosed(() => {
-      if (screen.contains(modalOverlay)) {
-        screen.removeChild(modalOverlay);
-      }
-    });
+    if (screen) {
+      screen.appendChild(modalOverlay);
+      win.onClosed(() => {
+        if (screen.contains(modalOverlay!)) {
+          screen.removeChild(modalOverlay!);
+        }
+      });
+    }
   }
 
   // Play sound
@@ -146,7 +128,9 @@ function ShowDialogWindow(options) {
   setTimeout(() => {
     const contentHeight =
       contentContainer.offsetHeight + buttonContainer.offsetHeight;
-    const frameHeight = win.outerHeight() - win.$content.innerHeight();
+    const currentOuterHeight = win.outerHeight() || 0;
+    const currentInnerHeight = win.$content.innerHeight() || 0;
+    const frameHeight = currentOuterHeight - currentInnerHeight;
     win.outerHeight(contentHeight + frameHeight); // Add some padding
     win.center(); // Recenter after resizing
   }, 0);
@@ -156,12 +140,10 @@ function ShowDialogWindow(options) {
   return win;
 }
 
-function ShowComingSoonDialog(title) {
+export function ShowComingSoonDialog(title: string): void {
   ShowDialogWindow({
     title: title,
     text: "Coming soon.",
     modal: true,
   });
 }
-
-export { ShowDialogWindow, ShowComingSoonDialog };

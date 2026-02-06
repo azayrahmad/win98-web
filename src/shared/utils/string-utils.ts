@@ -1,4 +1,4 @@
-export function truncateName(name, maxLength = 20) {
+export function truncateName(name: string, maxLength: number = 20): string {
   if (name.length <= maxLength) {
     return name;
   }

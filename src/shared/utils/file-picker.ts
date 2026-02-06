@@ -1,15 +1,16 @@
 import { FilePicker } from '../../shell/explorer/interface/file-picker.js';
 import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
 
-export async function ShowFilePicker(options = {}) {
+export async function ShowFilePicker(options: any = {}): Promise<any> {
   return new Promise((resolve) => {
-    const picker = new FilePicker({
+    const picker = new (FilePicker as any)({
       ...options,
     });
 
     const win = ShowDialogWindow({
       title: options.title || (options.mode === "save" ? "Save As" : "Open"),
       content: picker.element,
+      // @ts-ignore - Width and height are not in DialogOptions yet
       width: 550,
       height: 400,
       buttons: [], // We use the buttons inside FilePicker
@@ -17,7 +18,7 @@ export async function ShowFilePicker(options = {}) {
     });
 
     picker.win = win;
-    picker.onResolve = (result) => {
+    picker.onResolve = (result: any) => {
       resolve(result);
     };
 
@@ -34,4 +35,4 @@ export async function ShowFilePicker(options = {}) {
 }
 
 // Add to window for global access if needed
-window.ShowFilePicker = ShowFilePicker;
+(window as any).ShowFilePicker = ShowFilePicker;

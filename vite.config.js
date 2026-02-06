@@ -13,6 +13,9 @@ export default defineConfig({
     "import.meta.env.APP_VERSION": JSON.stringify(appVersion),
   },
   assetsInclude: ["**/*.ani"],
+  resolve: {
+    extensions: [".ts", ".js"],
+  },
   base: "/win98-web/",
   plugins: [
     VitePWA({

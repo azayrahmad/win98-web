@@ -1,4 +1,4 @@
-async function createBlobFromContent(content) {
+async function createBlobFromContent(content: any): Promise<Blob | null> {
     if (typeof content === 'string') {
         // If it's a URL-like string, fetch it.
         if (content.startsWith('http') || content.startsWith('data:') || content.includes('/')) {
@@ -26,7 +26,7 @@ async function createBlobFromContent(content) {
 }
 
 
-export async function downloadFile(filename, content) {
+export async function downloadFile(filename: string, content: any): Promise<void> {
     if (!filename || !content) {
         console.error("downloadFile requires both filename and content.");
         return;

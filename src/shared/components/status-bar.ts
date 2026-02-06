@@ -1,6 +1,9 @@
 import { ICONS } from '../../config/icons.js';
 
 export class StatusBar {
+  public element: HTMLElement;
+  private statusText: HTMLElement;
+
   constructor() {
     this.element = window.os_gui_utils.E("div", {
       className: "status-bar",
@@ -27,7 +30,7 @@ export class StatusBar {
     });
 
     const myComputerIcon = window.os_gui_utils.E("img", {
-      src: ICONS.computer[16],
+      src: (ICONS as any).computer[16],
       style: "width: 16px; height: 16px;",
     });
 
@@ -37,7 +40,7 @@ export class StatusBar {
     this.element.append(leftSection, rightSection);
   }
 
-  setText(text) {
+  public setText(text: string): void {
     this.statusText.textContent = text;
   }
 }

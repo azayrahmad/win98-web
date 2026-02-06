@@ -1,4 +1,4 @@
-export function renderHTML(container, htmlString, snippetWrapperClass = null) {
+export function renderHTML(container: HTMLElement, htmlString: string, snippetWrapperClass: string | null = null): void {
     const isFullHtml = /<!DOCTYPE html>/i.test(htmlString) || /<html[\s>]/i.test(htmlString) || /<body[\s>]/i.test(htmlString) || /<head[\s>]/i.test(htmlString) || /<title[\s>]/i.test(htmlString) || /<style[\s>]/i.test(htmlString) || /<meta[\s>]/i.test(htmlString);
 
     if (isFullHtml) {
