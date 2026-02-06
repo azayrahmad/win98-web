@@ -1,0 +1,20 @@
+export const songs = [
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 01 spun telecom tape.ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 02 golden springs tape.ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 03 gentle envelopment.ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 04 waiting room disco tape (loop).ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 05 checker field tape (stinger).ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 06 gridsquare tape (fade).ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 07 augs and 6ths study (15).ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 08 augs and 6th study (30).ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 09 beach tape (cut).ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 10 synth tape (loop).ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 11 kinda western tape (15).ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 12 kinda western tape (15 + intro).ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 13 three hit tape (loop).ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 14 2 bright tape (15).ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 15 2 bright tape (30).ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection - 16 water basin tape (loop).ogg",
+  "songs/anosci - Blank VHS Tape Jingle Collection/anosci - Blank VHS Tape Jingle Collection.m3u",
+  "songs/anosci - Blank VHS Tape Jingle Collection/cover.png"
+];

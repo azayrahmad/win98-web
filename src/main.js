@@ -37,6 +37,7 @@ import { fs, mounts } from "@zenfs/core";
 import { initFileSystem } from "./utils/zenfs-init.js";
 import { RecycleBinManager } from "./apps/zenexplorer/fileoperations/RecycleBinManager.js";
 import { appManager } from "./utils/appManager.js";
+import { songs } from "./config/songs.js";
 
 // Window Management System
 class WindowManagerSystem {
@@ -347,6 +348,50 @@ async function initializeOS() {
         }
         if (logElement && logElement.firstChild) {
           logElement.firstChild.nodeValue = "Loading Doom game data...";
+        }
+        finalizeBootProcessStep(logElement, "OK");
+      }
+    });
+
+    await executeBootStep(async () => {
+      const baseLocalPath = "/C:/My Documents/";
+
+      let needed = false;
+      for (const songFile of songs) {
+        if (!fs.existsSync(baseLocalPath + songFile)) {
+          needed = true;
+          break;
+        }
+      }
+
+      if (needed) {
+        let logElement = startBootProcessStep("Loading songs...");
+        for (const songFile of songs) {
+          const localPath = baseLocalPath + songFile;
+          if (!fs.existsSync(localPath)) {
+            const fileName = songFile.split("/").pop();
+            if (logElement && logElement.firstChild) {
+              logElement.firstChild.nodeValue = `Loading songs: ${fileName}...`;
+            }
+
+            // Ensure directory exists
+            const dir = localPath.substring(0, localPath.lastIndexOf("/"));
+            if (!fs.existsSync(dir)) {
+                await fs.promises.mkdir(dir, { recursive: true });
+            }
+
+            try {
+                const response = await fetch(songFile);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const buffer = await response.arrayBuffer();
+                await fs.promises.writeFile(localPath, new Uint8Array(buffer));
+            } catch (error) {
+                console.error(`Failed to load song: ${songFile}`, error);
+            }
+          }
+        }
+        if (logElement && logElement.firstChild) {
+          logElement.firstChild.nodeValue = "Loading songs...";
         }
         finalizeBootProcessStep(logElement, "OK");
       }
