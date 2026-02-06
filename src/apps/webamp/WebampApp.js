@@ -75,7 +75,8 @@ export class WebampApp extends Application {
 
             const trackFilenames = playlistText
               .split("\n")
-              .filter((line) => line.trim() !== "" && !line.startsWith("#"));
+              .map((line) => line.trim())
+              .filter((line) => line !== "" && !line.startsWith("#"));
             if (trackFilenames.length === 0) return;
 
             const baseUrl = path.substring(0, path.lastIndexOf("/") + 1);
