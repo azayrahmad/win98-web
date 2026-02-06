@@ -117,6 +117,21 @@ export const fileAssociations = {
     appId: "notepad",
     icon: ICONS.textFile,
   },
+  exe: {
+    name: "Application",
+    appId: "dosbox",
+    icon: ICONS.msdos,
+  },
+  com: {
+    name: "MS-DOS Command File",
+    appId: "dosbox",
+    icon: ICONS.msdos,
+  },
+  bat: {
+    name: "MS-DOS Batch File",
+    appId: "dosbox",
+    icon: ICONS.msdos,
+  },
   // Image files
   png: {
     name: "PNG Image",

@@ -338,23 +338,28 @@ export class CommandPromptApp extends Application {
         if (app) {
           launchApp(app.id);
         } else {
-          // Check if it's a file in current directory
-          const filePath = this.resolvePath(cmd);
-          try {
-            const stats = await fs.promises.stat(filePath);
-            if (stats.isFile()) {
-              const association = getAssociation(cmd);
-              if (association && association.appId) {
-                launchApp(association.appId, filePath);
-              } else {
-                this.terminal.write(`No association found for file: ${cmd}\r\n`);
+          // Check if it's a file in current directory or with DOS extensions
+          let executablePath = null;
+          const extensions = ["", ".exe", ".com", ".bat"];
+          for (const ext of extensions) {
+            const testPath = this.resolvePath(cmd + ext);
+            try {
+              const stats = await fs.promises.stat(testPath);
+              if (stats.isFile()) {
+                executablePath = testPath;
+                break;
               }
+            } catch (e) {}
+          }
+
+          if (executablePath) {
+            const association = getAssociation(executablePath);
+            if (association && association.appId) {
+              launchApp(association.appId, executablePath);
             } else {
-              this.terminal.write(
-                `'${cmd}' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n`,
-              );
+              this.terminal.write(`No association found for file: ${executablePath}\r\n`);
             }
-          } catch (e) {
+          } else {
             this.terminal.write(
               `'${cmd}' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n`,
             );

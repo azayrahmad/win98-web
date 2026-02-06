@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DosBox Runner</title>
+    <link rel="stylesheet" href="https://v8.js-dos.com/latest/js-dos.css">
+    <script src="https://v8.js-dos.com/latest/js-dos.js"></script>
+    <!-- Use fflate for zipping the bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/fflate/umd/index.js"></script>
+    <style>
+        body, html, #dos-container {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: black;
+        }
+        /* Hide js-dos overlays if any */
+        .jsdos-sidebar { display: none !important; }
+    </style>
+</head>
+<body>
+    <div id="dos-container"></div>
+    <script>
+        const container = document.getElementById("dos-container");
+        let ci;
+        const files = {};
+        let started = false;
+
+        window.addEventListener("message", async (event) => {
+            const { type, path, data, exe } = event.data;
+
+            if (type === "WRITE_FILE") {
+                files[path] = new Uint8Array(data);
+            } else if (type === "START_EXE") {
+                if (started) return;
+                started = true;
+
+                // Add a basic dosbox.conf to start the EXE if provided
+                if (exe) {
+                    const conf = `[autoexec]\nmount c .\nc:\n${exe}\n`;
+                    files["dosbox.conf"] = new TextEncoder().encode(conf);
+                }
+
+                // Create bundle using fflate
+                // fflate.zipSync takes an object where keys are paths and values are Uint8Arrays
+                const bundleData = fflate.zipSync(files);
+                const bundleBlob = new Blob([bundleData], { type: "application/zip" });
+                const bundleUrl = URL.createObjectURL(bundleBlob);
+
+                try {
+                    ci = await Dos(container, {
+                        style: "none",
+                        noCursor: true,
+                        thinSidebar: true,
+                    }).run(bundleUrl);
+                } catch (e) {
+                    console.error("Failed to start DosBox:", e);
+                } finally {
+                    URL.revokeObjectURL(bundleUrl);
+                }
+            } else if (type === "REQUEST_SAVE") {
+                if (ci) {
+                    try {
+                        const saveBundle = await ci.persist();
+                        // Send the zip data back to the host
+                        window.parent.postMessage({ type: "DOSBOX_SAVE", data: saveBundle }, "*");
+                    } catch (e) {
+                        console.error("Failed to persist DosBox state:", e);
+                        window.parent.postMessage({ type: "DOSBOX_SAVE", data: null }, "*");
+                    }
+                } else {
+                    window.parent.postMessage({ type: "DOSBOX_SAVE", data: null }, "*");
+                }
+            }
+        });
+
+        // Notify parent that we are ready to receive files
+        window.parent.postMessage({ type: "DOSBOX_READY" }, "*");
+    </script>
+</body>
+</html>

@@ -136,6 +136,34 @@ export async function initializeOS() {
     });
 
     await executeBootStep(async () => {
+      const simCityPath = "/C:/Games/SimCity2000";
+      if (!fs.existsSync(simCityPath)) {
+        let logElement = startBootProcessStep("Installing SimCity 2000...");
+        try {
+          const response = await fetch("games/dos/simcity2000/sc2000bundle.jsdos");
+          const buffer = await response.arrayBuffer();
+          const { unzipSync } = await import("fflate");
+          const unzipped = unzipSync(new Uint8Array(buffer));
+
+          await fs.promises.mkdir(simCityPath, { recursive: true });
+          for (const [path, data] of Object.entries(unzipped)) {
+            if (path.endsWith("/")) continue;
+            const fullPath = `${simCityPath}/${path}`;
+            const dir = fullPath.substring(0, fullPath.lastIndexOf("/"));
+            if (!fs.existsSync(dir)) {
+              await fs.promises.mkdir(dir, { recursive: true });
+            }
+            await fs.promises.writeFile(fullPath, data);
+          }
+          finalizeBootProcessStep(logElement, "OK");
+        } catch (e) {
+          console.error("Failed to install SimCity 2000:", e);
+          finalizeBootProcessStep(logElement, "FAILED");
+        }
+      }
+    });
+
+    await executeBootStep(async () => {
       let logElement = startBootProcessStep("Connecting to network...");
       await new Promise((resolve) => setTimeout(resolve, 1000));
       finalizeBootProcessStep(logElement, navigator.onLine ? "OK" : "FAILED");
