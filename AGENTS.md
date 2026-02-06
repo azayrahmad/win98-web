@@ -4,170 +4,90 @@ This document provides essential knowledge for AI agents to effectively contribu
 
 ## 1. Project Architecture
 
-Windows 98 Web Edition is a web-based desktop environment built with vanilla JavaScript that emulates the Windows 98 experience. It is a modular system with a centralized configuration.
+Windows 98 Web Edition is a modular web-based desktop environment that emulates Windows 98. It separates core system logic, shell components, and applications.
 
-### Core Components & Systems
+### Core Systems (`src/system/`)
 
--   **Entry Point** (`src/main.js`): Initializes all core systems, including the desktop, taskbar, and global `window.System` object.
--   **App Manager** (`src/utils/appManager.js`): Handles the entire lifecycle of applications, from launching to closing. It is the single source of truth for all running applications.
--   **Desktop** (`src/components/desktop.js`): Manages desktop icons, wallpaper, and user interactions like selection and context menus.
--   **Taskbar** (`src/components/taskbar.js`): Renders the Start Menu, taskbar buttons for running apps, and the system tray.
--   **Window Management** (`public/os-gui/$Window.js`): The core `$Window` component from the `os-gui` library handles window creation and basic interactions.
--   **Global System Object** (`src/main.js`): A global `window.System` object is initialized at startup. It exposes a `WindowManagerSystem` class that manages global z-indexing and minimize/restore functionality for all windows.
+-   **OS Initialization** (`os-init.js`): Orchestrates the boot process, initializes core systems, and sets up the global `window.System` object.
+-   **App Manager** (`app-manager.js`): Manages the application lifecycle (launching, closing, tracking running instances).
+-   **Window Manager** (`window-manager.js`): Handles window stacking (z-index), focus, and minimize/restore logic.
+-   **ZenFS Integration** (`zenfs-init.js`): Configures the virtual file system with IndexedDB persistence for the `C:` drive.
+-   **Application Base Class** (`application.js`): The abstract base class that all windowed applications must extend.
+-   **Core Utilities**: Includes specialized managers for `ScreenManager`, `ColorModeManager`, `ThemeManager`, `RecycleBinManager`, and more.
 
-### Centralized Configuration
+### Shell Components (`src/shell/`)
 
-The project relies heavily on a centralized configuration model located in the `src/config/` directory. This is the single source of truth for defining applications, icons, themes, and more.
+-   **Desktop** (`src/shell/desktop/desktop.js`): Manages desktop icons, wallpaper, and icon-specific interactions.
+-   **Taskbar** (`src/shell/taskbar/taskbar.js`): Renders the taskbar, Start Menu, and system tray.
+-   **Explorer** (`src/shell/explorer/`): The file explorer application and shell extensions for handling directory views.
 
--   `apps.js`: Registers all applications and their properties.
--   `icons.js`: Defines all system icons with multiple sizes.
--   `themes.js`: Contains definitions for all visual themes, including colors, wallpapers, and sound schemes.
--   `sound-schemes.js`: Maps system events to audio files.
--   `startmenu.js`: Defines the structure and content of the Start Menu.
--   `desktop.json`: Specifies which icons appear on the default desktop.
+### Centralized Configuration (`src/config/`)
+
+-   `apps.js`: Entry point for application registration (system apps and dynamic loading).
+-   `icons.js`: Defines the system icon set.
+-   `themes.js` & `sound-schemes.js`: Configures visual and auditory themes.
+-   `start-menu.js`: Defines the Start Menu structure.
 
 ## 2. Key Dependencies
 
--   **Vite**: The build tool and development server.
--   **os-gui**: A custom-modified component library for core UI elements like windows and menus.
--   **jQuery**: Included as a local file (`/jquery-3.3.1.js`) and used primarily by the `os-gui` library for DOM manipulation. It is **not** the primary tool for application-level logic.
--   **CDN Libraries**: Several libraries are loaded via CDN in `index.html`:
-    -   `highlight.js`: For syntax highlighting in Notepad.
-    -   `Marked.js`: For Markdown parsing.
-    -   `Prettier`: For code formatting.
+-   **ZenFS**: Provides the persistent virtual file system. Use `fs` and `mounts` from `@zenfs/core`.
+-   **os-gui**: A library for Windows 98 UI components. **Note**: We use a modified version located in `public/os-gui/` which overrides the npm package for core components like `$Window`.
+-   **jQuery**: Used primarily by `os-gui` for DOM manipulation.
+-   **Vite**: Build tool and development server.
 
 ## 3. Development Patterns
 
 ### Application Integration
 
-All applications are registered in `src/config/apps.js`. To add a new app, you must provide a configuration object with the following schema:
+Applications are dynamically discovered by `src/config/apps.js` using Vite's glob import if they follow the `src/apps/*/*-app.js` naming convention and export a class with a static `config` property.
 
+#### Static Config Schema:
 ```javascript
-{
-  // A unique identifier for the application.
-  id: "string",
-
-  // The display name shown in titles and menus.
-  title: "string",
-
-  // A brief description for tooltips or properties.
-  description: "string",
-
-  // The icon object, providing 16px and 32px versions. See Icon System below.
-  icon: ICONS.iconName,
-
-  // The application's main class that extends the base Application class.
-  appClass: class,
-
-  // --- Optional Properties ---
-
-  // Window dimensions.
-  width: integer,
-  height: integer,
-
-  // Window behavior flags.
-  resizable: boolean,
-  isSingleton: boolean, // If true, only one instance can run.
-
-  // Defines a right-click context menu for the app's desktop/start menu icon.
-  contextMenu: [
-    { label: "string", action: "string" | function },
-    // ...
-  ],
-
-  // For apps that run in the background and show in the system tray.
-  hasTray: boolean,
-  tray: {
-    contextMenu: function // A function that returns a menu item array.
-  },
-
-  // Alternative to appClass for simple, function-based actions.
-  action: {
-    type: "function",
-    handler: function // A function to execute when launched.
-  },
-}
-```
-
-### Icon System
-
-The icon system is defined in `src/config/icons.js`. It is **not** based on simple `.ico` files.
-
--   Icons are defined as objects with `16` and `32` pixel properties.
--   The values are URLs to `.png` or `.gif` files, correctly bundled by Vite using the `new URL(...)` pattern.
--   To add a new icon, place the asset in `src/assets/icons/` and add a corresponding entry to the `ICONS` object in `icons.js`.
-
-**Example:**
-
-```javascript
-// in src/config/icons.js
-export const ICONS = {
-  notepad: {
-    16: new URL("../assets/icons/notepad-0.png", import.meta.url).href,
-    32: new URL("../assets/icons/NOTEPAD_1-32.png", import.meta.url).href,
-  },
-  // ...
+static config = {
+  id: "my-app",
+  title: "My Application",
+  description: "A brief description.",
+  icon: ICONS.myAppIcon,
+  width: 640,
+  height: 480,
+  resizable: true,
+  isSingleton: true, // Only one instance allowed
+  hasTaskbarButton: true,
+  // ... other properties from Application base class
 };
-
-// in src/config/apps.js
-import { ICONS } from "./icons.js";
-// ...
-{
-  id: "notepad",
-  title: "Notepad",
-  icon: ICONS.notepad,
-  // ...
-}
 ```
 
-### Theming
+### The Global `window.System` Object
 
-The theme system is managed by `src/utils/themeManager.js` and configured in `src/config/themes.js`. Each theme object defines the theme's colors, wallpaper, sound scheme, and cursor scheme. Theme stylesheets are located in `public/os-gui/` and work by overriding CSS custom properties.
+The `window.System` object is the central API for system operations.
+-   `window.System.launchApp(appId, data)`: The standard way to launch an application.
+-   `window.System.appManager`: Access to the running application instances.
+-   `window.fs`: Access to the ZenFS instance.
+
+### File System Persistence
+
+User data should be stored in `/C:/My Documents/` or `/C:/WINDOWS/`. ZenFS ensures these paths persist across sessions via IndexedDB.
 
 ## 4. Development Workflow
 
 ### Local Development
-
-Use the following npm scripts to run the project:
-
 ```bash
-npm run dev     # Start the Vite development server.
-npm run build   # Create a production build in the /dist directory.
-npm run preview # Serve the production build locally.
+npm run dev     # Start development server
+npm run build   # Build for production
+npm run preview # Preview production build
 ```
 
 ### Adding a New Application
-
-1.  **Create the App Class**: Create a new directory in `src/apps/` and add your main application file (e.g., `MyApp.js`). The class must extend `Application` from `src/apps/Application.js`.
-2.  **Add Icons**: Add `16x16` and `32x32` `.png` icons for your app to `src/assets/icons/`.
-3.  **Register Icons**: Add an entry for your new icon in `src/config/icons.js`.
-4.  **Register Application**: Import your app class into `src/config/apps.js` and add a new configuration object to the `apps` array, following the schema described above.
-5.  **Add to Desktop/Start Menu** (Optional):
-    -   To add the app to the desktop, add its `id` to the `apps` array in `src/config/desktop.json`.
-    -   To add it to the Start Menu, modify the structure in `src/config/startmenu.js`.
+1.  **Create App Directory**: `src/apps/my-app/`.
+2.  **Implementation**: Create `my-app-app.js` extending `Application` from `../../system/application.js`.
+3.  **Static Config**: Define the `static config` property on your class.
+4.  **Registration**: The app will be automatically picked up by the dynamic loader in `src/config/apps.js`.
+5.  **Icon**: Add your icon to `src/assets/icons/` and register it in `src/config/icons.js`.
 
 ## 5. Release Management and Commit Guidelines
 
 ### Conventional Commits
-The project uses [Conventional Commits](https://www.conventionalcommits.org/) to automate versioning and changelog generation. All commit messages must follow this format:
-
-`<type>[optional scope]: <description>`
-
-Common types:
-- `feat`: A new feature (correlates to a SemVer minor).
-- `fix`: A bug fix (correlates to a SemVer patch).
-- `chore`: Maintenance tasks or changes that don't affect the production code.
-- `docs`: Documentation changes.
-- `style`: Changes that do not affect the meaning of the code (white-space, formatting, etc).
-- `refactor`: A code change that neither fixes a bug nor adds a feature.
-- `perf`: A code change that improves performance.
-- `test`: Adding missing tests or correcting existing tests.
-
-Breaking changes must be indicated by an `!` after the type/scope (e.g., `feat!: breaking change`) and will result in a SemVer major.
+All commits must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification (e.g., `feat: add new app`, `fix: window focus bug`).
 
 ### Automated Releases
-[Release Please](https://github.com/googleapis/release-please) is configured to monitor the `main` branch. When releasable changes (`feat`, `fix`, `deps`) are merged, it automatically creates or updates a Release Pull Request. Merging this PR will:
-1. Update `CHANGELOG.md` and `package.json`.
-2. Create a GitHub Release and tag the commit.
-
-As an AI agent, you **MUST** use Conventional Commits for all your contributions to this repository.
+Merging to `main` triggers [Release Please](https://github.com/googleapis/release-please), which manages `CHANGELOG.md` and versioning.

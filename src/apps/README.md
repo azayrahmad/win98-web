@@ -1,200 +1,113 @@
 # Application Development Guide
 
-This guide provides instructions on how to add new applications to azOS Second Edition. For a high-level overview of the available applications, see the "Applications" section below.
+This guide provides instructions on how to add new applications to Windows 98 Web Edition.
 
 ## Applications
 
 ### Games & Entertainment
-*For applications that are primarily for fun and leisure.*
-| Application | Description | Source |
-| :--- | :--- | :--- |
-| [Commander Keen](./keen/README.md) | Play the classic game Commander Keen. | |
-| [Diablo](./diablo/README.md) | Play the classic game Diablo. | |
-| [DOS Game](./dosgame/README.md) | A generic launcher for various DOS games. | |
-| [eSheep](./esheep/README.md) | A classic desktop pet. | |
-| [Media Player](./media-player/README.md) | Play audio and video files. | |
-| [Minesweeper](./minesweeper/README.md) | Play the classic game of Minesweeper. | |
-| [Pinball](./pinball/README.md) | A classic "Space Cadet" pinball game. | |
-| [Webamp](./webamp/README.md) | A faithful recreation of the classic Winamp music player. | |
-
-### System Utilities
-*For tools that help manage, configure, or provide information about the OS.*
-| Application | Description | Source |
-| :--- | :--- | :--- |
-| [About](./about/README.md) | A simple utility that displays information about the azOS Second Edition operating system. | |
-| [Cursor Explorer](./cursor-explorer/README.md) | Explore and preview cursor schemes. | |
-| [Desktop Themes](./desktop-themes/README.md) | A utility for managing and previewing desktop visual themes. | |
-| [Display Properties](./display-properties/README.md) | A tool for customizing wallpaper, screen savers, and display settings. | |
-| [Explorer](../shell/explorer/README.md) | A file and folder navigation tool for the virtual file system. | |
-| [Sound Scheme Explorer](./sound-scheme-explorer/README.md) | A utility to browse and preview system sound schemes. | |
-| [Task Manager](./task-manager/README.md) | A utility to view and close running applications. | |
-| [Tip of the Day](./tip-of-the-day/README.md) | A helpful utility that displays useful hints and tricks to the user upon startup. | |
+*Classic games and media playback applications.*
+| Application | Description |
+| :--- | :--- |
+| [3D Pinball](./pinball/README.md) | A classic "Space Cadet" pinball game. |
+| [Buggy Program](./buggy-program/README.md) | An intentionally buggy program that leaves trails. |
+| [Commander Keen](./keen/README.md) | Play the classic game Commander Keen. |
+| [Diablo](./diablo/README.md) | Play the classic game Diablo. |
+| [Doom](./doom/README.md) | Play the legendary first-person shooter Doom. |
+| [eSheep](./esheep/README.md) | A classic desktop pet. |
+| [FreeCell](./freecell/README.md) | Play the classic game of FreeCell solitaire. |
+| [Media Player](./media-player/README.md) | Play audio and video files. |
+| [Minesweeper](./minesweeper/README.md) | Play the classic game of Minesweeper. |
+| [Prince of Persia](./prince-of-persia/README.md) | Play the classic cinematic platformer Prince of Persia. |
+| [Quake](./quake/README.md) | Play the classic 3D shooter Quake. |
+| [SimCity 2000](./sim-city-2000/README.md) | Play the SimCity 2000 demo. |
+| [Solitaire](./solitaire/README.md) | Play the classic Klondike solitaire. |
+| [Spider Solitaire](./spider-solitaire/README.md) | Play the challenging Spider solitaire. |
+| [Webamp](./webamp/README.md) | A faithful recreation of the classic Winamp music player. |
 
 ### Accessories & Tools
-*For general-purpose productivity, creative, or developer tools.*
-| Application | Description | Source |
-| :--- | :--- | :--- |
-| [App Maker](./appmaker/README.md) | A tool to create custom, windowed applications using HTML. | |
-| [Clippy](./clippy/README.md) | An interactive AI assistant. | |
-| [Image Resizer](./image-resizer/README.md) | A utility to enlarge images using nearest-neighbor scaling. | |
-| [Image Viewer](./image-viewer/README.md) | A simple application for viewing and editing image files. | |
-| [Notepad](./notepad/README.md) | A powerful text editor with syntax highlighting, code formatting, and Markdown preview. | |
-| [Paint](./paint/README.md) | A classic drawing and image editing application. | |
-| [PDF Viewer](./pdf-viewer/README.md) | A simple application for viewing PDF documents. | |
-| [Theme to CSS](./theme-to-css/README.md) | A developer utility to convert `.theme` INI files into CSS. | |
+*General-purpose productivity and creative tools.*
+| Application | Description |
+| :--- | :--- |
+| [App Maker](./app-maker/README.md) | A tool to create custom, windowed applications using HTML. |
+| [Calculator](./calculator/README.md) | A fully functional Standard and Scientific calculator. |
+| [Clippy](./clippy/README.md) | An interactive AI assistant. |
+| [Flash Player](./flash-player/README.md) | Play classic Adobe Flash (.swf) files. |
+| [Image Resizer](./image-resizer/README.md) | A utility to enlarge images using nearest-neighbor scaling. |
+| [Image Viewer](./image-viewer/README.md) | A simple application for viewing and editing image files. |
+| [Notepad](./notepad/README.md) | A powerful text editor with syntax highlighting, code formatting, and Markdown preview. |
+| [Paint](./paint/README.md) | A classic drawing and image editing application. |
+| [PDF Viewer](./pdf-viewer/README.md) | A simple application for viewing PDF documents. |
+| [Theme to CSS](./theme-to-css/README.md) | A developer utility to convert `.theme` INI files into CSS. |
 
 ### Community & Support
-*For applications related to supporting the project or its developer.*
-| Application | Description | Source |
-| :--- | :--- | :--- |
-| [Buy me a coffee](./buy-me-a-coffee/README.md) | Support the developer. | |
+*Support the project and report issues.*
+| Application | Description |
+| :--- | :--- |
+| [Buy me a coffee](./buy-me-a-coffee/README.md) | Support the developer. |
+| [Report a Bug](./report-a-bug/README.md) | Report issues encountered while using the system. |
 
 ## Adding New Applications
 
-Applications are defined in the `src/config/apps.js` file. Each application is represented by an object in the `apps` array. There are two types of applications you can add: **windowed** and **function-based**.
+Applications are now dynamically loaded. To add a new application, follow these steps:
 
-### Windowed Applications
+### 1. Create the Application Class
 
-Windowed applications open in a new window on the desktop. They are defined with an `action.type` of `"window"`.
-
-To add a windowed application, follow these steps:
-
-1.  **Open `src/config/apps.js`:** This file contains the array of application configurations.
-2.  **Add a new application object:** Add a new object to the `apps` array with the following properties:
-    - `id`: A unique identifier for the application (e.g., `"notepad"`).
-    - `title`: The name of the application that will be displayed on the desktop and in the window's title bar (e.g., `"Notepad"`).
-    - `icon`: The path to the application's icon. You can use an existing icon or add a new one to the `src/assets/icons` directory.
-    - `action`: An object with the following properties:
-      - `type`: Set to `"window"`.
-      - `window`: An object that defines the window's properties:
-        - `width`: The initial width of the window.
-        - `height`: The initial height of the window.
-        - `resizable`: A boolean indicating whether the window can be resized.
-        - `menuBar`: (Optional) An object defining the window's menu bar.
-        - `content`: The HTML content to be displayed within the window.
-
-**Example: A Simple "About" Application**
+Create a new directory in `src/apps/` and a JavaScript file ending in `-app.js` (e.g., `src/apps/my-app/my-app-app.js`). Your class must extend the base `Application` class.
 
 ```javascript
-{
-  id: "about",
-  title: "About",
-  icon: new URL('../assets/icons/COMCTL32_20481.ico', import.meta.url).href,
-  action: {
-    type: "window",
-    window: {
-      width: 400,
-      height: 300,
-      resizable: true,
-      menuBar: {
-        File: [
-          {
-            label: "&Close",
-            action: (win) => win.close(),
-            shortcutLabel: "Alt+F4",
-          },
-        ],
-        Help: [
-          {
-            label: "&About",
-            action: () => alert("About this app"),
-          },
-        ],
-      },
-      content: `
-        <div class="about-content" style="padding: 16px;">
-          <h1>About azOS</h1>
-          <p>azOS Second Edition is a web-based operating system interface.</p>
-        </div>
-      `,
-    },
-  },
+import { Application } from '../../system/application.js';
+import { ICONS } from '../../config/icons.js';
+
+export class MyApp extends Application {
+  static config = {
+    id: "my-app",
+    title: "My App",
+    description: "What my app does.",
+    icon: ICONS.default, // Register your icon in src/config/icons.js
+    width: 400,
+    height: 300,
+    resizable: true,
+  };
+
+  _createWindow(filePath) {
+    const win = new window.$Window({
+      title: this.title,
+      icons: this.icon,
+      width: this.width,
+      height: this.height,
+      resizable: this.resizable,
+      id: this.id,
+    });
+
+    win.$content.append('<div>Hello World!</div>');
+    return win;
+  }
 }
 ```
 
-### Non-Windowed (Function-Based) Applications
+### 2. Static Configuration
 
-Function-based applications execute a JavaScript function when launched. These are useful for actions that don't require a window, such as showing a confirmation dialog or performing a system action.
+The `static config` property is used by the system to register the application and define its properties:
 
-To add a function-based application, follow these steps:
+- `id`: A unique identifier.
+- `title`: Display name.
+- `icon`: Application icon (usually from `ICONS` in `src/config/icons.js`).
+- `width` / `height`: Default window dimensions.
+- `resizable`: Whether the window can be resized.
+- `isSingleton`: If `true`, only one instance of the app can be open at a time.
 
-1.  **Open `src/config/apps.js`:** This file contains the array of application configurations.
-2.  **Add a new application object:** Add a new object to the `apps` array with the following properties:
-    - `id`: A unique identifier for the application (e.g., `"shutdown"`).
-    - `title`: The name of the application that will be displayed on the desktop.
-    - `icon`: The path to the application's icon.
-    - `action`: An object with the following properties:
-      - `type`: Set to `"function"`.
-      - `handler`: The function to be executed when the application is launched.
+### 3. Dynamic Loading
 
-**Example: A "Shut Down" Application**
+The system automatically finds and registers any class exported from a `*-app.js` file in `src/apps/` that has a `static config` property. This is handled in `src/config/apps.js` using Vite's glob import.
 
-```javascript
-{
-  id: "shutdown",
-  title: "Shut Down",
-  icon: "./src/assets/icons/shutdown.ico",
-  action: {
-    type: "function",
-    handler: () => {
-      if (confirm("Are you sure you want to shut down the system?")) {
-        document.body.innerHTML =
-          '<div style="text-align: center; padding-top: 40vh;">It is now safe to turn off your computer.</div>';
-      }
-    },
-  },
-}
-```
+### 4. Integrating with the Shell
 
-After adding your application to `src/config/apps.js`, it will automatically appear on the desktop the next time you load the application.
+- **Desktop**: To add an icon to the desktop, add the app `id` to `src/config/desktop.json`.
+- **Start Menu**: To add the app to the Start Menu, modify `src/config/start-menu.js`.
+- **File Associations**: To associate the app with specific file extensions, modify `src/config/file-associations.js`.
 
-### Adding Context Menus to Desktop Icons
+## Global API Interaction
 
-You can customize the right-click context menu for each application icon. Add a `contextMenu` property to your application configuration to define custom menu items.
-
-Each menu item can be either a regular item with a label and action, a submenu, or a separator (using the string "MENU_DIVIDER").
-
-**Example: Adding a Custom Context Menu**
-
-```javascript
-{
-  id: "myapp",
-  title: "My App",
-  icon: new URL('../assets/icons/myapp.ico', import.meta.url).href,
-  action: {
-    type: "window",
-    // ... window configuration
-  },
-  contextMenu: [
-    {
-      label: "&Open",
-      action: "open" // Special action that launches the app
-    },
-    "MENU_DIVIDER",
-    {
-      label: "Cu&t",
-      enabled: false // Disabled menu item
-    },
-    {
-      label: "&Properties",
-      action: "properties" // Special action that shows properties
-    },
-    {
-      label: "Custom Action",
-      action: () => alert("Custom action clicked!") // Custom function
-    }
-  ]
-}
-```
-
-Menu Item Properties:
-
-- `label`: The text to display (use & before a character to create a keyboard shortcut)
-- `action`: Can be one of:
-  - `"open"`: Opens/launches the application
-  - `"properties"`: Shows the properties dialog
-  - A custom function to execute when clicked
-- `enabled`: (Optional) Boolean to enable/disable the item
-- `submenu`: (Optional) Array of nested menu items for dropdowns
-
-If no `contextMenu` is specified, the icon will have a default context menu with just an "Open" option.
+Use the global `window.System` object to interact with the OS:
+- `window.System.launchApp('app-id', data)`: Launch another app.
+- `window.fs`: Access the virtual file system.
