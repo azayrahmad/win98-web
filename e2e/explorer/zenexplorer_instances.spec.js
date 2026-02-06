@@ -28,7 +28,7 @@ test('ZenExplorer directory-based singleton behavior', async ({ page }, testInfo
         const programs = page.locator('.start-menu-item:has-text("Programs")');
         await expect(programs).toBeVisible({ timeout: 10000 });
         await programs.dispatchEvent('pointerenter');
-        await page.click('text=File Manager (ZenFS)', { timeout: 10000 });
+        await page.click('text=Windows Explorer', { timeout: 10000 });
     };
 
     // 1. Launch first instance (defaults to / aka My Computer)
@@ -58,7 +58,7 @@ test('ZenExplorer directory-based singleton behavior', async ({ page }, testInfo
     await launchZenExplorer('third');
 
     // Wait for two windows to exist
-    await expect(page.locator('.window[data-app-id="zenexplorer"]')).toHaveCount(2, { timeout: 10000 });
+    await expect(page.locator('.window[data-app-id="explorer"]')).toHaveCount(2, { timeout: 10000 });
 
     // Now wait for the title to update to My Computer
     // We use a regex to ensure we are matching the whole title and avoid partial matches if any

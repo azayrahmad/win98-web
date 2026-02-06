@@ -430,7 +430,7 @@ export class ZenExplorerApp extends Application {
    * @private
    */
   _setupEventListeners() {
-    this.iconContainer.addEventListener("dblclick", (e) => {
+    this.iconContainer.addEventListener("dblclick", async (e) => {
       const icon = e.target.closest(".explorer-icon");
       if (icon) {
         const path = icon.getAttribute("data-path");
@@ -440,6 +440,10 @@ export class ZenExplorerApp extends Application {
           PropertiesManager.show([path]);
           return;
         }
+
+        // Try shell extension first
+        const handled = await ShellManager.onOpen(path, this);
+        if (handled) return;
 
         if (type === "directory") {
           this.navigateTo(path);
