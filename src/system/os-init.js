@@ -27,8 +27,13 @@ import { appManager } from './app-manager.js';
 import { WindowManager } from './window-manager.js';
 
 export async function initializeOS() {
+  if (window.System?.initialized) {
+    return;
+  }
+
   // Initialize Window Management System
   window.System = new WindowManager();
+  window.System.initialized = true;
 
   const path = window.location.pathname;
   const profileName = path.startsWith('/win98-web/')

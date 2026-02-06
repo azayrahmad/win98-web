@@ -15,6 +15,9 @@ test('Notepad E2E - Create, Save, and Reopen', async ({ page }) => {
     }
     await expect(page.locator('#splash-screen')).toBeHidden({ timeout: 30000 });
 
+    // Wait for the System API to be fully available
+    await page.waitForFunction(() => window.System && typeof window.System.launchApp === 'function', { timeout: 30000 });
+
     // Close Welcome window if it appears
     const welcomeWindow = page.locator('.window:has-text("Welcome")');
     if (await welcomeWindow.isVisible()) {

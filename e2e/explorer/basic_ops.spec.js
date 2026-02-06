@@ -15,6 +15,9 @@ test('Explorer Basic Operations', async ({ page }) => {
     }
     await expect(page.locator('#splash-screen')).toBeHidden({ timeout: 60000 });
 
+    // Wait for the System API to be fully available
+    await page.waitForFunction(() => window.System && typeof window.System.launchApp === 'function', { timeout: 30000 });
+
     // Close Welcome window if it appears
     const welcomeWindow = page.locator('.window:has-text("Welcome")');
     if (await welcomeWindow.isVisible()) {
@@ -76,16 +79,16 @@ test('Explorer Basic Operations', async ({ page }) => {
     // (Visual verification of sort is harder, but we check the action works)
 
     // 6. Delete items
-    await newFolder.click();
-    await page.keyboard.press('Delete');
+    await newFolder.click({ button: 'right' });
+    await page.locator('.menu-item:has-text("Delete")').filter({ visible: true }).click();
 
     const deleteDialog = page.locator('.window:has-text("Confirm File Delete")');
     await expect(deleteDialog).toBeVisible();
     await deleteDialog.locator('button:has-text("Yes")').click();
     await expect(newFolder).toBeHidden();
 
-    await newFile.click();
-    await page.keyboard.press('Delete');
+    await newFile.click({ button: 'right' });
+    await page.locator('.menu-item:has-text("Delete")').filter({ visible: true }).click();
     await expect(deleteDialog).toBeVisible();
     await deleteDialog.locator('button:has-text("Yes")').click();
     await expect(newFile).toBeHidden();

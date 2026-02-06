@@ -4,8 +4,20 @@ test('Verify Recycle Bin Icons and Properties', async ({ page }, testInfo) => {
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
     await page.goto('/');
+
+    // Handle "Press any key to continue" boot prompt if it appears
+    const bootScreen = page.locator('#boot-screen');
+    if (await bootScreen.isVisible()) {
+        const prompt = page.locator('text=Press any key to continue');
+        try {
+            await prompt.waitFor({ state: 'visible', timeout: 5000 });
+            await page.keyboard.press('Enter');
+        } catch (e) { }
+    }
+
     await page.waitForSelector('text=azOS Ready!', { timeout: 60000 });
     await page.waitForSelector('#splash-screen', { state: 'hidden' });
+    await page.waitForFunction(() => window.System && typeof window.System.launchApp === 'function', { timeout: 30000 });
 
     // Create a text file and move it to recycle bin
     await page.evaluate(async () => {
