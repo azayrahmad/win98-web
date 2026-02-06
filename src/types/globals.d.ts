@@ -1,20 +1,15 @@
-export {};
+import { WindowManager } from '../system/window-manager';
 
 declare global {
   interface Window {
-    System: {
-      incrementZIndex(): number;
-      getHighestZIndex(): number;
-      minimizeWindow(win: any, skipTaskbarUpdate?: boolean): void;
-      restoreWindow(win: any): void;
-      updateTitleBarClasses(win: any): void;
+    System: WindowManager & {
       launchApp: (id: string, data?: any) => Promise<void>;
       appManager: any;
       resetInactivityTimer(): void;
     };
-    fs: any; // Ideally this would be from @zenfs/core but we'll use any for now to avoid complexity in phase 1
+    fs: any;
     mounts: any;
-    ShowDialogWindow: (options: any) => void;
+    ShowDialogWindow: (options: DialogOptions) => OSGUI$Window;
     playSound: (event: string) => void;
     setTheme: (themeName: string) => Promise<void>;
     RecycleBinManager: any;
@@ -25,5 +20,26 @@ declare global {
         get_new_menu_z_index: () => number;
         get_direction: () => "ltr" | "rtl";
     };
+    makeThemeCSSFile: (colors: Record<string, string>) => string;
+  }
+
+  interface DialogButton {
+    label: string;
+    action?: (win: OSGUI$Window) => void | boolean | Promise<void | boolean>;
+    isDefault?: boolean;
+    disabled?: boolean;
+  }
+
+  interface DialogOptions {
+    title: string;
+    titleIconUrl?: string;
+    contentIconUrl?: string;
+    text?: string;
+    content?: HTMLElement;
+    buttons?: DialogButton[];
+    soundEvent?: string;
+    modal?: boolean;
+    showOverlay?: boolean;
+    parentWindow?: OSGUI$Window | null;
   }
 }

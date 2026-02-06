@@ -8,15 +8,24 @@ import { addDesktopShortcut, removeDesktopShortcut } from './zenfs-utils.js';
 import { launchApp } from './app-manager.js';
 import { addToRecycleBin } from './recycle-bin-utils.js';
 
-export function setupIcons() {
-    const desktop = document.querySelector('.desktop');
+export function setupIcons(): void {
+    const desktop = document.querySelector('.desktop') as any;
     if (desktop && typeof desktop.refreshIcons === 'function') {
         desktop.refreshIcons();
     }
 }
 
-export function registerCustomApp(appInfo) {
-    const existingApp = apps.find(app => app.id === appInfo.id);
+export interface CustomAppInfo {
+    id: string;
+    title: string;
+    width?: number;
+    height?: number;
+    icon?: string;
+    html: string;
+}
+
+export function registerCustomApp(appInfo: CustomAppInfo): void {
+    const existingApp = apps.find(app => app.id === appInfo.id) as any;
 
     if (existingApp) {
         // Update existing app's properties
@@ -28,11 +37,11 @@ export function registerCustomApp(appInfo) {
         }
         // Re-create the app class to capture the new HTML content in the closure
         existingApp.appClass = class CustomApp extends Application {
-            constructor(config) {
+            constructor(config: any) {
                 super(config);
             }
 
-            _createWindow() {
+            async _createWindow() {
                 const win = new $Window({
                     title: this.title,
                     outerWidth: this.width,
@@ -44,17 +53,17 @@ export function registerCustomApp(appInfo) {
                 return win;
             }
         };
-        appClasses[appInfo.id] = existingApp.appClass;
+        (appClasses as any)[appInfo.id] = existingApp.appClass;
         setupIcons();
         return;
     }
 
     class CustomApp extends Application {
-        constructor(config) {
+        constructor(config: any) {
             super(config);
         }
 
-        _createWindow() {
+        async _createWindow() {
             const win = new $Window({
                 title: this.title,
                 outerWidth: this.width || 400,
@@ -67,7 +76,7 @@ export function registerCustomApp(appInfo) {
         }
     }
 
-    const newApp = {
+    const newApp: any = {
         id: appInfo.id,
         title: appInfo.title,
         icon: appInfo.icon ? { 16: appInfo.icon, 32: appInfo.icon } : ICONS.appmaker,
@@ -96,6 +105,7 @@ export function registerCustomApp(appInfo) {
                             },
                             {
                                 label: 'No',
+                                action: () => {},
                             },
                         ],
                     });
@@ -107,11 +117,11 @@ export function registerCustomApp(appInfo) {
     addDesktopShortcut(appInfo.id, appInfo.title);
 
     apps.push(newApp);
-    appClasses[appInfo.id] = newApp.appClass;
+    (appClasses as any)[appInfo.id] = newApp.appClass;
     setupIcons();
 }
 
-export function deleteCustomApp(appId) {
+export function deleteCustomApp(appId: string): void {
     const appIndex = apps.findIndex(app => app.id === appId);
     if (appIndex === -1) return;
 
@@ -119,11 +129,11 @@ export function deleteCustomApp(appId) {
     addToRecycleBin(app);
 
     apps.splice(appIndex, 1);
-    delete appClasses[appId];
+    delete (appClasses as any)[appId];
 
     removeDesktopShortcut(appId);
 
-    const savedApps = getItem(LOCAL_STORAGE_KEYS.CUSTOM_APPS) || [];
+    const savedApps = (getItem(LOCAL_STORAGE_KEYS.CUSTOM_APPS) as CustomAppInfo[]) || [];
     const newSavedApps = savedApps.filter(savedApp => savedApp.id !== appId);
     setItem(LOCAL_STORAGE_KEYS.CUSTOM_APPS, newSavedApps);
 

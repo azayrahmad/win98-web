@@ -1,21 +1,23 @@
 import { Application } from './application.js';
 
-export class IFrameApplication extends Application {
-  constructor(config) {
+export abstract class IFrameApplication extends Application {
+  constructor(config: any) {
     super(config);
   }
 
-  _setupIframeForInactivity(iframe) {
+  protected _setupIframeForInactivity(iframe: HTMLIFrameElement | null): void {
     if (!iframe) return;
 
     const resetTimer = () => window.System.resetInactivityTimer();
 
     const setupListeners = () => {
       try {
-        const iframeDoc = iframe.contentWindow.document;
-        iframeDoc.addEventListener("mousemove", resetTimer);
-        iframeDoc.addEventListener("mousedown", resetTimer);
-        iframeDoc.addEventListener("keydown", resetTimer);
+        if (iframe.contentWindow) {
+          const iframeDoc = iframe.contentWindow.document;
+          iframeDoc.addEventListener("mousemove", resetTimer);
+          iframeDoc.addEventListener("mousedown", resetTimer);
+          iframeDoc.addEventListener("keydown", resetTimer);
+        }
       } catch (e) {
         console.warn(
           `Could not add inactivity listeners to iframe for app ${this.id}. This might be due to cross-origin restrictions.`,

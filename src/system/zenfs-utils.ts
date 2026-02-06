@@ -5,7 +5,7 @@ import { fs } from "@zenfs/core";
  * @param {string} path
  * @returns {boolean}
  */
-export function isZenFSPath(path) {
+export function isZenFSPath(path: string): boolean {
   return (
     typeof path === "string" &&
     /^\/[A-Z]:/.test(path) && // Path that starts with a drive letter (/A:, /C:, etc)
@@ -19,9 +19,9 @@ export function isZenFSPath(path) {
  * @param {string} filename
  * @returns {string}
  */
-export function getMimeType(filename) {
-  const extension = filename.split(".").pop().toLowerCase();
-  const mimeTypes = {
+export function getMimeType(filename: string): string {
+  const extension = filename.split(".").pop()?.toLowerCase() || "";
+  const mimeTypes: Record<string, string> = {
     txt: "text/plain",
     js: "text/javascript",
     json: "application/json",
@@ -69,10 +69,10 @@ export function getMimeType(filename) {
  * @param {string} path
  * @returns {Promise<Blob>}
  */
-export async function getZenFSFileAsBlob(path) {
+export async function getZenFSFileAsBlob(path: string): Promise<Blob> {
   const data = await fs.promises.readFile(path);
   const type = getMimeType(path);
-  return new Blob([data], { type });
+  return new Blob([data as any], { type });
 }
 
 /**
@@ -80,7 +80,7 @@ export async function getZenFSFileAsBlob(path) {
  * @param {string} path
  * @returns {Promise<string>}
  */
-export async function getZenFSFileAsText(path) {
+export async function getZenFSFileAsText(path: string): Promise<string> {
   return await fs.promises.readFile(path, "utf8");
 }
 
@@ -89,7 +89,7 @@ export async function getZenFSFileAsText(path) {
  * @param {string} path
  * @returns {Promise<string>}
  */
-export async function getZenFSFileUrl(path) {
+export async function getZenFSFileUrl(path: string): Promise<string> {
   const blob = await getZenFSFileAsBlob(path);
   return URL.createObjectURL(blob);
 }
@@ -99,7 +99,7 @@ export async function getZenFSFileUrl(path) {
  * @param {string} path
  * @returns {Promise<boolean>}
  */
-export async function existsAsync(path) {
+export async function existsAsync(path: string): Promise<boolean> {
     try {
         await fs.promises.stat(path);
         return true;
@@ -113,7 +113,7 @@ export async function existsAsync(path) {
  * @param {string} appId The ID of the app to add.
  * @param {string} appTitle The title of the shortcut.
  */
-export async function addDesktopShortcut(appId, appTitle) {
+export async function addDesktopShortcut(appId: string, appTitle: string): Promise<void> {
   const desktopPath = "/C:/WINDOWS/Desktop";
   try {
     if (!(await existsAsync(desktopPath))) {
@@ -137,7 +137,7 @@ export async function addDesktopShortcut(appId, appTitle) {
  * Removes a shortcut from the desktop (/C:/WINDOWS/Desktop).
  * @param {string} appId The ID of the app to remove.
  */
-export async function removeDesktopShortcut(appId) {
+export async function removeDesktopShortcut(appId: string): Promise<void> {
   const desktopPath = "/C:/WINDOWS/Desktop";
   try {
     if (await existsAsync(desktopPath)) {

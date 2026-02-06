@@ -1,24 +1,32 @@
 import { taskbar } from '../shell/taskbar/taskbar.js';
 
+interface WindowElement extends HTMLElement {
+  $window?: OSGUI$Window;
+  isMinimized?: boolean;
+}
+
 export class WindowManager {
+  private _zIndex: number;
+  public minimizedWindows: Map<string, any>;
+
   constructor() {
     this._zIndex = 1000;
     this.minimizedWindows = new Map();
   }
 
-  incrementZIndex() {
+  incrementZIndex(): number {
     return ++this._zIndex;
   }
 
-  getHighestZIndex() {
+  getHighestZIndex(): number {
     return this._zIndex;
   }
 
-  minimizeWindow(win, skipTaskbarUpdate = false) {
+  minimizeWindow(win: WindowElement | null, skipTaskbarUpdate: boolean = false): void {
     if (!win?.id) return;
 
     // Access the $window jQuery object from the DOM element
-    const $window = win.$window || $(win).closest(".window").data("$window");
+    const $window = win.$window || ($(win).closest(".window").data("$window") as OSGUI$Window);
     if ($window && typeof $window.minimize === "function") {
       $window.minimize();
     } else {
@@ -33,11 +41,11 @@ export class WindowManager {
     }
   }
 
-  restoreWindow(win) {
+  restoreWindow(win: WindowElement | null): void {
     if (!win?.id) return;
 
     // Access the $window jQuery object from the DOM element
-    const $window = win.$window || $(win).closest(".window").data("$window");
+    const $window = win.$window || ($(win).closest(".window").data("$window") as OSGUI$Window);
 
     if ($window && typeof $window.unminimize === "function") {
       $window.unminimize();
@@ -52,7 +60,7 @@ export class WindowManager {
     taskbar.updateTaskbarButton(win.id, true, false);
   }
 
-  updateTitleBarClasses(win) {
+  updateTitleBarClasses(win: HTMLElement | null): void {
     if (!win) return;
 
     // Remove active class from all windows

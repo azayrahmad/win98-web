@@ -1,9 +1,9 @@
-let floppyContent = null;
-let folderName = null;
+let floppyContent: any[] | null = null;
+let folderName: string | null = null;
 
-async function buildFileTree(directoryHandle) {
-  const children = [];
-  for await (const entry of directoryHandle.values()) {
+async function buildFileTree(directoryHandle: FileSystemDirectoryHandle): Promise<any[]> {
+  const children: any[] = [];
+  for await (const entry of (directoryHandle as any).values()) {
     if (entry.kind === "file") {
       children.push({
         id: `floppy-${directoryHandle.name}-${entry.name}`,
@@ -30,10 +30,10 @@ async function buildFileTree(directoryHandle) {
 }
 
 export const floppyManager = {
-  async insert({ onBeforeInsert, onAfterInsert } = {}) {
+  async insert({ onBeforeInsert, onAfterInsert }: { onBeforeInsert?: () => void, onAfterInsert?: () => void } = {}): Promise<boolean> {
     onBeforeInsert?.();
     try {
-      const directoryHandle = await window.showDirectoryPicker();
+      const directoryHandle = await (window as any).showDirectoryPicker();
       folderName = directoryHandle.name;
       floppyContent = await buildFileTree(directoryHandle);
       document.dispatchEvent(new CustomEvent("floppy-inserted"));
@@ -46,21 +46,21 @@ export const floppyManager = {
     }
   },
 
-  eject() {
+  eject(): void {
     floppyContent = null;
     folderName = null;
     document.dispatchEvent(new CustomEvent("floppy-ejected"));
   },
 
-  isInserted() {
+  isInserted(): boolean {
     return floppyContent !== null;
   },
 
-  getContents() {
+  getContents(): any[] | null {
     return floppyContent;
   },
 
-  getFolderName() {
+  getFolderName(): string | null {
     return folderName;
   },
 };

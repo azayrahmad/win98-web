@@ -6,18 +6,58 @@ import {
 import { openApps } from '../system/application.js';
 import { playSound } from './sound-manager.js';
 
-const appManager = {
+export interface AppConfig {
+    id: string;
+    title: string;
+    description?: string;
+    summary?: string;
+    icon?: any;
+    appClass?: any;
+    width?: number;
+    height?: number;
+    resizable?: boolean;
+    isSingleton?: boolean;
+    contextMenu?: any[];
+    hasTray?: boolean;
+    tray?: {
+        contextMenu: () => any[];
+    };
+    action?: {
+        type: "function";
+        handler: (data?: any) => void;
+    };
+    minimizeButton?: boolean;
+    maximizeButton?: boolean;
+    hasTaskbarButton?: boolean;
+}
+
+export interface AppInstance {
+    id: string;
+    instanceKey: string;
+    win?: OSGUI$Window | null;
+    launch(data?: any): Promise<void>;
+    _cleanup?: () => void;
+}
+
+interface AppManager {
+    runningApps: Record<string, AppInstance>;
+    getRunningApps(): Record<string, AppInstance>;
+    getAppConfig(appId: string): AppConfig | undefined;
+    closeApp(instanceKey: string): void;
+}
+
+const appManager: AppManager = {
     runningApps: {},
 
     getRunningApps() {
         return this.runningApps;
     },
 
-    getAppConfig(appId) {
-        return apps.find((a) => a.id === appId);
+    getAppConfig(appId: string) {
+        return apps.find((a: any) => a.id === appId) as AppConfig | undefined;
     },
 
-    closeApp(instanceKey) {
+    closeApp(instanceKey: string) {
         const appInstance = this.runningApps[instanceKey];
         if (appInstance) {
             playSound("Close");
@@ -36,7 +76,7 @@ const appManager = {
     }
 };
 
-export async function launchApp(appId, data = null) {
+export async function launchApp(appId: string, data: any = null): Promise<AppInstance | void> {
   const launchId = `launch-${appId}-${Date.now()}`;
   requestWaitState(launchId);
 
@@ -58,7 +98,7 @@ export async function launchApp(appId, data = null) {
 
     try {
         if (appConfig.appClass) {
-            const appInstance = new appConfig.appClass({ ...appConfig, id: appId });
+            const appInstance = new appConfig.appClass({ ...appConfig, id: appId }) as AppInstance;
             // The instance will register itself in runningApps during launch using its unique instanceKey
             await appInstance.launch(data);
             document.dispatchEvent(new CustomEvent('app-launched', { detail: { appId } }));
@@ -76,7 +116,7 @@ export async function launchApp(appId, data = null) {
     }
 }
 
-export function handleAppAction(app) {
+export function handleAppAction(app: { id: string; filePath?: string }): void {
     launchApp(app.id, app.filePath);
 }
 

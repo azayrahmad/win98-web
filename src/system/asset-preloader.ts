@@ -2,57 +2,62 @@ import { themes } from '../config/themes.js';
 import { soundSchemes } from '../config/sound-schemes.js';
 import { cursors } from '../config/cursors.js';
 
-export async function preloadImage(src) {
+export async function preloadImage(src: string): Promise<void> {
   const img = new Image();
   img.src = src;
   if ('decode' in img) {
-    return img.decode().catch((err) => {
+    return (img as any).decode().catch((err: any) => {
       console.warn(`Failed to decode image: ${src}`, err);
       // Fallback to standard loading if decode fails
-      return new Promise((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         if (img.complete) return resolve();
-        img.onload = resolve;
+        img.onload = () => resolve();
         img.onerror = reject;
       });
     });
   } else {
-    return new Promise((resolve, reject) => {
-      if (img.complete) return resolve();
-      img.onload = resolve;
-      img.onerror = reject;
+    return new Promise<void>((resolve, reject) => {
+      const anyImg = img as any;
+      if (anyImg.complete) return resolve();
+      anyImg.onload = () => resolve();
+      anyImg.onerror = reject;
     });
   }
 }
 
-async function preloadAudio(src) {
+async function preloadAudio(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const audio = new Audio();
     audio.src = src;
-    audio.addEventListener('canplaythrough', resolve, { once: true });
+    audio.addEventListener('canplaythrough', () => resolve(), { once: true });
     audio.onerror = reject;
   });
 }
 
-async function preloadCursor(src) {
+async function preloadCursor(src: string): Promise<Response> {
   // For cursors, we just need to fetch the file to get it into the browser cache
   return fetch(src);
 }
 
-export async function preloadThemeAssets(themeId, onAssetStart, onAssetFinish) {
-  const theme = themes[themeId];
+export async function preloadThemeAssets(
+  themeId: string,
+  onAssetStart?: (name: string) => Promise<any> | any,
+  onAssetFinish?: (handle: any, status: "OK" | "FAILED") => void
+): Promise<void> {
+  const theme = (themes as any)[themeId];
   if (!theme) {
     console.warn(`Theme not found: ${themeId}`);
     return;
   }
 
-  const assetsToLoad = [];
+  const assetsToLoad: { factory: () => Promise<any>, name: string }[] = [];
 
-  const queueAsset = (loaderPromiseFactory, src) => {
+  const queueAsset = (loaderPromiseFactory: () => Promise<any>, src: any) => {
     // Extract filename for display
-    let name = src;
+    let name = String(src);
     try {
       if (typeof src === 'string') {
-        name = src.split('/').pop().split('?')[0];
+        name = src.split('/').pop()?.split('?')[0] || src;
       }
     } catch (e) {
       // fallback
@@ -67,7 +72,7 @@ export async function preloadThemeAssets(themeId, onAssetStart, onAssetFinish) {
   }
 
   // Sound scheme
-  const soundScheme = soundSchemes[theme.soundScheme];
+  const soundScheme = (soundSchemes as any)[theme.soundScheme];
   if (soundScheme) {
     for (const sound in soundScheme) {
       if (soundScheme[sound]) {
@@ -77,7 +82,7 @@ export async function preloadThemeAssets(themeId, onAssetStart, onAssetFinish) {
   }
 
   // Cursor scheme
-  const cursorScheme = cursors[themeId];
+  const cursorScheme = (cursors as any)[themeId];
   if (cursorScheme) {
     for (const cursor in cursorScheme) {
       if (cursorScheme[cursor]) {

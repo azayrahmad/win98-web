@@ -3,22 +3,22 @@ import { recycleBinContent } from '../config/recyclebin.js';
 
 /**
  * Gets all items from the Recycle Bin.
- * @returns {Array} An array of items in the Recycle Bin.
+ * @returns {any[]} An array of items in the Recycle Bin.
  */
-export function getRecycleBinItems() {
+export function getRecycleBinItems(): any[] {
   const items = getItem(LOCAL_STORAGE_KEYS.RECYCLE_BIN);
   if (items === null) {
     setItem(LOCAL_STORAGE_KEYS.RECYCLE_BIN, recycleBinContent);
-    return recycleBinContent;
+    return recycleBinContent as any[];
   }
-  return items;
+  return items as any[];
 }
 
 /**
  * Adds an item to the Recycle Bin.
  * @param {object} item - The item to add.
  */
-export function addToRecycleBin(item) {
+export function addToRecycleBin(item: any): void {
   const items = getRecycleBinItems();
   items.push(item);
   setItem(LOCAL_STORAGE_KEYS.RECYCLE_BIN, items);
@@ -28,7 +28,7 @@ export function addToRecycleBin(item) {
  * Removes an item from the Recycle Bin by its ID.
  * @param {string} itemId - The ID of the item to remove.
  */
-export function removeFromRecycleBin(itemId) {
+export function removeFromRecycleBin(itemId: string): void {
   const items = getRecycleBinItems();
   const newItems = items.filter(item => item.id !== itemId);
   setItem(LOCAL_STORAGE_KEYS.RECYCLE_BIN, newItems);
@@ -37,6 +37,6 @@ export function removeFromRecycleBin(itemId) {
 /**
  * Clears all items from the Recycle Bin.
  */
-export function emptyRecycleBin() {
+export function emptyRecycleBin(): void {
   setItem(LOCAL_STORAGE_KEYS.RECYCLE_BIN, []);
 }

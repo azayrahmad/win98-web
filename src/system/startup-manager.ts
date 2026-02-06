@@ -11,8 +11,8 @@ const STARTUP_PATH = `${START_MENU_PATH}/StartUp`;
  * Gets the list of startup app IDs from ZenFS and localStorage (fallback).
  * @returns {Promise<string[]>} An array of app IDs.
  */
-export async function getStartupApps() {
-  const appIds = new Set();
+export async function getStartupApps(): Promise<string[]> {
+  const appIds = new Set<string>();
 
   // 1. Read from ZenFS
   try {
@@ -33,7 +33,7 @@ export async function getStartupApps() {
   }
 
   // 2. Read from localStorage (for backwards compatibility if migration failed or hasn't run)
-  const localApps = getItem(STARTUP_APPS_KEY) || [];
+  const localApps = (getItem(STARTUP_APPS_KEY) as string[]) || [];
   localApps.forEach(id => appIds.add(id));
 
   return Array.from(appIds);
@@ -43,14 +43,14 @@ export async function getStartupApps() {
  * Adds an app ID to the startup list.
  * @param {string} appId The ID of the app to add.
  */
-export async function addStartupApp(appId) {
+export async function addStartupApp(appId: string): Promise<void> {
   // Add to ZenFS
   try {
     if (!(await existsAsync(STARTUP_PATH))) {
       await fs.promises.mkdir(STARTUP_PATH, { recursive: true });
     }
     const app = apps.find(a => a.id === appId);
-    const label = app ? app.title : appId;
+    const label = app ? (app as any).title : appId;
     const lnkPath = `${STARTUP_PATH}/${label}.lnk.json`;
 
     if (!(await existsAsync(lnkPath))) {
@@ -64,7 +64,7 @@ export async function addStartupApp(appId) {
   }
 
   // Still add to localStorage for now to be safe
-  const currentApps = getItem(STARTUP_APPS_KEY) || [];
+  const currentApps = (getItem(STARTUP_APPS_KEY) as string[]) || [];
   if (!currentApps.includes(appId)) {
     const newApps = [...currentApps, appId];
     setItem(STARTUP_APPS_KEY, newApps);
@@ -75,7 +75,7 @@ export async function addStartupApp(appId) {
  * Removes an app ID from the startup list.
  * @param {string} appId The ID of the app to remove.
  */
-export async function removeStartupApp(appId) {
+export async function removeStartupApp(appId: string): Promise<void> {
   // Remove from ZenFS
   try {
     if (await existsAsync(STARTUP_PATH)) {
@@ -95,7 +95,7 @@ export async function removeStartupApp(appId) {
   }
 
   // Remove from localStorage
-  const currentApps = getItem(STARTUP_APPS_KEY) || [];
+  const currentApps = (getItem(STARTUP_APPS_KEY) as string[]) || [];
   const newApps = currentApps.filter((id) => id !== appId);
   setItem(STARTUP_APPS_KEY, newApps);
 }

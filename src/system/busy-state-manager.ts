@@ -5,20 +5,20 @@ import {
   clearWaitCursor,
 } from './cursor-manager.js';
 
-const busyStateRequesters = new Map();
-const waitStateRequesters = new Map();
+const busyStateRequesters = new Map<HTMLElement, Set<string | symbol>>();
+const waitStateRequesters = new Map<HTMLElement, Set<string | symbol>>();
 
 function requestState(
-  requesterId,
-  element,
-  requestersMap,
-  applyCursor,
-) {
+  requesterId: string | symbol,
+  element: HTMLElement,
+  requestersMap: Map<HTMLElement, Set<string | symbol>>,
+  applyCursor: (el: HTMLElement) => void,
+): void {
   if (!requesterId) {
     console.warn('A unique requesterId must be provided to request a busy/wait state.');
     return;
   }
-  const requesters = requestersMap.get(element) || new Set();
+  const requesters = requestersMap.get(element) || new Set<string | symbol>();
   if (requesters.size === 0) {
     applyCursor(element);
   }
@@ -27,11 +27,11 @@ function requestState(
 }
 
 function releaseState(
-  requesterId,
-  element,
-  requestersMap,
-  clearCursor,
-) {
+  requesterId: string | symbol,
+  element: HTMLElement,
+  requestersMap: Map<HTMLElement, Set<string | symbol>>,
+  clearCursor: (el: HTMLElement) => void,
+): void {
   const requesters = requestersMap.get(element);
   if (!requesters || !requesters.has(requesterId)) {
     return;
@@ -46,10 +46,10 @@ function releaseState(
 /**
  * Requests the busy cursor for a given element, tracked by a unique requester ID.
  * The busy cursor is applied only on the first request and removed only on the last release.
- * @param {string | Symbol} requesterId - A unique identifier for the component/operation requesting the state.
+ * @param {string | symbol} requesterId - A unique identifier for the component/operation requesting the state.
  * @param {HTMLElement} [element=document.body] - The element to apply the cursor to.
  */
-export function requestBusyState(requesterId, element = document.body) {
+export function requestBusyState(requesterId: string | symbol, element: HTMLElement = document.body): void {
   requestState(
     requesterId,
     element,
@@ -60,10 +60,10 @@ export function requestBusyState(requesterId, element = document.body) {
 
 /**
  * Releases the busy cursor for a given element, tracked by a unique requester ID.
- * @param {string | Symbol} requesterId - The unique identifier used when requesting the state.
+ * @param {string | symbol} requesterId - The unique identifier used when requesting the state.
  * @param {HTMLElement} [element=document.body] - The element to clear the cursor from.
  */
-export function releaseBusyState(requesterId, element = document.body) {
+export function releaseBusyState(requesterId: string | symbol, element: HTMLElement = document.body): void {
   releaseState(
     requesterId,
     element,
@@ -75,10 +75,10 @@ export function releaseBusyState(requesterId, element = document.body) {
 /**
  * Requests the wait cursor for a given element, tracked by a unique requester ID.
  * The wait cursor is applied only on the first request and removed only on the last release.
- * @param {string | Symbol} requesterId - A unique identifier for the component/operation requesting the state.
+ * @param {string | symbol} requesterId - A unique identifier for the component/operation requesting the state.
  * @param {HTMLElement} [element=document.body] - The element to apply the cursor to.
  */
-export function requestWaitState(requesterId, element = document.body) {
+export function requestWaitState(requesterId: string | symbol, element: HTMLElement = document.body): void {
   requestState(
     requesterId,
     element,
@@ -89,10 +89,10 @@ export function requestWaitState(requesterId, element = document.body) {
 
 /**
  * Releases the wait cursor for a given element, tracked by a unique requester ID.
- * @param {string | Symbol} requesterId - The unique identifier used when requesting the state.
+ * @param {string | symbol} requesterId - The unique identifier used when requesting the state.
  * @param {HTMLElement} [element=document.body] - The element to clear the cursor from.
  */
-export function releaseWaitState(requesterId, element = document.body) {
+export function releaseWaitState(requesterId: string | symbol, element: HTMLElement = document.body): void {
   releaseState(
     requesterId,
     element,

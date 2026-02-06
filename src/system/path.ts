@@ -2,12 +2,12 @@ import { SPECIAL_FOLDER_PATHS } from '../config/special-folders.js';
 import { apps } from '../config/apps.js';
 
 // Create a reverse map for easy lookup
-const reverseSpecialFolderPaths = {};
+const reverseSpecialFolderPaths: Record<string, string> = {};
 for (const key in SPECIAL_FOLDER_PATHS) {
-  reverseSpecialFolderPaths[SPECIAL_FOLDER_PATHS[key]] = key;
+  reverseSpecialFolderPaths[(SPECIAL_FOLDER_PATHS as any)[key]] = key;
 }
 
-export function convertInternalPathToWindows(internalPath) {
+export function convertInternalPathToWindows(internalPath: string): string {
   if (internalPath === "/") {
     return "My Computer";
   }
@@ -15,15 +15,15 @@ export function convertInternalPathToWindows(internalPath) {
   // Handle special folders via reverse lookup
   const specialFolderKey = reverseSpecialFolderPaths[internalPath];
   if (specialFolderKey) {
-    const app = apps.find((app) => app.id === specialFolderKey);
-    if (app) return app.title;
+    const app = apps.find((app: any) => app.id === specialFolderKey);
+    if (app) return (app as any).title;
   }
 
   // Handle virtual shell paths (legacy)
   if (internalPath.startsWith("//")) {
     const appId = internalPath.substring(2);
-    const app = apps.find((a) => a.id === appId);
-    if (app) return app.title;
+    const app = apps.find((a: any) => a.id === appId);
+    if (app) return (app as any).title;
   }
 
   // Handle ZenFS paths
@@ -32,7 +32,7 @@ export function convertInternalPathToWindows(internalPath) {
   return p.replace(/\//g, "\\");
 }
 
-export function convertWindowsPathToInternal(windowsPath) {
+export function convertWindowsPathToInternal(windowsPath: string): string {
   if (!windowsPath) return "/";
   if (windowsPath.toLowerCase() === "my computer") {
     return "/";
@@ -40,9 +40,9 @@ export function convertWindowsPathToInternal(windowsPath) {
 
   // Check for special folder names like "My Documents"
   for (const key in SPECIAL_FOLDER_PATHS) {
-    const app = apps.find((a) => a.id === key);
-    if (app && app.title.toLowerCase() === windowsPath.toLowerCase()) {
-      return SPECIAL_FOLDER_PATHS[key];
+    const app = apps.find((a: any) => a.id === key);
+    if (app && (app as any).title.toLowerCase() === windowsPath.toLowerCase()) {
+      return (SPECIAL_FOLDER_PATHS as any)[key];
     }
   }
 

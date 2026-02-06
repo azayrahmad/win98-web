@@ -1,6 +1,6 @@
-let lastCursorElement = null;
+let lastCursorElement: HTMLElement | null = null;
 
-function hideBootScreen() {
+function hideBootScreen(): void {
     const bootScreenEl = document.getElementById("boot-screen");
     if (bootScreenEl) {
         const contentEl = document.getElementById("boot-screen-content");
@@ -14,7 +14,7 @@ function hideBootScreen() {
     }
 }
 
-function startBootProcessStep(message) {
+function startBootProcessStep(message: string): HTMLElement | null {
     const bootLogEl = document.getElementById("boot-log");
     if (bootLogEl) {
         const logEntry = document.createElement("div");
@@ -31,7 +31,7 @@ function startBootProcessStep(message) {
     return null;
 }
 
-function finalizeBootProcessStep(logElement, status) {
+function finalizeBootProcessStep(logElement: HTMLElement | null, status: string): void {
     if (logElement) {
         const cursor = logElement.querySelector(".blinking-cursor");
         if (cursor) {
@@ -41,7 +41,7 @@ function finalizeBootProcessStep(logElement, status) {
     }
 }
 
-function showBlinkingCursor() {
+function showBlinkingCursor(): void {
     const bootLogEl = document.getElementById("boot-log");
     if (bootLogEl) {
         if (lastCursorElement) {
@@ -57,14 +57,14 @@ function showBlinkingCursor() {
     }
 }
 
-function removeLastBlinkingCursor() {
+function removeLastBlinkingCursor(): void {
     if (lastCursorElement) {
         lastCursorElement.remove();
         lastCursorElement = null;
     }
 }
 
-function promptToContinue() {
+function promptToContinue(): Promise<void> {
     return new Promise((resolve) => {
         removeLastBlinkingCursor();
         const bootLogEl = document.getElementById("boot-log");
@@ -100,7 +100,7 @@ function promptToContinue() {
     });
 }
 
-function showSetupScreen() {
+function showSetupScreen(): void {
     const bootLogEl = document.getElementById("boot-log");
     const biosInfoRow = document.getElementById("bios-info-row");
     const rightColumn = document.getElementById("boot-screen-right-column");

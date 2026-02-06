@@ -2,15 +2,15 @@ import { convertAniBinaryToCSS } from "ani-cursor";
 import { cursors, getCursorThemes } from '../config/cursors.js';
 import { getCursorSchemeId } from './theme-manager.js';
 
-const styleMap = new Map();
+const styleMap = new Map<string, HTMLStyleElement>();
 
-export async function applyAniCursorTheme(theme, cursorType) {
+export async function applyAniCursorTheme(theme: string, cursorType: string): Promise<void> {
   // `cursorType` directly corresponds to the key in the cursors object (e.g., 'busy', 'wait')
-  const cursorUrl = cursors[theme]?.[cursorType];
+  const cursorUrl = (cursors as any)[theme]?.[cursorType];
 
   if (!cursorUrl) {
     // If a specific theme doesn't have an animated cursor, fall back to default if it exists.
-    if (cursors.default?.[cursorType]) {
+    if ((cursors as any).default?.[cursorType]) {
       // console.log(`Falling back to default animated cursor for theme: ${theme}, type: ${cursorType}`);
       // When falling back, use 'default' as the themeKey, not the original 'theme'
       await applyAniCursorTheme("default", cursorType); // Recursively call with default theme
@@ -28,7 +28,7 @@ export async function applyAniCursorTheme(theme, cursorType) {
 
     // Use a unique ID for the style element to manage it easily
     const styleId = `ani-cursor-style-${theme}-${cursorType}`;
-    let style = document.getElementById(styleId);
+    let style = document.getElementById(styleId) as HTMLStyleElement | null;
 
     if (!style) {
       style = document.createElement("style");
@@ -43,14 +43,12 @@ export async function applyAniCursorTheme(theme, cursorType) {
   }
 }
 
-export function clearAniCursor() {
+export function clearAniCursor(): void {
   for (const [selector, style] of styleMap.entries()) {
     if (style && style.parentNode) {
       style.parentNode.removeChild(style);
     }
     styleMap.delete(selector);
-    // Also reset the cursor property on the element
-    // document.querySelector(selector).style.cursor = '';
   }
 }
 
@@ -58,7 +56,7 @@ export function clearAniCursor() {
  * Applies a busy/wait cursor to a specific element.
  * @param {HTMLElement} [element=document.body] - The element to apply the cursor to.
  */
-export function applyBusyCursor(element = document.body) {
+export function applyBusyCursor(element: HTMLElement = document.body): void {
   element.classList.add("cursor-busy");
   element.style.cursor = "var(--cursor-wait, wait)";
 }
@@ -67,7 +65,7 @@ export function applyBusyCursor(element = document.body) {
  * Clears the busy/wait cursor from a specific element.
  * @param {HTMLElement} [element=document.body] - The element to clear the cursor from.
  */
-export function clearBusyCursor(element = document.body) {
+export function clearBusyCursor(element: HTMLElement = document.body): void {
   // Use a short timeout to prevent the cursor from reverting too quickly,
   // ensuring the browser has time to render the change.
   setTimeout(() => {
@@ -85,7 +83,7 @@ export function clearBusyCursor(element = document.body) {
  * Applies a wait/progress cursor to a specific element.
  * @param {HTMLElement} [element=document.body] - The element to apply the cursor to.
  */
-export function applyWaitCursor(element = document.body) {
+export function applyWaitCursor(element: HTMLElement = document.body): void {
   element.classList.add("cursor-wait");
   element.style.cursor = "var(--cursor-progress, progress)";
 }
@@ -94,7 +92,7 @@ export function applyWaitCursor(element = document.body) {
  * Clears the wait/progress cursor from a specific element.
  * @param {HTMLElement} [element=document.body] - The element to clear the cursor from.
  */
-export function clearWaitCursor(element = document.body) {
+export function clearWaitCursor(element: HTMLElement = document.body): void {
   setTimeout(() => {
     element.classList.remove("cursor-wait");
     if (element === document.body) {
@@ -105,7 +103,7 @@ export function clearWaitCursor(element = document.body) {
   }, 50);
 }
 
-export function applyCursorTheme() {
+export function applyCursorTheme(_themeIdOverride?: string): void {
   const themeId = getCursorSchemeId();
   const root = document.documentElement;
   let themeConfig = getCursorThemes(themeId);
@@ -113,18 +111,19 @@ export function applyCursorTheme() {
 
   if (themeConfig) {
     for (const [property, config] of Object.entries(themeConfig)) {
-      if (config.animated) {
-        applyAniCursorTheme(themeId, config.type);
+      if ((config as any).animated) {
+        applyAniCursorTheme(themeId, (config as any).type);
       } else {
-        root.style.setProperty(property, config.value);
+        root.style.setProperty(property, (config as any).value);
       }
     }
   } else {
     clearAniCursor();
     // Assuming getCursorThemes returns an array of property names on failure, which seems unlikely.
     // This part might need adjustment based on the actual return value.
-    const defaultCursorProperties = getCursorThemes("default")
-      ? Object.keys(getCursorThemes("default"))
+    const defaultCursorConfig = getCursorThemes("default");
+    const defaultCursorProperties = defaultCursorConfig
+      ? Object.keys(defaultCursorConfig)
       : [];
     for (const property of defaultCursorProperties) {
       root.style.removeProperty(property);

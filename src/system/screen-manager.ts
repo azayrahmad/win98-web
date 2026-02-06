@@ -1,6 +1,11 @@
 import { getItem, setItem, LOCAL_STORAGE_KEYS } from './local-storage.js';
 
-const RESOLUTIONS = {
+interface Resolution {
+  width: number | string;
+  height: number | string;
+}
+
+const RESOLUTIONS: Record<string, Resolution> = {
   "640 by 480": { width: 640, height: 480 },
   "800 by 600": { width: 800, height: 600 },
   "1024 by 768": { width: 1024, height: 768 },
@@ -11,19 +16,19 @@ const DEFAULT_RESOLUTION = "fit";
 
 let currentResolutionId = DEFAULT_RESOLUTION;
 
-function getScreenElement() {
+function getScreenElement(): HTMLElement | null {
   return document.getElementById("screen");
 }
 
-function getAvailableResolutions() {
+function getAvailableResolutions(): string[] {
   return Object.keys(RESOLUTIONS);
 }
 
-function getCurrentResolutionId() {
+function getCurrentResolutionId(): string {
   return currentResolutionId;
 }
 
-function setResolution(resolutionId) {
+function setResolution(resolutionId: string): void {
   if (!RESOLUTIONS[resolutionId]) {
     console.error(`Invalid resolution: ${resolutionId}`);
     return;
@@ -60,15 +65,15 @@ function setResolution(resolutionId) {
   saveResolution(resolutionId);
 }
 
-function saveResolution(resolutionId) {
+function saveResolution(resolutionId: string): void {
   setItem(LOCAL_STORAGE_KEYS.SCREEN_RESOLUTION, resolutionId);
 }
 
-function loadResolution() {
-  return getItem(LOCAL_STORAGE_KEYS.SCREEN_RESOLUTION) || DEFAULT_RESOLUTION;
+function loadResolution(): string {
+  return (getItem(LOCAL_STORAGE_KEYS.SCREEN_RESOLUTION) as string) || DEFAULT_RESOLUTION;
 }
 
-function initScreenManager() {
+function initScreenManager(): void {
   const savedResolution = loadResolution();
   setResolution(savedResolution);
 

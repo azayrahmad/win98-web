@@ -2,24 +2,26 @@ import { getItem, setItem, LOCAL_STORAGE_KEYS } from './local-storage.js';
 import { SCREENSAVERS } from '../config/screensavers.js';
 
 class Screensaver {
+  public element: HTMLIFrameElement | null = null;
+  public previewElement: HTMLIFrameElement | null = null;
+  public active: boolean = false;
+  public currentScreensaver: string;
+
   constructor() {
-    this.element = null;
-    this.previewElement = null;
-    this.active = false;
     this.currentScreensaver = this.getCurrentScreensaver();
   }
 
-  getCurrentScreensaver() {
-    return getItem(LOCAL_STORAGE_KEYS.SCREENSAVER) || "flowerbox";
+  getCurrentScreensaver(): string {
+    return (getItem(LOCAL_STORAGE_KEYS.SCREENSAVER) as string) || "flowerbox";
   }
 
-  setCurrentScreensaver(id) {
+  setCurrentScreensaver(id: string): void {
     this.currentScreensaver = id;
     setItem(LOCAL_STORAGE_KEYS.SCREENSAVER, id);
   }
 
-  show() {
-    const screensaver = SCREENSAVERS[this.currentScreensaver];
+  show(): void {
+    const screensaver = (SCREENSAVERS as any)[this.currentScreensaver];
     if (!screensaver || !screensaver.path) {
       return;
     }
@@ -36,16 +38,18 @@ class Screensaver {
       this.element.style.zIndex = "9999";
 
       this.element.onload = () => {
-        const iframeDoc = this.element.contentWindow.document;
-        iframeDoc.addEventListener("mousemove", () =>
-          window.System.resetInactivityTimer(),
-        );
-        iframeDoc.addEventListener("mousedown", () =>
-          window.System.resetInactivityTimer(),
-        );
-        iframeDoc.addEventListener("keydown", () =>
-          window.System.resetInactivityTimer(),
-        );
+        if (this.element?.contentWindow) {
+          const iframeDoc = this.element.contentWindow.document;
+          iframeDoc.addEventListener("mousemove", () =>
+            window.System.resetInactivityTimer(),
+          );
+          iframeDoc.addEventListener("mousedown", () =>
+            window.System.resetInactivityTimer(),
+          );
+          iframeDoc.addEventListener("keydown", () =>
+            window.System.resetInactivityTimer(),
+          );
+        }
       };
 
       document.body.appendChild(this.element);
@@ -54,7 +58,7 @@ class Screensaver {
     this.active = true;
   }
 
-  hide() {
+  hide(): void {
     if (this.element) {
       this.element.remove();
       this.element = null;
@@ -62,10 +66,10 @@ class Screensaver {
     this.active = false;
   }
 
-  showPreview(id) {
+  showPreview(id: string): void {
     this.hidePreview();
 
-    const screensaver = SCREENSAVERS[id];
+    const screensaver = (SCREENSAVERS as any)[id];
     if (!screensaver || !screensaver.path) {
       return;
     }
@@ -81,17 +85,19 @@ class Screensaver {
     this.previewElement.style.zIndex = "9999";
 
     this.previewElement.onload = () => {
-      const iframeDoc = this.previewElement.contentWindow.document;
-      const hidePreviewCallback = () => this.hidePreview();
-      iframeDoc.addEventListener("mousemove", hidePreviewCallback);
-      iframeDoc.addEventListener("mousedown", hidePreviewCallback);
-      iframeDoc.addEventListener("keydown", hidePreviewCallback);
+      if (this.previewElement?.contentWindow) {
+        const iframeDoc = this.previewElement.contentWindow.document;
+        const hidePreviewCallback = () => this.hidePreview();
+        iframeDoc.addEventListener("mousemove", hidePreviewCallback);
+        iframeDoc.addEventListener("mousedown", hidePreviewCallback);
+        iframeDoc.addEventListener("keydown", hidePreviewCallback);
+      }
     };
 
     document.body.appendChild(this.previewElement);
   }
 
-  hidePreview() {
+  hidePreview(): void {
     if (this.previewElement) {
       this.previewElement.remove();
       this.previewElement = null;

@@ -4,7 +4,7 @@ This guide outlines the strategy for gradually converting the Windows 98 Web pro
 
 ## Migration Progress
 - [x] Phase 1: Infrastructure & Ambient Declarations
-- [ ] Phase 2: Core System Migration
+- [x] Phase 2: Core System Migration
 - [ ] Phase 3: Shared Components & Utils
 - [ ] Phase 4: Application Migration
 

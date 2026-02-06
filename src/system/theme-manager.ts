@@ -14,18 +14,17 @@ import {
 import { preloadThemeAssets } from './asset-preloader.js';
 import screensaverManager from './screensaver-utils.js';
 
-let parserPromise = null;
-let activeTheme = null; // In-memory cache to avoid repeated localStorage access
+let parserPromise: Promise<void> | null = null;
 
-export function loadThemeParser() {
+export function loadThemeParser(): Promise<void> {
   if (!parserPromise) {
     parserPromise = new Promise((resolve, reject) => {
-      if (window.makeThemeCSSFile) {
+      if ((window as any).makeThemeCSSFile) {
         return resolve();
       }
       const script = document.createElement("script");
       script.src = "./os-gui/parse-theme.js";
-      script.onload = resolve;
+      script.onload = () => resolve();
       script.onerror = () => {
         parserPromise = null; // Reset on error
         reject(new Error("Failed to load theme parser."));
@@ -36,78 +35,78 @@ export function loadThemeParser() {
   return parserPromise;
 }
 
-export function getCustomThemes() {
-  return getItem(LOCAL_STORAGE_KEYS.CUSTOM_THEMES) || {};
+export function getCustomThemes(): Record<string, any> {
+  const customThemes = getItem<Record<string, any>>(LOCAL_STORAGE_KEYS.CUSTOM_THEMES);
+  return (typeof customThemes === 'object' && customThemes !== null ? customThemes : {}) as Record<string, any>;
 }
 
-export function saveCustomTheme(themeId, themeData) {
+export function saveCustomTheme(themeId: string, themeData: any): void {
   const customThemes = getCustomThemes();
   customThemes[themeId] = themeData;
   setItem(LOCAL_STORAGE_KEYS.CUSTOM_THEMES, customThemes);
   document.dispatchEvent(new CustomEvent("custom-themes-changed"));
 }
 
-export function deleteCustomTheme(themeId) {
+export function deleteCustomTheme(themeId: string): void {
   const customThemes = getCustomThemes();
   delete customThemes[themeId];
   setItem(LOCAL_STORAGE_KEYS.CUSTOM_THEMES, customThemes);
   document.dispatchEvent(new CustomEvent("custom-themes-changed"));
 }
 
-export function getThemes() {
+export function getThemes(): Record<string, any> {
   const customThemes = getCustomThemes();
   return { ...themes, ...customThemes };
 }
 
-export function getColorSchemes() {
+export function getColorSchemes(): Record<string, any> {
   return colorSchemes;
 }
 
-// Gets the full theme object from localStorage, with a fallback to default.
 // Gets the ID of the base active theme.
-export function getActiveThemeId() {
-  return getItem(LOCAL_STORAGE_KEYS.ACTIVE_THEME) || "default";
+export function getActiveThemeId(): string {
+  return (getItem(LOCAL_STORAGE_KEYS.ACTIVE_THEME) as string) || "default";
 }
 
 // Gets the full theme object for the base active theme.
-export function getActiveTheme() {
+export function getActiveTheme(): any {
   const allThemes = getThemes();
   const activeId = getActiveThemeId();
-  return allThemes[activeId] || themes.default;
+  return allThemes[activeId] || (themes as any).default;
 }
 
 // --- Individual Scheme Getters with Overrides ---
 
-export function getColorSchemeId() {
-  return getItem(LOCAL_STORAGE_KEYS.COLOR_SCHEME) || getActiveThemeId();
+export function getColorSchemeId(): string {
+  return (getItem(LOCAL_STORAGE_KEYS.COLOR_SCHEME) as string) || getActiveThemeId();
 }
 
-export function getSoundSchemeName() {
+export function getSoundSchemeName(): string {
   return (
-    getItem(LOCAL_STORAGE_KEYS.SOUND_SCHEME) || getActiveTheme().soundScheme
+    (getItem(LOCAL_STORAGE_KEYS.SOUND_SCHEME) as string) || getActiveTheme().soundScheme
   );
 }
 
-export function getIconSchemeName() {
+export function getIconSchemeName(): string {
   return (
-    getItem(LOCAL_STORAGE_KEYS.ICON_SCHEME) || getActiveTheme().iconScheme
+    (getItem(LOCAL_STORAGE_KEYS.ICON_SCHEME) as string) || getActiveTheme().iconScheme
   );
 }
 
-export function getCursorSchemeId() {
+export function getCursorSchemeId(): string {
   return (
-    getItem(LOCAL_STORAGE_KEYS.CURSOR_SCHEME) || getActiveThemeId()
+    (getItem(LOCAL_STORAGE_KEYS.CURSOR_SCHEME) as string) || getActiveThemeId()
   );
 }
 
 // Deprecated: for components that still use it. Should be phased out.
-export function getCurrentTheme() {
+export function getCurrentTheme(): string {
   return getActiveThemeId();
 }
 
-function applyStylesheet(themeId, cssContent) {
+function applyStylesheet(themeId: string, cssContent: string): void {
   const styleId = `${themeId}-theme-styles`;
-  let styleEl = document.getElementById(styleId);
+  let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
   if (!styleEl) {
     styleEl = document.createElement("style");
     styleEl.id = styleId;
@@ -116,7 +115,7 @@ function applyStylesheet(themeId, cssContent) {
   styleEl.textContent = cssContent;
 }
 
-function removeStylesheet(themeId) {
+function removeStylesheet(themeId: string): void {
   const styleId = `${themeId}-theme-styles`;
   const styleEl = document.getElementById(styleId);
   if (styleEl) {
@@ -124,7 +123,7 @@ function removeStylesheet(themeId) {
   }
 }
 
-export async function applyTheme() {
+export async function applyTheme(): Promise<void> {
   const allThemes = getThemes();
   const allColorSchemes = getColorSchemes();
   const colorSchemeId = getColorSchemeId();
@@ -159,8 +158,8 @@ export async function applyTheme() {
   } else if (customThemeForColors && customThemeForColors.colors) {
     // It's a custom or temporary theme, so generate and apply its CSS.
     await loadThemeParser();
-    if (window.makeThemeCSSFile) {
-      const cssContent = window.makeThemeCSSFile(customThemeForColors.colors);
+    if ((window as any).makeThemeCSSFile) {
+      const cssContent = (window as any).makeThemeCSSFile(customThemeForColors.colors);
       const styleId = customThemeForColors.id === "custom" ? "custom" : customThemeForColors.id;
       applyStylesheet(styleId, cssContent);
     }
@@ -178,7 +177,7 @@ export async function applyTheme() {
   }
 }
 
-export async function setColorScheme(schemeId) {
+export async function setColorScheme(schemeId: string): Promise<void> {
   const setColorSchemeId = `set-color-scheme-${Date.now()}`;
   requestBusyState(setColorSchemeId, document.body);
   try {
@@ -197,18 +196,18 @@ export async function setColorScheme(schemeId) {
   }
 }
 
-export async function setCursorScheme(schemeId) {
+export async function setCursorScheme(schemeId: string): Promise<void> {
   setItem(LOCAL_STORAGE_KEYS.CURSOR_SCHEME, schemeId);
   await applyTheme();
   document.dispatchEvent(new CustomEvent("theme-changed"));
 }
 
-export function setSoundScheme(schemeName) {
+export function setSoundScheme(schemeName: string): void {
   setItem(LOCAL_STORAGE_KEYS.SOUND_SCHEME, schemeName);
   document.dispatchEvent(new CustomEvent("theme-changed"));
 }
 
-export async function applyCustomColorScheme(colorObject) {
+export async function applyCustomColorScheme(colorObject: any): Promise<void> {
   if (!colorObject) {
     console.error("applyCustomColorScheme received an invalid color object.");
     return;
@@ -218,8 +217,8 @@ export async function applyCustomColorScheme(colorObject) {
   requestBusyState(applyCustomId, document.body);
   try {
     await loadThemeParser();
-    if (window.makeThemeCSSFile) {
-      const cssContent = window.makeThemeCSSFile(colorObject);
+    if ((window as any).makeThemeCSSFile) {
+      const cssContent = (window as any).makeThemeCSSFile(colorObject);
       applyStylesheet("custom", cssContent);
     }
     // Set a temporary key in localStorage so other parts of the system
@@ -231,7 +230,7 @@ export async function applyCustomColorScheme(colorObject) {
   }
 }
 
-export async function setTheme(themeKey) {
+export async function setTheme(themeKey: string): Promise<void> {
   const setThemeId = `set-theme-${Date.now()}`;
   requestBusyState(setThemeId, document.body);
   try {

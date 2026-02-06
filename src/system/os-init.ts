@@ -26,25 +26,25 @@ import { RecycleBinManager } from '../shell/explorer/file-operations/recycle-bin
 import { appManager } from './app-manager.js';
 import { WindowManager } from './window-manager.js';
 
-export async function initializeOS() {
+export async function initializeOS(): Promise<void> {
   // Initialize Window Management System
-  window.System = new WindowManager();
+  window.System = new WindowManager() as any;
 
   const path = window.location.pathname;
   const profileName = path.startsWith('/win98-web/')
     ? path.substring('/win98-web/'.length).split('/')[0]
     : '';
 
-  window.activeProfile = null;
-  if (profileName && profiles[profileName]) {
-    window.activeProfile = profiles[profileName];
-    await setTheme(window.activeProfile.theme);
-    await setColorScheme(window.activeProfile.colorScheme);
+  (window as any).activeProfile = null;
+  if (profileName && (profiles as any)[profileName]) {
+    (window as any).activeProfile = (profiles as any)[profileName];
+    await setTheme((window as any).activeProfile.theme);
+    await setColorScheme((window as any).activeProfile.colorScheme);
   }
 
   let setupEntered = false;
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Delete") {
       setupEntered = true;
       showSetupScreen();
@@ -53,7 +53,7 @@ export async function initializeOS() {
   };
   window.addEventListener("keydown", handleKeyDown);
 
-  const executeBootStep = async (func) => {
+  const executeBootStep = async (func: () => void | Promise<void>) => {
     if (setupEntered) throw new Error("Setup interrupted");
     await func();
   };
@@ -61,7 +61,6 @@ export async function initializeOS() {
   try {
     let splashScreenVisible = false;
     let bootProcessFinished = false;
-    let splashScreenTimer = null;
 
     const splashScreen = document.getElementById("splash-screen");
     if (splashScreen) {
@@ -72,7 +71,7 @@ export async function initializeOS() {
       if (splashScreen) {
         splashScreen.style.display = "block";
         splashScreenVisible = true;
-        splashScreenTimer = setTimeout(async () => {
+        setTimeout(async () => {
           if (bootProcessFinished) {
             await hideBootAndSplash();
           } else {
@@ -93,7 +92,8 @@ export async function initializeOS() {
       hideSplashScreenOnly();
       hideBootScreen();
       document.body.classList.remove("booting");
-      document.getElementById("screen").classList.remove("boot-mode");
+      const screenEl = document.getElementById("screen");
+      if (screenEl) screenEl.classList.remove("boot-mode");
       playSound("WindowsLogon");
       document.dispatchEvent(new CustomEvent("desktop-ready-to-launch-apps"));
     }
@@ -107,24 +107,23 @@ export async function initializeOS() {
 
     await executeBootStep(() => {
       document.body.classList.add("booting");
-      document.getElementById("screen").classList.add("boot-mode");
-      document.getElementById("initial-boot-message").style.display = "none";
-      document.getElementById("boot-screen-content").style.display = "flex";
+      const screenEl = document.getElementById("screen");
+      if (screenEl) screenEl.classList.add("boot-mode");
+
+      const messageEl = document.getElementById("initial-boot-message");
+      if (messageEl) messageEl.style.display = "none";
+      const contentEl = document.getElementById("boot-screen-content");
+      if (contentEl) contentEl.style.display = "flex";
 
       const biosTextColumn = document.getElementById("bios-text-column");
       if (biosTextColumn) {
         biosTextColumn.innerHTML = `Award Modular BIOS v4.51PG, An Energy Star Ally<br/>Copyright (C) 1984-85, Award Software, Inc.`;
       }
-
-      const browserInfoEl = document.getElementById("browser-info");
-      if (browserInfoEl) {
-        // browserInfoEl.textContent = `Client: ${navigator.userAgent}`;
-      }
     });
 
     function loadCustomApps() {
       const savedApps = getItem(LOCAL_STORAGE_KEYS.CUSTOM_APPS) || [];
-      savedApps.forEach((appInfo) => {
+      savedApps.forEach((appInfo: any) => {
         registerCustomApp(appInfo);
       });
     }
@@ -144,7 +143,7 @@ export async function initializeOS() {
     await executeBootStep(async () => {
       const baseMsg = "Initializing file system...";
       let logElement = startBootProcessStep(baseMsg);
-      await initFileSystem((subStep) => {
+      await initFileSystem((subStep: string) => {
         if (logElement && logElement.firstChild) {
           logElement.firstChild.nodeValue = `${baseMsg} ${subStep}`;
         }
@@ -161,15 +160,15 @@ export async function initializeOS() {
       finalizeBootProcessStep(logElement, "OK");
     });
 
-    const createAssetLogCallbacks = (logElement, baseMessage) => {
-      const onAssetLogStart = (name) => {
+    const createAssetLogCallbacks = (logElement: HTMLElement | null, baseMessage: string) => {
+      const onAssetLogStart = (name: string) => {
         if (logElement && logElement.firstChild) {
           logElement.firstChild.nodeValue = `${baseMessage} ${name}...`;
         }
         return logElement;
       };
 
-      const onAssetLogFinish = (logEl, status) => {
+      const onAssetLogFinish = (_logEl: any, status: string) => {
         if (status === "FAILED") {
           if (logElement && logElement.firstChild) {
             logElement.firstChild.nodeValue += " (FAILED)";
@@ -275,7 +274,7 @@ export async function initializeOS() {
     await executeBootStep(async () => {
       let logElement = startBootProcessStep("Setting up desktop...");
       await new Promise((resolve) => setTimeout(resolve, 50));
-      await initDesktop(window.activeProfile);
+      await initDesktop((window as any).activeProfile);
       document.dispatchEvent(new CustomEvent("desktop-refresh"));
       finalizeBootProcessStep(logElement, "OK");
     });
@@ -293,29 +292,29 @@ export async function initializeOS() {
     window.removeEventListener("keydown", handleKeyDown);
     await handleBootCompletion();
 
-    window.ShowDialogWindow = ShowDialogWindow;
-    window.playSound = playSound;
-    window.setTheme = setTheme;
-    window.fs = fs;
-    window.mounts = mounts;
-    window.RecycleBinManager = RecycleBinManager;
-    window.System.launchApp = launchApp;
+    (window as any).ShowDialogWindow = ShowDialogWindow;
+    (window as any).playSound = playSound;
+    (window as any).setTheme = setTheme;
+    (window as any).fs = fs;
+    (window as any).mounts = mounts;
+    (window as any).RecycleBinManager = RecycleBinManager;
+    window.System.launchApp = launchApp as any;
     window.System.appManager = appManager;
     console.log("azOS initialized");
 
-    let inactivityTimer;
+    let inactivityTimer: any;
 
     function resetInactivityTimer() {
       clearTimeout(inactivityTimer);
-      if (screensaver.active) {
-        screensaver.hide();
+      if ((screensaver as any).active) {
+        (screensaver as any).hide();
       }
 
       const timeoutDuration =
         getItem(LOCAL_STORAGE_KEYS.SCREENSAVER_TIMEOUT) || 5 * 60 * 1000;
 
       inactivityTimer = setTimeout(() => {
-        screensaver.show();
+        (screensaver as any).show();
       }, timeoutDuration);
     }
 
@@ -327,7 +326,7 @@ export async function initializeOS() {
 
     resetInactivityTimer();
     initScreenManager();
-  } catch (error) {
+  } catch (error: any) {
     if (error.message !== "Setup interrupted") {
       console.error("An error occurred during boot:", error);
     }

@@ -1,27 +1,34 @@
-const clipboardManager = {
-  items: [],
-  operation: null, // 'cut' or 'copy'
+export type ClipboardOperation = 'cut' | 'copy' | null;
 
-  set(items, operation) {
+export interface ClipboardData {
+  items: string[];
+  operation: ClipboardOperation;
+}
+
+const clipboardManager = {
+  items: [] as string[],
+  operation: null as ClipboardOperation,
+
+  set(items: string[], operation: ClipboardOperation): void {
     this.items = items;
     this.operation = operation;
     document.dispatchEvent(new CustomEvent('clipboard-change', { detail: this }));
   },
 
-  get() {
+  get(): ClipboardData {
     return {
       items: this.items,
       operation: this.operation,
     };
   },
 
-  clear() {
+  clear(): void {
     this.items = [];
     this.operation = null;
     document.dispatchEvent(new CustomEvent('clipboard-change', { detail: this }));
   },
 
-  isEmpty() {
+  isEmpty(): boolean {
     return this.items.length === 0;
   },
 };

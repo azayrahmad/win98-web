@@ -1,12 +1,12 @@
 import { getItem, setItem, LOCAL_STORAGE_KEYS } from './local-storage.js';
 
-function generateHighColorFilter() {
-  const rLevels = [];
+function generateHighColorFilter(): string {
+  const rLevels: string[] = [];
   for (let i = 0; i < 32; i++) {
     rLevels.push(((i * 255) / 31 / 255).toFixed(3));
   }
 
-  const gLevels = [];
+  const gLevels: string[] = [];
   for (let i = 0; i < 64; i++) {
     gLevels.push(((i * 255) / 63 / 255).toFixed(3));
   }
@@ -16,7 +16,12 @@ function generateHighColorFilter() {
   return `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="high"><feComponentTransfer><feFuncR type="discrete" tableValues="${rLevels.join(" ")}"/><feFuncG type="discrete" tableValues="${gLevels.join(" ")}"/><feFuncB type="discrete" tableValues="${bLevels.join(" ")}"/></feComponentTransfer></filter></svg>#high')`;
 }
 
-const COLOR_MODES = {
+export interface ColorMode {
+  name: string;
+  filter: string;
+}
+
+const COLOR_MODES: Record<string, ColorMode> = {
   true: {
     name: "True Color (32 bit)",
     filter: "",
@@ -35,14 +40,14 @@ const COLOR_MODES = {
   },
 };
 
-let targetElement;
+let targetElement: HTMLElement | undefined;
 
-function applyColorMode(mode) {
+function applyColorMode(mode: string): void {
   if (!targetElement || !COLOR_MODES[mode]) return;
   targetElement.style.filter = COLOR_MODES[mode].filter;
 }
 
-export function setColorMode(mode) {
+export function setColorMode(mode: string): void {
   if (COLOR_MODES[mode]) {
     setItem(LOCAL_STORAGE_KEYS.COLOR_MODE, mode);
     applyColorMode(mode);
@@ -52,15 +57,15 @@ export function setColorMode(mode) {
   }
 }
 
-export function getCurrentColorMode() {
-  return getItem(LOCAL_STORAGE_KEYS.COLOR_MODE) || "true";
+export function getCurrentColorMode(): string {
+  return (getItem(LOCAL_STORAGE_KEYS.COLOR_MODE) as string) || "true";
 }
 
-export function getColorModes() {
+export function getColorModes(): Record<string, ColorMode> {
   return COLOR_MODES;
 }
 
-export function initColorModeManager(element) {
+export function initColorModeManager(element: HTMLElement): void {
   targetElement = element;
   const savedMode = getCurrentColorMode();
   applyColorMode(savedMode);

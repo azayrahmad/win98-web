@@ -6,11 +6,11 @@ import { getSoundSchemeName } from './theme-manager.js';
  * @param {string} eventName - The name of the sound event to play.
  * @returns {Promise<void>} A promise that resolves when the sound has finished playing.
  */
-export function playSound(eventName) {
+export function playSound(eventName: string): Promise<void> {
   return new Promise((resolve) => {
     const schemeName = getSoundSchemeName();
-    const currentScheme = soundSchemes[schemeName];
-    const defaultScheme = soundSchemes["Default"];
+    const currentScheme = (soundSchemes as any)[schemeName];
+    const defaultScheme = (soundSchemes as any)["Default"];
 
     // Determine the sound file url with fallbacks
     const soundUrl =

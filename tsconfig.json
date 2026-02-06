@@ -26,7 +26,8 @@
     "baseUrl": ".",
     "paths": {
       "*": ["src/*"]
-    }
+    },
+    "types": ["vite/client", "jquery", "node"]
   },
   "include": ["src", "public/os-gui"],
   "exclude": ["node_modules"]

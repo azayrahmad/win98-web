@@ -14,7 +14,7 @@ import { existsAsync } from "./zenfs-utils.js";
 
 let isInitialized = false;
 
-export async function initFileSystem(onProgress) {
+export async function initFileSystem(onProgress?: (msg: string) => void): Promise<void> {
   if (isInitialized) return;
 
   try {
@@ -23,7 +23,7 @@ export async function initFileSystem(onProgress) {
     // For now, let's just ensure we have our mounts.
     // If / is already mounted, we might need to unmount it first to use manual mount.
     try {
-      fs.umount("/");
+      (fs as any).umount("/");
     } catch (e) {
       // Root might not be unmountable or not mounted
     }
@@ -156,8 +156,8 @@ export async function initFileSystem(onProgress) {
     }
 
     if (!(await existsAsync(START_MENU_PATH))) {
-      const programsConfig = startMenuConfig.find(
-        (item) => item.label === "Programs",
+      const programsConfig = (startMenuConfig as any[]).find(
+        (item: any) => item.label === "Programs",
       );
       if (programsConfig && programsConfig.submenu) {
         await migrateToZenFS(programsConfig.submenu, START_MENU_PATH);
@@ -171,8 +171,8 @@ export async function initFileSystem(onProgress) {
           await fs.promises.mkdir(startupPath, { recursive: true });
         }
         for (const appId of startupApps) {
-          const app = apps.find((a) => a.id === appId);
-          const label = app ? app.title : appId;
+          const app = apps.find((a: any) => a.id === appId);
+          const label = app ? (app as any).title : appId;
           const lnkPath = `${startupPath}/${label}.lnk.json`;
           if (!(await existsAsync(lnkPath))) {
             await fs.promises.writeFile(
@@ -199,8 +199,8 @@ export async function initFileSystem(onProgress) {
 
     if (onProgress) onProgress("Initializing Favorites...");
     if (!(await existsAsync(FAVORITES_PATH))) {
-      const favoritesConfig = startMenuConfig.find(
-        (item) => item.label === "Favorites",
+      const favoritesConfig = (startMenuConfig as any[]).find(
+        (item: any) => item.label === "Favorites",
       );
       if (favoritesConfig && favoritesConfig.submenu) {
         await migrateToZenFS(favoritesConfig.submenu, FAVORITES_PATH);

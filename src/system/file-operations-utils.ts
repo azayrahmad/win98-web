@@ -1,11 +1,11 @@
 import { getItem, setItem, LOCAL_STORAGE_KEYS } from './local-storage.js';
 import { findItemByPath } from './directory.js';
 
-function getUniqueName(destinationPath, originalName) {
+function getUniqueName(destinationPath: string, originalName: string): string {
     const destinationFolder = findItemByPath(destinationPath);
     if (!destinationFolder) return originalName;
 
-    const allDroppedFiles = getItem(LOCAL_STORAGE_KEYS.DROPPED_FILES) || [];
+    const allDroppedFiles = (getItem(LOCAL_STORAGE_KEYS.DROPPED_FILES) as any[]) || [];
     const itemsInDestination = [
         ...(destinationFolder.children || []),
         ...allDroppedFiles.filter(f => f.path === destinationPath)
@@ -31,8 +31,8 @@ function getUniqueName(destinationPath, originalName) {
     return newName;
 }
 
-export function pasteItems(destinationPath, items, operation) {
-    const allDroppedFiles = getItem(LOCAL_STORAGE_KEYS.DROPPED_FILES) || [];
+export function pasteItems(destinationPath: string, items: any[], operation: 'cut' | 'copy'): void {
+    const allDroppedFiles = (getItem(LOCAL_STORAGE_KEYS.DROPPED_FILES) as any[]) || [];
     let updatedFiles = [...allDroppedFiles];
 
     items.forEach(item => {

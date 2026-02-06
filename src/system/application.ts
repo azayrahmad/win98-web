@@ -1,12 +1,29 @@
 import { ShowDialogWindow } from '../shared/components/dialog-window.js';
 import { createTaskbarButton, createTrayIcon } from '../shell/taskbar/taskbar.js';
-import { appManager } from './app-manager.js';
+import { appManager, AppConfig, AppInstance } from './app-manager.js';
 
-const openWindows = new Map();
-export const openApps = new Map();
+const openWindows = new Map<string, OSGUI$Window>();
+export const openApps = new Map<string, Application>();
 
-export class Application {
-  constructor(config) {
+export abstract class Application implements AppInstance {
+  public config: AppConfig;
+  public id: string;
+  public title: string;
+  public icon: any;
+  public isSingleton: boolean;
+  public hasTaskbarButton: boolean;
+  public hasTray: boolean;
+  public tray: any;
+  public win: OSGUI$Window | null = null;
+  public instanceKey: string = '';
+
+  public width?: number;
+  public height?: number;
+  public resizable?: boolean;
+  public minimizeButton?: boolean;
+  public maximizeButton?: boolean;
+
+  constructor(config: AppConfig) {
     if (this.constructor === Application) {
       throw new TypeError(
         'Abstract class "Application" cannot be instantiated directly.',
@@ -18,10 +35,9 @@ export class Application {
     this.title = config.title;
     this.icon = config.icon;
     this.isSingleton = config.isSingleton !== false;
-    this.hasTaskbarButton = config.hasTaskbarButton !== false;
+    this.hasTaskbarButton = (config as any).hasTaskbarButton !== false;
     this.hasTray = config.hasTray === true;
     this.tray = config.tray;
-    this.win = null;
 
     // Store window properties
     this.width = config.width;
@@ -31,9 +47,9 @@ export class Application {
     this.maximizeButton = config.maximizeButton;
   }
 
-  async launch(data = null) {
-    let filePath = null;
-    let windowIdOverride = null;
+  async launch(data: any = null): Promise<void> {
+    let filePath: any = null;
+    let windowIdOverride: string | null = null;
 
     if (data) {
       if (typeof data === "string") {
@@ -50,14 +66,14 @@ export class Application {
     this.instanceKey = instanceKey;
 
     if (openApps.has(instanceKey)) {
-      const existingApp = openApps.get(instanceKey);
+      const existingApp = openApps.get(instanceKey)!;
       if (existingApp.win) {
         const $win = $(existingApp.win.element);
         if ($win.is(":visible")) {
           existingApp.win.focus();
         } else {
           existingApp.win.restore();
-          setTimeout(() => existingApp.win.focus(), 0);
+          setTimeout(() => existingApp.win!.focus(), 0);
         }
       } else if (!existingApp.win && existingApp.isSingleton) {
         // It's a non-windowed singleton app, delegate to its own launch logic
@@ -74,7 +90,7 @@ export class Application {
     }
 
     if (this.hasTray) {
-      createTrayIcon(this);
+      createTrayIcon(this as any);
     }
 
     await this._onLaunch(filePath);
@@ -82,7 +98,7 @@ export class Application {
     appManager.runningApps[instanceKey] = this;
   }
 
-  _getWindowId(filePath) {
+  _getWindowId(filePath: any): string {
     const fileName = filePath?.name || filePath?.filename;
     if (filePath && typeof filePath === "object" && fileName) {
       return `${this.id}-${fileName}`;
@@ -92,21 +108,20 @@ export class Application {
       : this.id;
   }
 
-  _createWindow(filePath) {
-    throw new Error("Application must implement the _createWindow() method.");
-  }
+  abstract _createWindow(filePath: any): Promise<OSGUI$Window | null>;
 
-  async _onLaunch(filePath) {
+  async _onLaunch(_filePath: any): Promise<void> {
     // Optional hook for subclasses to implement for post-launch logic
   }
 
-  _setupWindow(windowId, instanceKey) {
+  _setupWindow(windowId: string, instanceKey: string): void {
+    if (!this.win) return;
     this.win.element.id = windowId;
     this.win.element.dataset.appId = this.id;
 
     this.win.onClosed(() => {
-      if (typeof this._onClose === "function") {
-        this._onClose();
+      if (typeof (this as any)._onClose === "function") {
+        (this as any)._onClose();
       }
       if (this.hasTaskbarButton) {
         const taskbarButton = document.querySelector(
@@ -126,15 +141,17 @@ export class Application {
         this.icon,
         this.title,
       );
-      this.win.element.classList.add("app-window");
-      this.win.setMinimizeTarget(taskbarButton);
+      if (taskbarButton) {
+        this.win.element.classList.add("app-window");
+        this.win.setMinimizeTarget(taskbarButton as HTMLElement);
+      }
     }
 
     this.win.center();
     this.win.focus();
   }
 
-  showProperties() {
+  showProperties(): void {
     let text = `<b>${this.config.title}</b>`;
     if (this.config.description) {
       text += `<br><br>${this.config.description}`;
@@ -147,7 +164,9 @@ export class Application {
       title: `${this.config.title} Properties`,
       contentIconUrl: this.config.icon[32],
       text: text,
-      buttons: [{ label: "OK", isDefault: true }],
+      buttons: [{ label: "OK", action: () => {}, isDefault: true }],
     });
   }
+
+  _cleanup?(): void;
 }

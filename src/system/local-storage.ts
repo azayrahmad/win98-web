@@ -31,10 +31,11 @@ export const LOCAL_STORAGE_KEYS = {
   SOLITAIRE_OUTLINE_DRAGGING: "solitaireOutlineDragging",
   SOLITAIRE_SHOW_STATUS_BAR: "solitaireShowStatusBar",
   SOLITAIRE_KEEP_SCORE: "solitaireKeepScore",
-};
+} as const;
 
-export function getItem(key) {
+export function getItem<T = any>(key: string): T | string | null {
   const item = localStorage.getItem(key);
+  if (item === null) return null;
   try {
     return JSON.parse(item);
   } catch (e) {
@@ -42,14 +43,14 @@ export function getItem(key) {
   }
 }
 
-export function setItem(key, value) {
-  if (typeof value === 'object') {
+export function setItem(key: string, value: any): void {
+  if (typeof value === 'object' && value !== null) {
     localStorage.setItem(key, JSON.stringify(value));
   } else {
     localStorage.setItem(key, value);
   }
 }
 
-export function removeItem(key) {
+export function removeItem(key: string): void {
     localStorage.removeItem(key)
 }

@@ -5,7 +5,7 @@ import { joinPath } from '../shell/explorer/navigation/path-utils.js';
  * Recursively scans the filesystem and renames .lnk files to .lnk.json
  * @param {string} dir - Directory to scan
  */
-export async function migrateShortcuts(dir = "/") {
+export async function migrateShortcuts(dir: string = "/"): Promise<void> {
     try {
         const files = await fs.promises.readdir(dir);
         for (const file of files) {
