@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <div id="loading">Preparing DOS environment...</div>
+    <div id="dos-container"></div>
+    <script src="lib/js-dos.js"></script>
+    <script src="lib/fflate.min.js"></script>
+    <script>
+        const log = (msg) => {
+            console.log(msg);
+            if (window.parent && window.parent.console) window.parent.console.log(msg);
+        };
+
+        async function run() {
+             try {
+                 const params = new URLSearchParams(window.location.search);
+                 const executable = params.get("executable");
+                 const directory = params.get("directory");
+                 const fs = window.parent.fs;
+
+                 const zipContent = {};
+                 const readRecursive = async (curr, rel) => {
+                    const entries = await fs.promises.readdir(curr);
+                    for (const entry of entries) {
+                        if (entry === "." || entry === "..") continue;
+                        const full = curr + (curr.endsWith("/") ? "" : "/") + entry;
+                        const stat = await fs.promises.stat(full);
+                        const zipPath = rel ? rel + "/" + entry : entry;
+                        if (stat.isDirectory()) {
+                            if (curr === "/C:" && (entry === "WINDOWS" || entry === "Program Files")) continue;
+                            await readRecursive(full, zipPath);
+                        } else {
+                            const data = await fs.promises.readFile(full);
+                            zipContent[zipPath] = new Uint8Array(data);
+                        }
+                    }
+                 };
+
+                 await readRecursive(directory, "");
+
+                 if (!zipContent[".jsdos/dosbox.conf"]) {
+                    zipContent[".jsdos/dosbox.conf"] = fflate.strToU8(`[autoexec]\nmount c .\nc:\n${executable}\n`);
+                 }
+
+                 const data = fflate.zipSync(zipContent);
+                 document.getElementById("loading").style.display = "none";
+                 const url = URL.createObjectURL(new Blob([data], {type: "application/zip"}));
+
+                 if (typeof emulators !== 'undefined') {
+                    emulators.pathPrefix = "https://v8.js-dos.com/latest/";
+                 }
+
+                 log("[DOSBox] Calling Dos(element, options)");
+                 const result = Dos(document.getElementById("dos-container"), {
+                    style: "none",
+                    url: url,
+                    autoStart: "true",
+                 });
+
+                 log("[DOSBox] Result type: " + typeof result);
+                 if (result) {
+                     log("[DOSBox] Result keys: " + Object.keys(result).join(", "));
+                     if (typeof result.then === 'function') {
+                         result.then(ci => {
+                             log("[DOSBox] ci ready from promise");
+                             window.ci = ci;
+                         });
+                     } else {
+                         // Maybe result IS the ci?
+                         window.ci = result;
+                     }
+                 }
+
+             } catch (e) {
+                 log("[DOSBox] Error: " + e.message);
+                 document.getElementById("loading").textContent = "Error: " + e.message;
+             }
+        }
+
+        run();
+    </script>
+</body>
+</html>

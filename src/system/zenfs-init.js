@@ -62,6 +62,15 @@ export async function initFileSystem(onProgress) {
     if (!(await existsAsync("/C:/Program Files/Doom"))) {
       await fs.promises.mkdir("/C:/Program Files/Doom");
     }
+
+    // Ensure C:/Games/SimCity2000 exists
+    if (!(await existsAsync("/C:/Games"))) {
+      await fs.promises.mkdir("/C:/Games");
+    }
+    if (!(await existsAsync("/C:/Games/SimCity2000"))) {
+      await fs.promises.mkdir("/C:/Games/SimCity2000");
+    }
+
     // Ensure WINDOWS/Desktop directory exists for the Desktop shell extension
     if (!(await existsAsync("/C:/WINDOWS/Desktop"))) {
       await fs.promises.mkdir("/C:/WINDOWS/Desktop");

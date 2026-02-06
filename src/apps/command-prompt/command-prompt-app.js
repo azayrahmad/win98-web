@@ -339,22 +339,46 @@ export class CommandPromptApp extends Application {
           launchApp(app.id);
         } else {
           // Check if it's a file in current directory
-          const filePath = this.resolvePath(cmd);
+          let filePath = this.resolvePath(cmd);
+
+          // Try with extensions if not specified
+          const extensions = [".exe", ".com", ".bat"];
+          let foundFile = false;
+
           try {
-            const stats = await fs.promises.stat(filePath);
+            let stats = await fs.promises.stat(filePath);
             if (stats.isFile()) {
-              const association = getAssociation(cmd);
-              if (association && association.appId) {
-                launchApp(association.appId, filePath);
-              } else {
-                this.terminal.write(`No association found for file: ${cmd}\r\n`);
-              }
-            } else {
-              this.terminal.write(
-                `'${cmd}' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n`,
-              );
+                foundFile = true;
             }
-          } catch (e) {
+          } catch (e) {}
+
+          if (!foundFile) {
+              for (const ext of extensions) {
+                  try {
+                      const tryPath = filePath + ext;
+                      const stats = await fs.promises.stat(tryPath);
+                      if (stats.isFile()) {
+                          filePath = tryPath;
+                          foundFile = true;
+                          break;
+                      }
+                  } catch (e) {}
+              }
+          }
+
+          if (foundFile) {
+            const lowerPath = filePath.toLowerCase();
+            if (lowerPath.endsWith(".exe") || lowerPath.endsWith(".com") || lowerPath.endsWith(".bat")) {
+                launchApp("dosbox", filePath);
+            } else {
+                const association = getAssociation(filePath);
+                if (association && association.appId) {
+                  launchApp(association.appId, filePath);
+                } else {
+                  this.terminal.write(`No association found for file: ${cmd}\r\n`);
+                }
+            }
+          } else {
             this.terminal.write(
               `'${cmd}' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n`,
             );

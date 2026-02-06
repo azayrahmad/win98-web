@@ -20,7 +20,8 @@ import { createMainUI } from '../shell/ui.js';
 import { initColorModeManager } from './color-mode-manager.js';
 import screensaver from './screensaver-utils.js';
 import { initScreenManager } from './screen-manager.js';
-import { fs, mounts } from "@zenfs/core";
+import { fs, mounts, resolveMountConfig } from "@zenfs/core";
+import { Zip } from "@zenfs/archives";
 import { initFileSystem } from './zenfs-init.js';
 import { RecycleBinManager } from '../shell/explorer/file-operations/recycle-bin-manager.js';
 import { appManager } from './app-manager.js';
@@ -270,6 +271,65 @@ export async function initializeOS() {
       await new Promise((resolve) => setTimeout(resolve, 50));
       taskbar.init();
       finalizeBootProcessStep(logElement, "OK");
+    });
+
+    await executeBootStep(async () => {
+      const sc2000Path = "/C:/Games/SimCity2000/";
+      const sc2000Bundle = "games/dos/simcity2000/sc2000bundle.jsdos";
+
+      let needed = false;
+      try {
+        const entries = await fs.promises.readdir(sc2000Path);
+        if (entries.length === 0) needed = true;
+      } catch (e) {
+        needed = true;
+      }
+
+      if (needed) {
+        let logElement = startBootProcessStep("Extracting SimCity 2000...");
+        try {
+          const response = await fetch(sc2000Bundle);
+          const buffer = await response.arrayBuffer();
+          const zipData = new Uint8Array(buffer);
+
+          const zipFs = await resolveMountConfig({
+            backend: Zip,
+            data: zipData,
+          });
+
+          const mountPath = "/mnt/sc2000-zip";
+          if (!fs.existsSync("/mnt")) {
+            await fs.promises.mkdir("/mnt").catch(() => {});
+          }
+          await fs.promises.mkdir(mountPath).catch(() => {});
+          fs.mount(mountPath, zipFs);
+
+          const copyRecursive = async (src, dest) => {
+            const entries = await fs.promises.readdir(src);
+            for (const entry of entries) {
+              const srcPath = src + (src.endsWith("/") ? "" : "/") + entry;
+              const destPath = dest + (dest.endsWith("/") ? "" : "/") + entry;
+              const stats = await fs.promises.stat(srcPath);
+              if (stats.isDirectory()) {
+                if (!fs.existsSync(destPath)) {
+                  await fs.promises.mkdir(destPath);
+                }
+                await copyRecursive(srcPath, destPath);
+              } else {
+                const data = await fs.promises.readFile(srcPath);
+                await fs.promises.writeFile(destPath, data);
+              }
+            }
+          };
+
+          await copyRecursive(mountPath, sc2000Path);
+          fs.umount(mountPath);
+          finalizeBootProcessStep(logElement, "OK");
+        } catch (error) {
+          console.error("Failed to extract SimCity 2000:", error);
+          finalizeBootProcessStep(logElement, "FAILED");
+        }
+      }
     });
 
     await executeBootStep(async () => {
