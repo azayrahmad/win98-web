@@ -2,6 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script>
+        // Shim keyboard lock to prevent InvalidStateError in iframes
+        // This must run before js-dos.js if it uses it during load,
+        // though it usually uses it during Dos() call.
+        if (navigator.keyboard && navigator.keyboard.lock) {
+            const originalLock = navigator.keyboard.lock.bind(navigator.keyboard);
+            navigator.keyboard.lock = function() {
+                try {
+                    const result = originalLock.apply(navigator.keyboard, arguments);
+                    if (result && typeof result.catch === 'function') {
+                        return result.catch(e => {
+                            console.warn("Keyboard lock promise failed, ignoring:", e);
+                        });
+                    }
+                    return result;
+                } catch (e) {
+                    console.warn("Keyboard lock call failed, ignoring:", e);
+                    return Promise.resolve();
+                }
+            };
+        } else if (navigator.keyboard) {
+            // If lock is missing but keyboard exists (unlikely to throw but good to be safe)
+            navigator.keyboard.lock = () => Promise.resolve();
+        }
+    </script>
+    <link rel="stylesheet" href="lib/js-dos.css">
+    <style>
+        body, html, #dos-container {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: black;
+        }
+        #loading {
+            color: white;
+            font-family: sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+    </style>
 </head>
 <body>
     <div id="loading">Preparing DOS environment...</div>
@@ -21,6 +65,10 @@
                  const directory = params.get("directory");
                  const fs = window.parent.fs;
 
+                 if (!fs) {
+                     throw new Error("ZenFS not found in parent window");
+                 }
+
                  const zipContent = {};
                  const readRecursive = async (curr, rel) => {
                     const entries = await fs.promises.readdir(curr);
@@ -31,6 +79,8 @@
                         const zipPath = rel ? rel + "/" + entry : entry;
                         if (stat.isDirectory()) {
                             if (curr === "/C:" && (entry === "WINDOWS" || entry === "Program Files")) continue;
+                            // Add directory entry (important for some zip extractors)
+                            zipContent[zipPath + "/"] = new Uint8Array(0);
                             await readRecursive(full, zipPath);
                         } else {
                             const data = await fs.promises.readFile(full);
@@ -39,6 +89,7 @@
                     }
                  };
 
+                 log(`[DOSBox] Reading directory: ${directory}`);
                  await readRecursive(directory, "");
 
                  if (!zipContent[".jsdos/dosbox.conf"]) {
@@ -50,6 +101,7 @@
                  const url = URL.createObjectURL(new Blob([data], {type: "application/zip"}));
 
                  if (typeof emulators !== 'undefined') {
+                    // Use the official CDN for auxiliary files (.wasm, workers)
                     emulators.pathPrefix = "https://v8.js-dos.com/latest/";
                  }
 
@@ -57,21 +109,15 @@
                  const result = Dos(document.getElementById("dos-container"), {
                     style: "none",
                     url: url,
-                    autoStart: "true",
+                    autoStart: true,
                  });
 
-                 log("[DOSBox] Result type: " + typeof result);
-                 if (result) {
-                     log("[DOSBox] Result keys: " + Object.keys(result).join(", "));
-                     if (typeof result.then === 'function') {
-                         result.then(ci => {
-                             log("[DOSBox] ci ready from promise");
-                             window.ci = ci;
-                         });
-                     } else {
-                         // Maybe result IS the ci?
-                         window.ci = result;
-                     }
+                 if (result && typeof result.then === 'function') {
+                     const ci = await result;
+                     log("[DOSBox] ci ready");
+                     window.ci = ci;
+                 } else {
+                     window.ci = result;
                  }
 
              } catch (e) {

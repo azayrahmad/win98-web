@@ -34,7 +34,6 @@ export class DosBoxApp extends Application {
       resizable: true,
       maximizable: true,
       icons: this.icon,
-      id: "dosbox-" + Math.random().toString(36).substring(7),
     });
 
     this.win = win;
@@ -44,7 +43,8 @@ export class DosBoxApp extends Application {
     if (this.filePath) params.set("executable", this.filePath.split("/").pop());
     if (this.directory) params.set("directory", this.directory);
 
-    iframe.src = `apps/dosbox/index.html?${params.toString()}`;
+    const baseUrl = import.meta.env.BASE_URL || "/";
+    iframe.src = `${baseUrl}apps/dosbox/index.html?${params.toString()}`;
     iframe.style.width = "100%";
     iframe.style.height = "100%";
     iframe.style.border = "none";

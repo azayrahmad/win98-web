@@ -410,6 +410,11 @@ export class CommandPromptApp extends Application {
   }
 
   resolvePath(path) {
+    // Handle absolute ZenFS paths starting with /C:/ or /A:/
+    if (path.match(/^\/[A-Z]:/i)) {
+        return path.replace(/\\/g, "/");
+    }
+
     if (path.match(/^[A-Z]:/i)) {
       const drive = path.substring(0, 2).toUpperCase();
       let rest = path.substring(2).replace(/\\/g, "/");
@@ -422,7 +427,7 @@ export class CommandPromptApp extends Application {
     let currentParts = this.currentDirectory.split("/").filter((p) => p !== "");
 
     if (path.startsWith("/") || path.startsWith("\\")) {
-      // Absolute path from drive root
+      // Absolute path from drive root (e.g. \WINDOWS)
       currentParts = [currentParts[0]]; // Keep only the drive (e.g., "C:")
     }
 
