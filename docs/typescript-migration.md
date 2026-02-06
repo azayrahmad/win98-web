@@ -2,6 +2,12 @@
 
 This guide outlines the strategy for gradually converting the Windows 98 Web project from JavaScript to TypeScript. The goal is to achieve full type safety with `strict: true` while maintaining a functional project at every step.
 
+## Migration Progress
+- [x] Phase 1: Infrastructure & Ambient Declarations
+- [ ] Phase 2: Core System Migration
+- [ ] Phase 3: Shared Components & Utils
+- [ ] Phase 4: Application Migration
+
 ## Migration Strategy
 
 We will follow a **Hybrid Approach** that allows both `.js` and `.ts` files to coexist.
