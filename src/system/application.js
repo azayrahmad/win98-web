@@ -104,6 +104,20 @@ export class Application {
     this.win.element.id = windowId;
     this.win.element.dataset.appId = this.id;
 
+    this.win.on("close", async (e) => {
+      if (typeof this._onBeforeClose === "function") {
+        if (this._isClosing) return;
+        e.preventDefault();
+        this._isClosing = true;
+        try {
+          await this._onBeforeClose();
+        } catch (error) {
+          console.error(`Error in _onBeforeClose for app ${this.id}:`, error);
+        }
+        this.win.close(true);
+      }
+    });
+
     this.win.onClosed(() => {
       if (typeof this._onClose === "function") {
         this._onClose();

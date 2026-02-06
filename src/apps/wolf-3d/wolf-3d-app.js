@@ -1,12 +1,12 @@
 import { DosBoxApp } from '../dosbox/dosbox-app.js';
 import { ICONS } from '../../config/icons.js';
 
-export class SimCity2000App extends DosBoxApp {
+export class Wolf3DApp extends DosBoxApp {
   static config = {
-    id: "sim-city-2000",
-    title: "SimCity 2000 Demo",
-    description: "Play the SimCity 2000 demo.",
-    icon: ICONS.simcity2000,
+    id: "wolf-3d",
+    title: "Wolfenstein 3D",
+    description: "Play the classic first-person shooter Wolfenstein 3D.",
+    icon: ICONS.msdos,
     width: 640,
     height: 480,
     resizable: true,
@@ -18,7 +18,7 @@ export class SimCity2000App extends DosBoxApp {
   }
 
   _createWindow() {
-    return super._createWindow("/C:/Games/SimCity2000/SC2000.EXE");
+    return super._createWindow("/C:/Games/Wolf3D/WOLF3D.EXE");
   }
 
   _onLaunch() {

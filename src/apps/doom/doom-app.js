@@ -220,7 +220,7 @@ export class DoomApp extends Application {
     }
   }
 
-  async _onClose() {
+  async _onBeforeClose() {
     window.removeEventListener("message", this._boundHandleMessage);
 
     if (this.isMounted && this.iframe && this.iframe.contentWindow) {

@@ -71,6 +71,11 @@ export async function initFileSystem(onProgress) {
       await fs.promises.mkdir("/C:/Games/SimCity2000");
     }
 
+    // Ensure C:/Games/Wolf3D exists
+    if (!(await existsAsync("/C:/Games/Wolf3D"))) {
+      await fs.promises.mkdir("/C:/Games/Wolf3D");
+    }
+
     // Ensure WINDOWS/Desktop directory exists for the Desktop shell extension
     if (!(await existsAsync("/C:/WINDOWS/Desktop"))) {
       await fs.promises.mkdir("/C:/WINDOWS/Desktop");
@@ -118,6 +123,7 @@ export async function initFileSystem(onProgress) {
       { name: "Diablo.lnk.json", appId: "diablo" },
       { name: "Quake.lnk.json", appId: "quake" },
       { name: "Prince of Persia.lnk.json", appId: "prince-of-persia" },
+      { name: "Wolfenstein 3D.lnk.json", appId: "wolf-3d" },
     ];
 
     for (const game of games) {

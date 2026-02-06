@@ -13,13 +13,13 @@ test('ZenExplorer pathing and root immutability', async ({ page }, testInfo) => 
     await page.click('button:has-text("Start")');
     await page.click('text=Programs');
     await page.screenshot({ path: testInfo.outputPath('before_click_zenfs.png') });
-    await page.click('text=File Manager (ZenFS)');
+    await page.click('text=Windows Explorer');
 
     // Wait for a bit
     await page.waitForTimeout(2000);
     await page.screenshot({ path: testInfo.outputPath('after_click_zenfs.png') });
 
-    const zenWin = page.locator('#zenexplorer');
+    const zenWin = page.locator('#explorer');
     await expect(zenWin).toBeVisible();
 
     // 1. Verify root display name and address bar

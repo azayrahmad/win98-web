@@ -55,7 +55,7 @@ export class DosBoxApp extends Application {
     return win;
   }
 
-  async _onClose() {
+  async _onBeforeClose() {
     if (this.iframe && this.iframe.contentWindow && this.iframe.contentWindow.ci) {
       const ci = this.iframe.contentWindow.ci;
       // In v8, ci.save() might be used for persistence
@@ -67,6 +67,9 @@ export class DosBoxApp extends Application {
               const unzipped = fflate.unzipSync(changes);
               for (const [path, data] of Object.entries(unzipped)) {
                 const fullPath = this.directory + "/" + path;
+                // Avoid writing back internal jsdos files if any
+                if (path.startsWith(".jsdos/")) continue;
+
                 const dirPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
 
                 const parts = dirPath.split("/").filter(Boolean);

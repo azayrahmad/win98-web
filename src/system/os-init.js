@@ -137,6 +137,65 @@ export async function initializeOS() {
     });
 
     await executeBootStep(async () => {
+      const wolf3dPath = "/C:/Games/Wolf3D/";
+      const wolf3dZip = "games/dos/wolf3d/wolf3d.zip";
+
+      let needed = false;
+      try {
+        const entries = await fs.promises.readdir(wolf3dPath);
+        if (entries.length === 0) needed = true;
+      } catch (e) {
+        needed = true;
+      }
+
+      if (needed) {
+        let logElement = startBootProcessStep("Extracting Wolfenstein 3D...");
+        try {
+          const response = await fetch(wolf3dZip);
+          const buffer = await response.arrayBuffer();
+          const zipData = new Uint8Array(buffer);
+
+          const zipFs = await resolveMountConfig({
+            backend: Zip,
+            data: zipData,
+          });
+
+          const mountPath = "/mnt/wolf3d-zip";
+          if (!fs.existsSync("/mnt")) {
+            await fs.promises.mkdir("/mnt").catch(() => {});
+          }
+          await fs.promises.mkdir(mountPath).catch(() => {});
+          fs.mount(mountPath, zipFs);
+
+          const copyRecursive = async (src, dest) => {
+            const entries = await fs.promises.readdir(src);
+            for (const entry of entries) {
+              const srcPath = src + (src.endsWith("/") ? "" : "/") + entry;
+              const destPath = dest + (dest.endsWith("/") ? "" : "/") + entry;
+              const stats = await fs.promises.stat(srcPath);
+              if (stats.isDirectory()) {
+                if (!fs.existsSync(destPath)) {
+                  await fs.promises.mkdir(destPath);
+                }
+                await copyRecursive(srcPath, destPath);
+              } else {
+                const data = await fs.promises.readFile(srcPath);
+                await fs.promises.writeFile(destPath, data);
+              }
+            }
+          };
+
+          await copyRecursive(mountPath, wolf3dPath);
+          fs.umount(mountPath);
+          finalizeBootProcessStep(logElement, "OK");
+        } catch (error) {
+          console.error("Failed to extract Wolfenstein 3D:", error);
+          finalizeBootProcessStep(logElement, "FAILED");
+        }
+      }
+    });
+
+    await executeBootStep(async () => {
       let logElement = startBootProcessStep("Connecting to network...");
       await new Promise((resolve) => setTimeout(resolve, 1000));
       finalizeBootProcessStep(logElement, navigator.onLine ? "OK" : "FAILED");

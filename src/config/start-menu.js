@@ -19,6 +19,7 @@ const startMenuAppIds = [
   "esheep",
   "quake",
   "prince-of-persia",
+  "wolf-3d",
 ];
 const accessoriesAppIds = [
   "notepad",
