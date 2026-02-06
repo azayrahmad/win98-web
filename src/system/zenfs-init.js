@@ -91,6 +91,11 @@ export async function initFileSystem(onProgress) {
       }
     }
 
+    // Ensure C:/Games directory exists
+    if (!(await existsAsync("/C:/Games"))) {
+      await fs.promises.mkdir("/C:/Games");
+    }
+
     // Add Games folder to Desktop
     const gamesPath = "/C:/WINDOWS/Desktop/Games";
     if (!(await existsAsync(gamesPath))) {
@@ -109,7 +114,7 @@ export async function initFileSystem(onProgress) {
       { name: "Diablo.lnk.json", appId: "diablo" },
       { name: "Quake.lnk.json", appId: "quake" },
       { name: "Prince of Persia.lnk.json", appId: "prince-of-persia" },
-      { name: "Persistence Test.lnk.json", targetPath: "/C:/Games/PersistenceTest/TEST.BAT" },
+      { name: "Persistence Test.exe.lnk.json", targetPath: "/C:/Games/PersistenceTest/TEST.BAT" },
     ];
 
     for (const game of games) {

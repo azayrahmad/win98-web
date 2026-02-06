@@ -26,18 +26,17 @@ export class DosBoxApp extends IFrameApplication {
 
   _createWindow(data) {
     let title = this.config.title;
+    let filePath = "";
+
+    if (typeof data === "string") {
+      filePath = data;
+    } else if (data && (data.filePath || data.file)) {
+      filePath = data.filePath || data.file;
+    }
 
     // Only override title if we are the generic DosBox app
-    if (this.id === "dosbox") {
-      let filePath = "";
-      if (typeof data === 'string') {
-          filePath = data;
-      } else if (data && (data.filePath || data.file)) {
-          filePath = data.filePath || data.file;
-      }
-      if (filePath) {
-          title = `MS-DOS Prompt - ${filePath.split('/').pop()}`;
-      }
+    if (this.id === "dosbox" && filePath) {
+      title = `MS-DOS Player - ${filePath.split("/").pop()}`;
     }
 
     const win = new window.$Window({
@@ -50,7 +49,7 @@ export class DosBoxApp extends IFrameApplication {
     });
 
     const iframe = document.createElement("iframe");
-    iframe.src = "apps/dosbox/index.html";
+    iframe.src = new URL("/apps/dosbox/index.html", window.location.href).href;
     iframe.style.width = "100%";
     iframe.style.height = "100%";
     iframe.style.border = "none";
