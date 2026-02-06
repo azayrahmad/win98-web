@@ -109,6 +109,7 @@ export async function initFileSystem(onProgress) {
       { name: "Diablo.lnk.json", appId: "diablo" },
       { name: "Quake.lnk.json", appId: "quake" },
       { name: "Prince of Persia.lnk.json", appId: "prince-of-persia" },
+      { name: "Persistence Test.lnk.json", targetPath: "/C:/Games/PersistenceTest/TEST.BAT" },
     ];
 
     for (const game of games) {
@@ -120,6 +121,7 @@ export async function initFileSystem(onProgress) {
             {
               type: "shortcut",
               appId: game.appId,
+              targetPath: game.targetPath,
             },
             null,
             2,

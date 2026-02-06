@@ -25,6 +25,7 @@ This project is made possible by the following amazing open-source libraries and
 | highlight.js | 11.9.0 | Syntax highlighting. | [highlight.js Team](https://github.com/highlightjs) | [GitHub](https://github.com/highlightjs/highlight.js) |
 | Marked.js | latest | A markdown parser and compiler. | [Marked.js Team](https://github.com/markedjs) | [GitHub](https://github.com/markedjs/marked) |
 | Prettier | 2.8.8 | An opinionated code formatter. | [Prettier Team](https://github.com/prettier) | [GitHub](https://github.com/prettier/prettier) |
+| js-dos | v8 | DOSBox emulator for the web. | [Alexander Guryanov](https://github.com/dreamlayers) | [GitHub](https://github.com/js-dos/js-dos) |
 | Clippy.js | - | A fresh implementation of Microsoft Agent for the web. | [Pooya Parsa](https://github.com/pi0) | [GitHub](https://github.com/pi0/clippyjs) |
 | icojs | 0.20.1 | JavaScript library to parse ICO files. | [at-wat](https://github.com/at-wat) | [GitHub](https://github.com/at-wat/icojs) |
 | html2canvas | 1.4.1 | Screenshots with JavaScript. | [Niklas von Hertzen](https://github.com/niklasvh) | [GitHub](https://github.com/niklasvh/html2canvas) |

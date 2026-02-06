@@ -136,6 +136,15 @@ export async function initializeOS() {
     });
 
     await executeBootStep(async () => {
+      const testGamePath = "/C:/Games/PersistenceTest";
+      if (!fs.existsSync(testGamePath)) {
+        await fs.promises.mkdir(testGamePath, { recursive: true });
+        const batContent = `@echo off\ncls\necho ==============================\necho    DOS PERSISTENCE TEST\necho ==============================\nif exist SAVE.TXT (\n    echo Welcome back! Your last save was:\n    type SAVE.TXT\n) else (\n    echo This is your first time playing.\n)\necho.\nset /p input="Type something to save: "\necho %input% > SAVE.TXT\necho Progress saved to SAVE.TXT!\necho.\npause\n`;
+        await fs.promises.writeFile(`${testGamePath}/TEST.BAT`, batContent);
+      }
+    });
+
+    await executeBootStep(async () => {
       const simCityPath = "/C:/Games/SimCity2000";
       if (!fs.existsSync(simCityPath)) {
         let logElement = startBootProcessStep("Installing SimCity 2000...");
