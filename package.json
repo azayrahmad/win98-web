@@ -16,6 +16,7 @@
   "dependencies": {
     "@xterm/xterm": "^5.5.0",
     "@zenfs/archives": "^1.3.1",
+    "fflate": "^0.8.2",
     "@zenfs/core": "^2.4.4",
     "@zenfs/dom": "^1.2.7",
     "@zenfs/emscripten": "^1.0.5",

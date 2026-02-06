@@ -361,6 +361,16 @@ export async function initializeOS() {
     window.RecycleBinManager = RecycleBinManager;
     window.System.launchApp = launchApp;
     window.System.appManager = appManager;
+
+    // Helper for DOSBox runner
+    window.System.zip = async (files) => {
+        if (!window.fflate) {
+             const mod = await import('fflate');
+             window.fflate = mod;
+        }
+        return window.fflate.zipSync(files);
+    };
+
     console.log("azOS initialized");
 
     let inactivityTimer;

@@ -1,5 +1,6 @@
 // src/config/apps.js
 import { FlashPlayerApp } from '../apps/flash-player/flash-player-app.js';
+import { DosBoxApp } from '../apps/dosbox/dosbox-app.js';
 import { ZenExplorerApp } from '../shell/explorer/explorer-app.js';
 import { ShowDialogWindow } from '../shared/components/dialog-window.js';
 import { getIcon } from '../shared/utils/icon-resolver.js';
@@ -260,6 +261,11 @@ const systemApps = [
 if (FlashPlayerApp.config) {
   appClasses[FlashPlayerApp.config.id] = FlashPlayerApp;
   staticConfigs.push({ ...FlashPlayerApp.config, appClass: FlashPlayerApp });
+}
+
+if (DosBoxApp.config) {
+  appClasses[DosBoxApp.config.id] = DosBoxApp;
+  staticConfigs.push({ ...DosBoxApp.config, appClass: DosBoxApp });
 }
 
 if (ZenExplorerApp.config) {

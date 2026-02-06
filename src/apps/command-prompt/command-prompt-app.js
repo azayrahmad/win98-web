@@ -27,6 +27,8 @@ export class CommandPromptApp extends Application {
     this.commandHistory = [];
     this.historyIndex = -1;
     this.currentCommand = "";
+    this.commandQueue = [];
+    this.isProcessing = false;
   }
 
   _createWindow() {
@@ -105,8 +107,9 @@ export class CommandPromptApp extends Application {
     } else if (code.charCodeAt(0) === 13) {
       // Enter
       this.terminal.write("\r\n");
-      this.processCommand(this.currentCommand);
+      this.commandQueue.push(this.currentCommand);
       this.currentCommand = "";
+      this.processQueue();
     } else if (code.charCodeAt(0) === 127) {
       // Backspace
       if (this.currentCommand.length > 0) {
@@ -119,14 +122,28 @@ export class CommandPromptApp extends Application {
     }
   }
 
+  async processQueue() {
+    if (this.isProcessing || this.commandQueue.length === 0) return;
+    this.isProcessing = true;
+    try {
+      while (this.commandQueue.length > 0) {
+        const command = this.commandQueue.shift();
+        await this.processCommand(command);
+      }
+    } finally {
+      this.isProcessing = false;
+    }
+  }
+
   async processCommand(command) {
+    const originalCommand = command;
     command = command.trim();
     if (!command) {
       this.prompt();
       return;
     }
 
-    this.commandHistory.push(command);
+    this.commandHistory.push(originalCommand);
     this.historyIndex = this.commandHistory.length;
 
     const matches = command.match(/(?:[^\s"]+|"[^"]*")+/g);

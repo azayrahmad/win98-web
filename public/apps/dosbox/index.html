@@ -2,129 +2,308 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <script>
-        // Shim keyboard lock to prevent InvalidStateError in iframes
-        // This must run before js-dos.js if it uses it during load,
-        // though it usually uses it during Dos() call.
-        if (navigator.keyboard && navigator.keyboard.lock) {
-            const originalLock = navigator.keyboard.lock.bind(navigator.keyboard);
-            navigator.keyboard.lock = function() {
-                try {
-                    const result = originalLock.apply(navigator.keyboard, arguments);
-                    if (result && typeof result.catch === 'function') {
-                        return result.catch(e => {
-                            console.warn("Keyboard lock promise failed, ignoring:", e);
-                        });
-                    }
-                    return result;
-                } catch (e) {
-                    console.warn("Keyboard lock call failed, ignoring:", e);
-                    return Promise.resolve();
-                }
-            };
-        } else if (navigator.keyboard) {
-            // If lock is missing but keyboard exists (unlikely to throw but good to be safe)
-            navigator.keyboard.lock = () => Promise.resolve();
-        }
-    </script>
-    <link rel="stylesheet" href="lib/js-dos.css">
+    <title>DOSBox-X Runner</title>
+    <script src="lib/emulators.js"></script>
+    <script src="lib/fflate.min.js"></script>
     <style>
-        body, html, #dos-container {
+        body, html {
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
             overflow: hidden;
             background: black;
-        }
-        #loading {
             color: white;
             font-family: sans-serif;
             display: flex;
+            flex-direction: column;
+        }
+        #canvas-container {
+            flex: 1;
+            display: flex;
             align-items: center;
             justify-content: center;
-            height: 100%;
+            position: relative;
+            background: #111;
+        }
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            image-rendering: pixelated;
+            cursor: none;
+        }
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 5px;
+            background: rgba(0,0,0,0.5);
+            font-size: 10px;
+            pointer-events: none;
+            display: none;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #controls {
+            padding: 5px;
+            background: #333;
+            display: flex;
+            gap: 10px;
+            font-size: 12px;
+            align-items: center;
+        }
+        button {
+            cursor: pointer;
+            background: #555;
+            color: white;
+            border: 1px solid #777;
+            padding: 2px 8px;
+        }
+        button:hover {
+            background: #666;
         }
     </style>
 </head>
 <body>
-    <div id="loading">Preparing DOS environment...</div>
-    <div id="dos-container"></div>
-    <script src="lib/js-dos.js"></script>
-    <script src="lib/fflate.min.js"></script>
+    <div id="canvas-container">
+        <div id="loading">Initialzing DOSBox-X...</div>
+        <canvas id="dos-canvas"></canvas>
+        <div id="ui-overlay">DOSBox-X Direct Mode</div>
+    </div>
+    <div id="controls">
+        <span>DOSBox-X</span>
+        <button id="btn-save">Save Progress</button>
+        <button id="btn-fullscreen">Fullscreen</button>
+        <span id="status">Ready</span>
+    </div>
+
     <script>
+        const canvas = document.getElementById("dos-canvas");
+        const ctx = canvas.getContext("2d", { alpha: false });
+        const btnSave = document.getElementById("btn-save");
+        const btnFullscreen = document.getElementById("btn-fullscreen");
+        const statusEl = document.getElementById("status");
+
         const log = (msg) => {
             console.log(msg);
             if (window.parent && window.parent.console) window.parent.console.log(msg);
         };
 
+        let ci = null;
+        let audioContext = null;
+        let audioQueue = [];
+        let processor = null;
+
+        const keyCodeToScanCode = {
+            8: 0x0E, 9: 0x0F, 13: 0x1C, 16: 0x2A, 17: 0x1D, 18: 0x38, 19: 0x45, 20: 0x3A,
+            27: 0x01, 32: 0x39, 33: 0x49, 34: 0x51, 35: 0x4F, 36: 0x47, 37: 0x4B, 38: 0x48,
+            39: 0x4D, 40: 0x50, 45: 0x52, 46: 0x53,
+            48: 0x0B, 49: 0x02, 50: 0x03, 51: 0x04, 52: 0x05, 53: 0x06, 54: 0x07, 55: 0x08, 56: 0x09, 57: 0x0A,
+            65: 0x1E, 66: 0x30, 67: 0x2E, 68: 0x20, 69: 0x12, 70: 0x21, 71: 0x22, 72: 0x23, 73: 0x17, 74: 0x24,
+            75: 0x25, 76: 0x26, 77: 0x32, 78: 0x31, 79: 0x18, 80: 0x19, 81: 0x10, 82: 0x13, 83: 0x1F, 84: 0x14,
+            85: 0x16, 86: 0x2F, 87: 0x11, 88: 0x2D, 89: 0x15, 90: 0x2C,
+            112: 0x3B, 113: 0x3C, 114: 0x3D, 115: 0x3E, 116: 0x3F, 117: 0x40, 118: 0x41, 119: 0x42, 120: 0x43, 121: 0x44, 122: 0x57, 123: 0x58
+        };
+
+        async function initAudio(freq) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: freq });
+            processor = audioContext.createScriptProcessor(2048, 0, 1);
+            processor.onaudioprocess = (e) => {
+                const output = e.outputBuffer.getChannelData(0);
+                for (let i = 0; i < output.length; i++) {
+                    output[i] = audioQueue.shift() || 0;
+                }
+            };
+            processor.connect(audioContext.destination);
+            log(`[DOSBox-X] Audio initialized at ${freq}Hz`);
+        }
+
+        function pushAudio(samples) {
+            for (let i = 0; i < samples.length; i++) {
+                audioQueue.push(samples[i]);
+            }
+            // Limit queue size to avoid excessive latency (about 0.2s at 44.1kHz)
+            if (audioQueue.length > 8192) {
+                audioQueue.splice(0, audioQueue.length - 8192);
+            }
+        }
+
         async function run() {
-             try {
-                 const params = new URLSearchParams(window.location.search);
-                 const executable = params.get("executable");
-                 const directory = params.get("directory");
-                 const fs = window.parent.fs;
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const executable = params.get("executable");
+                const directory = params.get("directory");
+                const fs = window.parent.fs;
 
-                 if (!fs) {
-                     throw new Error("ZenFS not found in parent window");
-                 }
+                if (!fs) throw new Error("ZenFS not found");
 
-                 const zipContent = {};
-                 const readRecursive = async (curr, rel) => {
+                statusEl.textContent = "Loading files...";
+
+                const initFs = [];
+                const readRecursive = async (curr, rel) => {
                     const entries = await fs.promises.readdir(curr);
                     for (const entry of entries) {
                         if (entry === "." || entry === "..") continue;
                         const full = curr + (curr.endsWith("/") ? "" : "/") + entry;
                         const stat = await fs.promises.stat(full);
-                        const zipPath = rel ? rel + "/" + entry : entry;
+                        const relPath = rel ? rel + "/" + entry : entry;
                         if (stat.isDirectory()) {
                             if (curr === "/C:" && (entry === "WINDOWS" || entry === "Program Files")) continue;
-                            // Add directory entry (important for some zip extractors)
-                            zipContent[zipPath + "/"] = new Uint8Array(0);
-                            await readRecursive(full, zipPath);
+                            await readRecursive(full, relPath);
                         } else {
                             const data = await fs.promises.readFile(full);
-                            zipContent[zipPath] = new Uint8Array(data);
+                            initFs.push({ path: relPath, contents: new Uint8Array(data) });
                         }
                     }
-                 };
+                };
 
-                 log(`[DOSBox] Reading directory: ${directory}`);
-                 await readRecursive(directory, "");
+                await readRecursive(directory, "");
 
-                 if (!zipContent[".jsdos/dosbox.conf"]) {
-                    zipContent[".jsdos/dosbox.conf"] = fflate.strToU8(`[autoexec]\nmount c .\nc:\n${executable}\n`);
-                 }
+                // Add dosbox.conf
+                initFs.push({
+                    path: ".jsdos/dosbox.conf",
+                    contents: new TextEncoder().encode(`[dos]\nxms=true\nems=true\numb=true\n[config]\nmemsize=32\n[autoexec]\nmount c .\nc:\n${executable}\n`)
+                });
 
-                 const data = fflate.zipSync(zipContent);
-                 document.getElementById("loading").style.display = "none";
-                 const url = URL.createObjectURL(new Blob([data], {type: "application/zip"}));
+                statusEl.textContent = "Starting Emulator...";
+                emulators.pathPrefix = "lib/";
 
-                 if (typeof emulators !== 'undefined') {
-                    // Use the official CDN for auxiliary files (.wasm, workers)
-                    emulators.pathPrefix = "https://v8.js-dos.com/latest/";
-                 }
+                ci = await emulators.dosboxXWorker(initFs);
+                window.ci = ci; // For parent to access
 
-                 log("[DOSBox] Calling Dos(element, options)");
-                 const result = Dos(document.getElementById("dos-container"), {
-                    style: "none",
-                    url: url,
-                    autoStart: true,
-                 });
+                document.getElementById("loading").style.display = "none";
+                statusEl.textContent = "Running";
 
-                 if (result && typeof result.then === 'function') {
-                     const ci = await result;
-                     log("[DOSBox] ci ready");
-                     window.ci = ci;
-                 } else {
-                     window.ci = result;
-                 }
+                ci.events().onFrameSize((width, height) => {
+                    canvas.width = width;
+                    canvas.height = height;
+                    log(`[DOSBox-X] Frame size: ${width}x${height}`);
+                });
 
-             } catch (e) {
-                 log("[DOSBox] Error: " + e.message);
-                 document.getElementById("loading").textContent = "Error: " + e.message;
-             }
+                ci.events().onFrame((rgb, rgba) => {
+                    if (rgba) {
+                        const imageData = new ImageData(new Uint8ClampedArray(rgba), canvas.width, canvas.height);
+                        ctx.putImageData(imageData, 0, 0);
+                    } else if (rgb) {
+                        const rgbaData = new Uint8ClampedArray(canvas.width * canvas.height * 4);
+                        for (let i = 0; i < rgb.length / 3; i++) {
+                            rgbaData[i * 4] = rgb[i * 3];
+                            rgbaData[i * 4 + 1] = rgb[i * 3 + 1];
+                            rgbaData[i * 4 + 2] = rgb[i * 3 + 2];
+                            rgbaData[i * 4 + 3] = 255;
+                        }
+                        const imageData = new ImageData(rgbaData, canvas.width, canvas.height);
+                        ctx.putImageData(imageData, 0, 0);
+                    }
+                });
+
+                ci.events().onSoundPush((samples) => {
+                    if (!audioContext) {
+                        initAudio(ci.soundFrequency());
+                    }
+                    pushAudio(samples);
+                });
+
+                ci.events().onExit(() => {
+                    statusEl.textContent = "Exited";
+                    log("[DOSBox-X] Emulator exited");
+                });
+
+                // Input handling
+                window.addEventListener("keydown", (e) => {
+                    if (ci) {
+                        const scanCode = keyCodeToScanCode[e.keyCode];
+                        if (scanCode !== undefined) {
+                            ci.sendKeyEvent(scanCode, true);
+                            e.preventDefault();
+                        }
+                    }
+                });
+                window.addEventListener("keyup", (e) => {
+                    if (ci) {
+                        const scanCode = keyCodeToScanCode[e.keyCode];
+                        if (scanCode !== undefined) {
+                            ci.sendKeyEvent(scanCode, false);
+                            e.preventDefault();
+                        }
+                    }
+                });
+
+                canvas.addEventListener("mousemove", (e) => {
+                    if (ci) {
+                        const rect = canvas.getBoundingClientRect();
+                        const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
+                        const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
+                        ci.sendMouseMotion(x, y);
+                    }
+                });
+
+                canvas.addEventListener("mousedown", (e) => {
+                    if (ci) {
+                        if (audioContext && audioContext.state === 'suspended') audioContext.resume();
+                        ci.sendMouseButton(e.button, true);
+                    }
+                });
+
+                canvas.addEventListener("mouseup", (e) => {
+                    if (ci) {
+                        ci.sendMouseButton(e.button, false);
+                    }
+                });
+
+                // Block context menu
+                canvas.addEventListener("contextmenu", e => e.preventDefault());
+
+                // Persistence
+                async function persist() {
+                    statusEl.textContent = "Saving...";
+                    try {
+                        const changes = await ci.persist(true);
+                        if (changes) {
+                            window.parent.postMessage({
+                                type: "dosbox-persistence",
+                                changes: changes,
+                                directory: directory
+                            }, "*");
+                            statusEl.textContent = "Saved";
+                            setTimeout(() => { if (statusEl.textContent === "Saved") statusEl.textContent = "Running"; }, 2000);
+                        } else {
+                            statusEl.textContent = "Running (No changes)";
+                        }
+                    } catch (err) {
+                        log("[DOSBox-X] Persistence error: " + err.message);
+                        statusEl.textContent = "Save Failed";
+                    }
+                }
+
+                btnSave.addEventListener("click", persist);
+
+                // Auto-persist every 30 seconds
+                setInterval(persist, 30000);
+
+                // Persist on close
+                window.addEventListener("beforeunload", () => {
+                    persist();
+                });
+
+            } catch (e) {
+                log("[DOSBox-X] Error: " + e.message);
+                document.getElementById("loading").textContent = "Error: " + e.message;
+                statusEl.textContent = "Error";
+            }
         }
+
+        btnFullscreen.addEventListener("click", () => {
+            if (canvas.requestFullscreen) {
+                canvas.requestFullscreen();
+            } else if (canvas.webkitRequestFullscreen) {
+                canvas.webkitRequestFullscreen();
+            }
+        });
 
         run();
     </script>

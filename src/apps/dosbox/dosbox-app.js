@@ -28,9 +28,9 @@ export class DosBoxApp extends Application {
     }
 
     const win = new window.$Window({
-      title: this.filePath ? `DOSBox - ${this.filePath.split("/").pop()}` : this.title,
+      title: this.filePath ? `DOSBox-X - ${this.filePath.split("/").pop()}` : `DOSBox-X`,
       outerWidth: 640,
-      outerHeight: 480,
+      outerHeight: 510, // Extra for controls
       resizable: true,
       maximizable: true,
       icons: this.icon,
@@ -49,50 +49,76 @@ export class DosBoxApp extends Application {
     iframe.style.height = "100%";
     iframe.style.border = "none";
 
+    // Handle messages from the iframe (e.g., persistence)
+    const handleMessage = async (event) => {
+        if (event.data && event.data.type === "dosbox-persistence") {
+            const { changes, directory } = event.data;
+            await this._saveChanges(changes, directory);
+        }
+    };
+    window.addEventListener("message", handleMessage);
+
+    win.onClosed(() => {
+        window.removeEventListener("message", handleMessage);
+    });
+
     win.$content.append(iframe);
     this.iframe = iframe;
 
     return win;
   }
 
-  async _onClose() {
-    if (this.iframe && this.iframe.contentWindow && this.iframe.contentWindow.ci) {
-      const ci = this.iframe.contentWindow.ci;
-      // In v8, ci.save() might be used for persistence
-      if (typeof ci.persist === 'function') {
-          const fflate = this.iframe.contentWindow.fflate;
-          try {
-            const changes = await ci.persist();
-            if (changes) {
-              const unzipped = fflate.unzipSync(changes);
-              for (const [path, data] of Object.entries(unzipped)) {
-                const fullPath = this.directory + "/" + path;
-                const dirPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
+  async _saveChanges(changes, directory) {
+    const fflate = window.fflate || (window.System ? window.System.fflate : null);
+    if (!fflate) {
+        // Try to import it dynamically if not available
+        try {
+            const mod = await import('fflate');
+            this.fflate = mod;
+        } catch (e) {
+            console.error("fflate not found for saving changes");
+            return;
+        }
+    } else {
+        this.fflate = fflate;
+    }
 
-                const parts = dirPath.split("/").filter(Boolean);
-                let current = "";
-                for (const part of parts) {
-                  current += "/" + part;
-                  if (!fs.existsSync(current)) {
+    try {
+        const unzipped = this.fflate.unzipSync(new Uint8Array(changes));
+        for (const [path, data] of Object.entries(unzipped)) {
+            const fullPath = directory + "/" + path;
+            const dirPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
+
+            const parts = dirPath.split("/").filter(Boolean);
+            let current = "";
+            for (const part of parts) {
+                current += "/" + part;
+                if (!fs.existsSync(current)) {
                     await fs.promises.mkdir(current);
-                  }
                 }
-
-                await fs.promises.writeFile(fullPath, data);
-              }
-              document.dispatchEvent(new CustomEvent("fs-change", { detail: { path: this.directory } }));
             }
-          } catch (e) {
-            console.error("Failed to persist DOSBox changes:", e);
-          }
-      } else if (typeof ci.save === 'function') {
-          try {
-              // Best effort save
-              await ci.save();
-          } catch (e) {
-              console.error("Failed to call ci.save():", e);
-          }
-      }
+
+            await fs.promises.writeFile(fullPath, data);
+            console.log(`[DosBoxApp] Persisted: ${fullPath}`);
+        }
+        document.dispatchEvent(new CustomEvent("fs-change", { detail: { path: directory } }));
+    } catch (e) {
+        console.error("Failed to save DOSBox changes:", e);
+    }
+  }
+
+  async _onClose() {
+    // We already handle persistence via messages, but we can trigger one last save here if possible.
+    if (this.iframe && this.iframe.contentWindow && this.iframe.contentWindow.ci) {
+        const ci = this.iframe.contentWindow.ci;
+        try {
+            const changes = await ci.persist(true);
+            if (changes) {
+                await this._saveChanges(changes, this.directory);
+            }
+        } catch (e) {
+            console.warn("Final persistence failed on close:", e);
+        }
     }
   }
 }
