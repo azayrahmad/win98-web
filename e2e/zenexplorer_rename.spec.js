@@ -15,9 +15,9 @@ test('ZenExplorer inline rename mechanism', async ({ page }, testInfo) => {
     // Open ZenExplorer
     await startButton.click();
     await page.click('text=Programs');
-    await page.click('text=File Manager (ZenFS)');
+    await page.click('text=Windows Explorer');
 
-    const zenWin = page.locator('#zenexplorer');
+    const zenWin = page.locator('.window[data-app-id="explorer"]');
     await expect(zenWin).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath('1_zen_opened.png') });
 

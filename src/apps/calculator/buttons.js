@@ -1,5 +1,5 @@
 // src/apps/calculator/buttons.js
-import { CalculatorButton } from "./CalculatorButton.js";
+import { CalculatorButton } from './calculator-button.js';
 
 const red = { color: "red" };
 const blue = { color: "blue" };

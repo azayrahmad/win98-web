@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('Verify Recycle Bin Icons and Properties', async ({ page }) => {
+test('Verify Recycle Bin Icons and Properties', async ({ page }, testInfo) => {
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
     await page.goto('/');
@@ -19,17 +19,17 @@ test('Verify Recycle Bin Icons and Properties', async ({ page }) => {
 
     // Open Recycle Bin
     await page.evaluate(() => {
-        window.System.launchApp('zenexplorer', { filePath: '/Recycle Bin' });
+        window.System.launchApp('explorer', { filePath: '/Recycle Bin' });
     });
 
-    await page.waitForSelector('.window[data-app-id="zenexplorer"]');
+    await page.waitForSelector('.window[data-app-id="explorer"]');
 
     // Wait for the item to appear
     const itemSelector = '.icon-label:has-text("test_icon.txt")';
     await page.waitForSelector(itemSelector, { timeout: 10000 });
 
     // Take screenshot of the icon
-    await page.screenshot({ path: '/home/jules/verification/bin_item_icon_v2.png' });
+    await page.screenshot({ path: testInfo.outputPath('bin_item_icon_v2.png') });
 
     // Open properties
     const icon = page.locator(itemSelector).first();
@@ -43,7 +43,7 @@ test('Verify Recycle Bin Icons and Properties', async ({ page }) => {
     await page.waitForTimeout(2000);
 
     // Take screenshot of properties
-    await page.screenshot({ path: '/home/jules/verification/bin_item_properties_v2.png' });
+    await page.screenshot({ path: testInfo.outputPath('bin_item_properties_v2.png') });
 
     // Verify properties content
     const title = await page.textContent('.properties-dialog label');

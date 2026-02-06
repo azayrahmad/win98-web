@@ -1,4 +1,4 @@
-import { wallpapers } from "./wallpapers.js";
+import { wallpapers } from './wallpapers.js';
 
 export const themes = {
   default: {

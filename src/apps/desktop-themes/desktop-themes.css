@@ -1,0 +1,340 @@
+.desktopthemes-app .window-body {
+    display: flex;
+    flex-direction: column;
+}
+
+#desktop-themes .main-container {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    padding: 10px;
+    gap: 10px;
+}
+
+#desktop-themes .left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#desktop-themes .controls {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+#desktop-themes .controls label {
+    grid-column: 1 / 2;
+}
+
+#desktop-themes .controls select {
+    grid-column: 2 / 3;
+    width: 100%;
+}
+
+#desktop-themes .controls button {
+    min-width: 65px;
+    min-height: 22px;
+    font-size: var(--font-size-base);
+}
+
+#desktop-themes .preview-container {
+    flex-grow: 1;
+    width: 394px;
+    min-height: 355px; /* Important for flexbox shrinking */
+    border: 2px inset var(--border-color, #fff);
+    overflow: hidden;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+#desktop-themes .right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 220px;
+}
+
+#desktop-themes .right-panel fieldset {
+    padding: 10px;
+}
+
+#desktop-themes .right-panel .previews-fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#desktop-themes .right-panel .previews-fieldset button {
+    width: 100%;
+    font-size: var(--font-size-base);
+    min-height: 22px;
+}
+
+#desktop-themes .right-panel .settings-fieldset {
+    flex-grow: 1;
+}
+
+#desktop-themes .right-panel .settings-fieldset p {
+    margin: 0 0 10px 0;
+}
+
+#desktop-themes .actions {
+    padding: 10px;
+    display: flex !important;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+#desktop-themes .actions button {
+    padding: 2px;
+    min-width: 80px;
+}
+
+#desktop-themes .preview-label {
+    background-color: var(--preview-button-face);
+    padding: 3px;
+    border: 1px solid var(--preview-button-shadow);
+    border-top: 1px solid var(--preview-button-highlight);
+    text-align: center;
+    font-size: 11px;
+}
+
+#desktop-themes .desktop-icons-preview {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#desktop-themes .desktop-icon-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    width: 80px; /* Increased width for better text fit */
+    text-align: center;
+    color: white; /* Default icon text color */
+}
+
+#desktop-themes .desktop-icon-preview img {
+    width: 32px;
+    height: 32px;
+}
+
+#desktop-themes .desktop-icon-preview span {
+    background-color: transparent;
+    border: 1px dotted transparent;
+    padding: 1px 2px;
+    font-family: var(--preview-font-family-menu);
+    font-size: var(--preview-font-size-menu);
+    color: var(--preview-hilight-text);
+}
+
+#desktop-themes .preview-window {
+    box-sizing: border-box;
+    border: 1px solid;
+    border-color: var(--preview-button-highlight)
+        var(--preview-button-dk-shadow) var(--preview-button-dk-shadow)
+        var(--preview-button-highlight);
+    background: var(--preview-button-face);
+    padding: 1px;
+}
+
+#desktop-themes .inactive-window-preview {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    width: 200px;
+    height: 150px;
+    z-index: 1;
+}
+
+#desktop-themes .active-window-preview {
+    position: absolute;
+    right: 2px;
+    bottom: 20px;
+    width: 220px;
+    height: 130px;
+    z-index: 2;
+}
+
+#desktop-themes .message-box-preview {
+    position: absolute;
+    right: 60px;
+    bottom: 6px;
+    width: 158px;
+    height: 76px;
+    z-index: 3;
+}
+
+#desktop-themes .message-box-preview .window-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center content vertically */
+    align-items: center; /* Center content horizontally */
+    gap: 5px; /* Space between text and button */
+}
+
+#desktop-themes .message-box-preview .window-body span {
+    text-align: left; /* Center the message text within the flex item */
+    width: 100%; /* Make span take full width to center text within itself */
+}
+
+#desktop-themes .preview-window .title-bar {
+    padding: 2px 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+#desktop-themes .preview-window .title-bar .title-bar-text {
+    font-family: var(--preview-font-family-title);
+    font-size: var(--preview-font-size-title);
+}
+
+#desktop-themes .active-window-preview .menu-bar {
+    font-family: var(--preview-font-family-menu);
+    font-size: var(--preview-font-size-menu);
+}
+
+#desktop-themes .active-window-preview .title-bar,
+#desktop-themes .message-box-preview .title-bar {
+    background: linear-gradient(
+        to right,
+        var(--preview-active-title-bar-bg) 0%,
+        var(--preview-gradient-active-title-bar-bg) 100%
+    );
+    color: var(--preview-active-title-bar-text, #fff);
+}
+
+#desktop-themes .inactive-window-preview .title-bar {
+    background: linear-gradient(
+        to right,
+        var(--preview-inactive-title-bar-bg, #7f7f7f) 0%,
+        var(--preview-gradient-inactive-title-bar-bg, #b5b5b5) 100%
+    );
+    color: var(--preview-inactive-title-bar-text, #c0c0c0);
+}
+
+#desktop-themes .active-window-preview .window-body {
+    padding: 0;
+    margin: 1px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#desktop-themes .active-window-preview .menu-bar {
+    background-color: var(--preview-button-face);
+    color: var(--preview-window-text);
+    padding: 2px 4px;
+    display: flex;
+    gap: 8px;
+}
+
+#desktop-themes .active-window-preview .menu-bar .selected {
+    background-color: var(--preview-active-title-bar-bg);
+    color: var(--preview-active-title-bar-text);
+    padding: 0 2px;
+}
+
+#desktop-themes .active-window-preview .main-content {
+    background-color: var(--preview-window-bg);
+    color: var(--preview-window-text);
+    flex-grow: 1;
+    margin: 1px;
+}
+
+#desktop-themes .preview-window .title-bar-controls {
+    display: flex;
+}
+
+#desktop-themes .preview-window .title-bar-controls button {
+    width: 16px;
+    height: 14px;
+    min-width: 0;
+    padding: 0;
+    box-sizing: border-box;
+    border: 1px solid;
+    border-color: var(--preview-button-highlight) var(--preview-button-shadow)
+        var(--preview-button-shadow) var(--preview-button-highlight);
+    background: var(--preview-button-face);
+}
+
+#desktop-themes .preview-window .window-body {
+    background: var(--preview-button-face, #c0c0c0);
+    color: var(--preview-window-text, #000);
+    margin: 1px;
+}
+
+#desktop-themes .preview-window .window-body p {
+    margin: 0 0 12px;
+}
+
+#desktop-themes .preview-window .window-body button {
+    min-width: 70px;
+    height: 22px;
+    border: 1px solid;
+    border-color: var(--preview-button-highlight)
+        var(--preview-button-dk-shadow) var(--preview-button-dk-shadow)
+        var(--preview-button-highlight);
+    background: var(--preview-button-face);
+    color: var(--preview-button-text);
+    border-image: var(--preview-button-normal-border-image);
+}
+
+.theme-wizard-app .window-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.color-list-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    padding: 10px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.color-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.color-item input[type="color"] {
+    width: 50px;
+    height: 50px;
+    border: 1px solid var(--button-shadow);
+}
+
+.wizard-buttons {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.wallpaper-container {
+    padding: 10px;
+}
+
+.wallpaper-preview {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border: 1px solid var(--button-shadow);
+    margin-top: 10px;
+}

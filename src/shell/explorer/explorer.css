@@ -1,0 +1,273 @@
+@import url("../../shared/styles/shared.css");
+
+.explorer-content {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    height: 100%;
+}
+
+.status-bar {
+    height: 22px;
+    background-color: var(--ButtonFace);
+    border-top: 1px solid var(--ButtonShadow);
+    display: flex;
+    align-items: center;
+    padding: 0 2px;
+    font-size: 11px;
+}
+
+.explorer-sidebar {
+    display: none; /* Hidden by default */
+    width: 30%;
+    max-width: 250px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    word-wrap: break-word;
+}
+
+.sidebar-icon {
+    width: 32px;
+    height: 32px;
+    margin: 10px;
+}
+
+.sidebar-title {
+    font-family: Verdana, sans-serif;
+    font-size: 2em;
+    margin: 0 10px;
+    color: var(--WindowText);
+}
+
+.explorer-content.with-sidebar .explorer-sidebar {
+    display: block; /* Show sidebar */
+}
+
+.explorer-icon-view {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 70px);
+    grid-auto-rows: min-content;
+    grid-auto-flow: row;
+    gap: 5px;
+    padding: 10px;
+    align-content: start;
+    position: relative;
+}
+
+.explorer-icon-view.small-icons {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-auto-rows: min-content;
+    gap: 2px 5px;
+}
+
+.explorer-icon-view.list-icons {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 0 5px;
+}
+
+.explorer-icon-view.details-icons {
+    display: block;
+    padding: 0;
+}
+
+.explorer-icon-view.has-absolute-icons {
+    display: block;
+    position: relative;
+    min-height: 100%;
+    min-width: 100%;
+}
+
+.explorer-icon-view.has-absolute-icons .explorer-icon {
+    position: absolute;
+    margin: 0;
+}
+
+.explorer-icon {
+    width: 70px;
+    text-align: center;
+    color: var(--WindowText);
+    border: 1px solid transparent; /* Reserve space for selection border */
+}
+
+.explorer-icon-view.small-icons .explorer-icon,
+.explorer-icon-view.list-icons .explorer-icon,
+.explorer-icon-view.details-icons tr.explorer-icon {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    padding: 2px;
+}
+
+.explorer-icon-view.list-icons .explorer-icon {
+    width: 150px;
+}
+
+.explorer-icon .icon {
+    display: block;
+    margin: auto;
+}
+
+.explorer-icon-view.small-icons .explorer-icon .icon,
+.explorer-icon-view.list-icons .explorer-icon .icon,
+.explorer-icon-view.details-icons tr.explorer-icon .icon {
+    margin: 0 4px 0 0;
+    flex-shrink: 0;
+}
+
+.explorer-icon .icon img.icon-32 {
+    width: 32px;
+    height: 32px;
+    display: block;
+}
+
+.explorer-icon .icon img.icon-16 {
+    width: 16px;
+    height: 16px;
+    display: none;
+}
+
+.explorer-icon-view.small-icons .explorer-icon .icon img.icon-32,
+.explorer-icon-view.list-icons .explorer-icon .icon img.icon-32,
+.explorer-icon-view.details-icons tr.explorer-icon .icon img.icon-32 {
+    display: none;
+}
+
+.explorer-icon-view.small-icons .explorer-icon .icon img.icon-16,
+.explorer-icon-view.list-icons .explorer-icon .icon img.icon-16,
+.explorer-icon-view.details-icons tr.explorer-icon .icon img.icon-16 {
+    display: block;
+}
+
+.explorer-icon .icon-label {
+    font-family: var(--font-family-menu);
+    font-size: var(--font-size-menu);
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Hide overflowing content */
+    text-overflow: ellipsis; /* Show ellipsis for truncated text */
+    line-height: 1.2; /* Minimize vertical space */
+}
+
+.explorer-icon.cut {
+    opacity: 0.5;
+}
+
+.explorer-icon .highlighted-icon {
+    filter: var(--icon-filter);
+}
+
+.explorer-icon.selected .highlighted-label {
+    background-color: var(--highlight-blue);
+    color: var(--highlight-text);
+}
+
+.explorer-icon-view.details-icons table {
+    width: 100%;
+}
+
+.explorer-icon-view.details-icons tr.explorer-icon {
+    border: none;
+    height: 22px;
+    display: table-row;
+}
+
+.explorer-icon-view.details-icons td {
+    border: none;
+    padding: 0 4px;
+}
+
+.explorer-icon-view.details-icons tr.explorer-icon .icon .icon-wrapper {
+    position: static;
+}
+
+.explorer-icon-view.details-icons tr.explorer-icon .name-cell {
+    display: flex;
+    align-items: center;
+}
+
+.explorer-title {
+    display: none; /* Hidden by default */
+    font-size: 2em; /* h1 equivalent */
+    margin: 10px; /* Some spacing */
+    text-align: left;
+    color: var(--WindowText); /* Inherit text color */
+}
+
+/* When content width is less than 400px */
+.explorer-content.small-width {
+    flex-direction: column;
+}
+
+.explorer-content.small-width .explorer-title {
+    display: block; /* Show the title */
+}
+
+.explorer-icon .icon-label-input {
+    /* This will be applied to <textarea> */
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid black;
+    box-shadow: none;
+    background: white;
+    color: black;
+    text-align: center;
+    font-family: inherit;
+    font-size: inherit;
+    margin: 0;
+    outline: none;
+    z-index: 10;
+    position: relative;
+    /* New styles for textarea */
+    resize: none; /* Disable user resize handle */
+    overflow: hidden; /* Hide scrollbar, JS will manage height */
+    height: auto; /* Allow height to be controlled by content/JS */
+    min-height: 1.2em; /* Ensure at least one line is visible */
+    white-space: normal; /* Allow text to wrap */
+    word-break: break-word; /* Ensure long words break */
+    line-height: 1.2; /* Adjust line height for better appearance */
+    padding: 2px; /* Add some padding for better text visibility */
+}
+
+.explorer-icon-view.small-icons .explorer-icon .icon-label-input,
+.explorer-icon-view.list-icons .explorer-icon .icon-label-input,
+.explorer-icon-view.details-icons tr.explorer-icon .icon-label-input {
+    text-align: left;
+}
+
+/* Custom Drag and Drop Styles */
+.drag-ghost {
+    pointer-events: none;
+    user-select: none;
+    filter: opacity(0.8);
+}
+
+.drag-ghost .ghost-item {
+    background: transparent !important;
+    border: none !important;
+}
+
+.drag-ghost .explorer-icon {
+    margin: 0;
+}
+
+
+.drop-target-highlight {
+    background-color: var(--highlight-blue) !important;
+    color: var(--highlight-text) !important;
+}
+
+.drop-target-highlight .icon img {
+    filter: var(--icon-filter);
+}
+
+body.dragging * {
+    cursor: grabbing !important;
+}

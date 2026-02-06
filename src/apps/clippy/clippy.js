@@ -2,12 +2,12 @@ import {
   getItem,
   setItem,
   LOCAL_STORAGE_KEYS,
-} from "../../utils/localStorage.js";
+} from '../../system/local-storage.js';
 import {
   requestBusyState,
   releaseBusyState,
-} from "../../utils/busyStateManager.js";
-import { appManager } from "../../utils/appManager.js";
+} from '../../system/busy-state-manager.js';
+import { appManager } from '../../system/app-manager.js';
 
 window.clippyAppInstance = null;
 let currentAgentName =
@@ -121,7 +121,7 @@ async function askClippy(agent, question) {
   }
 }
 
-import { AGENT_NAMES } from "../../config/agents.js";
+import { AGENT_NAMES } from '../../config/agents.js';
 
 export function getClippyMenuItems(app) {
   const appInstance = app || window.clippyAppInstance;

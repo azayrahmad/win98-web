@@ -1,4 +1,4 @@
-import { appManager } from "../../utils/appManager.js";
+import { appManager } from '../../system/app-manager.js';
 
 let sheepInstances = [];
 let eSheepAppInstance = null;

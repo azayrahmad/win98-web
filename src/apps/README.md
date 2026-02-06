@@ -22,13 +22,13 @@ This guide provides instructions on how to add new applications to azOS Second E
 | Application | Description | Source |
 | :--- | :--- | :--- |
 | [About](./about/README.md) | A simple utility that displays information about the azOS Second Edition operating system. | |
-| [Cursor Explorer](./cursorexplorer/README.md) | Explore and preview cursor schemes. | |
-| [Desktop Themes](./desktopthemes/README.md) | A utility for managing and previewing desktop visual themes. | |
-| [Display Properties](./displayproperties/README.md) | A tool for customizing wallpaper, screen savers, and display settings. | |
-| [Explorer](./explorer/README.md) | A file and folder navigation tool for the virtual file system. | |
-| [Sound Scheme Explorer](./soundschemeexplorer/README.md) | A utility to browse and preview system sound schemes. | |
-| [Task Manager](./taskmanager/README.md) | A utility to view and close running applications. | |
-| [Tip of the Day](./tipOfTheDay/README.md) | A helpful utility that displays useful hints and tricks to the user upon startup. | |
+| [Cursor Explorer](./cursor-explorer/README.md) | Explore and preview cursor schemes. | |
+| [Desktop Themes](./desktop-themes/README.md) | A utility for managing and previewing desktop visual themes. | |
+| [Display Properties](./display-properties/README.md) | A tool for customizing wallpaper, screen savers, and display settings. | |
+| [Explorer](../shell/explorer/README.md) | A file and folder navigation tool for the virtual file system. | |
+| [Sound Scheme Explorer](./sound-scheme-explorer/README.md) | A utility to browse and preview system sound schemes. | |
+| [Task Manager](./task-manager/README.md) | A utility to view and close running applications. | |
+| [Tip of the Day](./tip-of-the-day/README.md) | A helpful utility that displays useful hints and tricks to the user upon startup. | |
 
 ### Accessories & Tools
 *For general-purpose productivity, creative, or developer tools.*
@@ -37,11 +37,11 @@ This guide provides instructions on how to add new applications to azOS Second E
 | [App Maker](./appmaker/README.md) | A tool to create custom, windowed applications using HTML. | |
 | [Clippy](./clippy/README.md) | An interactive AI assistant. | |
 | [Image Resizer](./image-resizer/README.md) | A utility to enlarge images using nearest-neighbor scaling. | |
-| [Image Viewer](./imageviewer/README.md) | A simple application for viewing and editing image files. | |
+| [Image Viewer](./image-viewer/README.md) | A simple application for viewing and editing image files. | |
 | [Notepad](./notepad/README.md) | A powerful text editor with syntax highlighting, code formatting, and Markdown preview. | |
 | [Paint](./paint/README.md) | A classic drawing and image editing application. | |
-| [PDF Viewer](./pdfviewer/README.md) | A simple application for viewing PDF documents. | |
-| [Theme to CSS](./themetocss/README.md) | A developer utility to convert `.theme` INI files into CSS. | |
+| [PDF Viewer](./pdf-viewer/README.md) | A simple application for viewing PDF documents. | |
+| [Theme to CSS](./theme-to-css/README.md) | A developer utility to convert `.theme` INI files into CSS. | |
 
 ### Community & Support
 *For applications related to supporting the project or its developer.*

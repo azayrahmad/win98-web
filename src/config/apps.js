@@ -1,18 +1,19 @@
 // src/config/apps.js
-import { FlashPlayerApp } from "../apps/flashplayer/FlashPlayerApp.js";
-import { ShowDialogWindow } from "../components/DialogWindow.js";
-import { getIcon } from "../utils/iconManager.js";
-import { playSound } from "../utils/soundManager.js";
+import { FlashPlayerApp } from '../apps/flash-player/flash-player-app.js';
+import { ZenExplorerApp } from '../shell/explorer/explorer-app.js';
+import { ShowDialogWindow } from '../shared/components/dialog-window.js';
+import { getIcon } from '../shared/utils/icon-resolver.js';
+import { playSound } from '../system/sound-manager.js';
 import {
   getRecycleBinItems,
   emptyRecycleBin,
-} from "../utils/recycleBinManager.js";
-import { SPECIAL_FOLDER_PATHS } from "./special-folders.js";
+} from '../system/recycle-bin-utils.js';
+import { SPECIAL_FOLDER_PATHS } from './special-folders.js';
 
 // --- Dynamic App Loading ---
 
 // Use Vite's glob import to get all App modules
-const appModules = import.meta.glob("../apps/*/*App.js", { eager: true });
+const appModules = import.meta.glob("../apps/*/*-app.js", { eager: true });
 
 export const appClasses = {};
 const staticConfigs = [];
@@ -23,7 +24,7 @@ for (const path in appModules) {
 
   // Check for a named export ending in 'App'
   const appClassName = Object.keys(appModule).find((key) =>
-    key.endsWith("App"),
+    key.toLowerCase().endsWith("app"),
   );
   if (appClassName) {
     AppClass = appModule[appClassName];
@@ -132,7 +133,7 @@ const systemApps = [
                 action: async () => {
                   if (window.RecycleBinManager) {
                     await window.RecycleBinManager.emptyAllRecycleBins();
-                    const { playSound } = await import("../utils/soundManager.js");
+                    const { playSound } = await import('../system/sound-manager.js');
                     playSound("EmptyRecycleBin");
                   }
                 },
@@ -259,6 +260,11 @@ const systemApps = [
 if (FlashPlayerApp.config) {
   appClasses[FlashPlayerApp.config.id] = FlashPlayerApp;
   staticConfigs.push({ ...FlashPlayerApp.config, appClass: FlashPlayerApp });
+}
+
+if (ZenExplorerApp.config) {
+  appClasses[ZenExplorerApp.config.id] = ZenExplorerApp;
+  staticConfigs.push({ ...ZenExplorerApp.config, appClass: ZenExplorerApp });
 }
 
 export const apps = [...systemApps, ...staticConfigs];

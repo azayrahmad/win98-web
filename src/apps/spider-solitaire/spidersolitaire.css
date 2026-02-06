@@ -1,0 +1,164 @@
+.spider-solitaire-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: #008000;
+    box-sizing: border-box;
+    background-image: url("./assets/FELT.bmp");
+}
+
+.spider-solitaire-container .game-board {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.spider-solitaire-container .toolbar {
+    margin-bottom: 10px;
+}
+
+.spider-solitaire-container .tableau-piles {
+    display: flex;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+
+.spider-solitaire-container .tableau-pile {
+    width: 71px;
+    min-height: 96px;
+    padding: 5px;
+}
+
+.spider-solitaire-container .bottom-area {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 10px;
+}
+
+.spider-solitaire-container .foundation-piles {
+    display: flex;
+}
+
+.spider-solitaire-container .stock-pile {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.spider-solitaire-container .foundation-pile {
+    width: 71px;
+    height: 96px;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+    text-align: left;
+    line-height: normal;
+    padding: 2px 4px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.spider-solitaire-container .stock-card-placeholder {
+    width: 71px;
+    height: 96px;
+    border: 1px solid #000;
+    border-radius: 5px;
+    margin-left: -60px;
+    box-sizing: border-box;
+    font-size: 16px;
+    text-align: left;
+    line-height: normal;
+    padding: 2px 4px;
+    cursor: pointer;
+    user-select: none;
+    background-color: #8b0000;
+    background-image: url("./assets/CARDBACK.bmp");
+}
+
+.spider-solitaire-container .foundation-pile {
+    margin-right: -55px;
+}
+
+.spider-solitaire-container .card {
+    width: 71px;
+    height: 96px;
+    border: 1px solid #000;
+    border-radius: 5px;
+    margin-bottom: -70px;
+    box-sizing: border-box;
+    font-size: 16px;
+    text-align: left;
+    line-height: normal;
+    padding: 2px 4px;
+    cursor: pointer;
+    user-select: none;
+    background-color: #ffffff;
+    position: relative;
+}
+
+.spider-solitaire-container .card.face-up {
+    color: transparent;
+    font-size: 0;
+}
+
+.spider-solitaire-container .card.face-down {
+    background-color: #8b0000;
+    margin-bottom: -85px;
+    background-image: url("./assets/CARDBACK.bmp");
+}
+
+/* 98 Style Layout */
+.spider-solitaire-container.style-98 .bottom-area {
+    display: none;
+}
+
+.spider-solitaire-container .tableau-placeholder {
+    width: 71px;
+    height: 96px;
+    border: 1px solid white;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #008000;
+    background-image: url("./assets/FELT.bmp");
+}
+
+.spider-solitaire-container .card.card-highlight,
+.spider-solitaire-container .tableau-placeholder.card-highlight {
+    filter: invert(1);
+}
+
+.spider-solitaire-container .card.dragging {
+    visibility: hidden;
+}
+
+.dragged-stack {
+    width: 71px;
+}
+
+#spidersolitaire .menu-bar {
+    display: flex;
+    background: silver;
+    border-bottom: 1px solid white;
+}
+
+#spidersolitaire .menu-button {
+    padding: 2px 6px;
+    position: relative;
+}
+
+.spider-statistics-content {
+    padding: 10px;
+    width: 100%;
+}
+
+.spider-statistics-content .stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.spider-statistics-content fieldset {
+    margin-bottom: 10px;
+}

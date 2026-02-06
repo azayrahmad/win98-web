@@ -1,14 +1,14 @@
 import { test, expect } from '@playwright/test';
 
-test('ZenExplorer address bar enhancement', async ({ page }) => {
+test('ZenExplorer address bar enhancement', async ({ page }, testInfo) => {
   await page.goto('./'); // Uses baseURL from config
 
   // Wait for boot
-  await page.locator('.desktop').waitFor();
+  await page.waitForFunction(() => window.System && typeof window.System.launchApp === 'function');
 
   // Launch ZenExplorer
-  await page.evaluate(() => window.System.launchApp('zenexplorer'));
-  await page.locator('.window#zenexplorer').waitFor();
+  await page.evaluate(() => window.System.launchApp('explorer'));
+  await page.locator('.window[data-app-id="explorer"]').waitFor();
 
   // Check address bar structure
   const addressBar = page.locator('.address-bar');
@@ -41,5 +41,5 @@ test('ZenExplorer address bar enhancement', async ({ page }) => {
   expect(count).toBeGreaterThan(0);
 
   // Take a screenshot
-  await page.screenshot({ path: 'test-results/address-bar.png' });
+  await page.screenshot({ path: testInfo.outputPath('address-bar.png') });
 });

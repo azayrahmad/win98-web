@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.3.0](https://github.com/azayrahmad/win98-web/compare/win98-web-v0.2.0...win98-web-v0.3.0) (2026-02-05)
+
+
+### Features
+
+* hide shortcut extensions and improve shortcut management ([0a59420](https://github.com/azayrahmad/win98-web/commit/0a5942084ba8820c7bdb7136183bae0a6ef05c44))
+* improve shortcuts by changing extension to .lnk.json and adding "Paste Shortcut" ([b18be5b](https://github.com/azayrahmad/win98-web/commit/b18be5bde8749135e8df2b849e6ac3d6df71e66b))
+* prioritize virtual icons and add desktop shortcuts ([3db0fcb](https://github.com/azayrahmad/win98-web/commit/3db0fcb2eae1a886a8fd403ee30929cc3b7586ec))
+
+
+### Bug Fixes
+
+* improve renaming in Zen Explorer and Desktop ([a076905](https://github.com/azayrahmad/win98-web/commit/a07690538f767a2afb9fd90b90026e29a5ddf554))
+* improve renaming in Zen Explorer and Desktop ([c798820](https://github.com/azayrahmad/win98-web/commit/c7988209a211fdf9fc3a9c36c7499e6a1da3d576))
+* improve renaming mechanism in Zen Explorer and Desktop ([b1b5a43](https://github.com/azayrahmad/win98-web/commit/b1b5a433e90daef2357ce91ef5088bfe20665bc6))
+* prevent system hotkeys from intercepting dialog interactions ([344770d](https://github.com/azayrahmad/win98-web/commit/344770d156f26ed2a7e3f8fe6cb892411e5e631b))
+* prioritize and order specific virtual icons on Desktop and Zen Explorer ([2a34355](https://github.com/azayrahmad/win98-web/commit/2a343553c3345de74ecf050f4139004059d203b4))
+* resolve virtual paths in shortcuts to real ZenFS paths ([c6a7570](https://github.com/azayrahmad/win98-web/commit/c6a757028ae6d443345776ec7b8ce49d690bb5d8))
+
 ## [0.2.0](https://github.com/azayrahmad/win98-web/compare/win98-web-v0.1.0...win98-web-v0.2.0) (2026-02-04)
 
 

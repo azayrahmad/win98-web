@@ -39,7 +39,7 @@
 .smiley {
     width: 23px;
     height: 23px;
-    background-image: url("/src/assets/minesweeper/minesweeper-smiley-neutral.png");
+    background-image: url("./minesweeper-smiley-neutral.png");
     background-size: auto;
     background-position: center;
     background-repeat: no-repeat;
@@ -91,7 +91,7 @@
 }
 
 .cell.mine {
-    background-image: url("/src/assets/minesweeper/mine.png");
+    background-image: url("./mine.png");
     background-repeat: no-repeat;
     background-size: cover;
 }
@@ -105,7 +105,7 @@
 .minesweeper-app.style-98 .tile {
     width: 16px;
     height: 16px;
-    background-image: url("../../assets/minesweeper/minesweeper-game.png");
+    background-image: url("./assets/minesweeper-game.png");
     background-repeat: no-repeat;
 }
 
@@ -179,7 +179,7 @@
 }
 
 .cell.flagged {
-    background-image: url("/src/assets/minesweeper/flag.png");
+    background-image: url("./flag.png");
     background-repeat: no-repeat;
     background-size: cover;
 }

@@ -1,4 +1,4 @@
-import { ICONS } from "./icons.js";
+import { ICONS } from './icons.js';
 
 // A helper function to create the icon object, pointing to both 16 and 32 sizes
 const createIcon = (path) => {

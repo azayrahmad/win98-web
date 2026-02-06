@@ -361,11 +361,11 @@ export const ICONS = {
   },
   minesweeper: {
     16: new URL(
-      "../assets/minesweeper/minesweeper-icon-small.png",
+      "../apps/minesweeper/assets/minesweeper-icon-small.png",
       import.meta.url,
     ).href,
     32: new URL(
-      "../assets/minesweeper/minesweeper-icon-large.png",
+      "../apps/minesweeper/assets/minesweeper-icon-large.png",
       import.meta.url,
     ).href,
   },
