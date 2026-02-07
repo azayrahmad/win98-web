@@ -70,8 +70,8 @@ export class SpiderSolitaireApp extends Application {
     this.dragOffsetY = 0;
     this.hoveredTarget = null;
 
-    this.boundOnMouseMove = this.onMouseMove.bind(this);
-    this.boundOnMouseUp = this.onMouseUp.bind(this);
+    this.boundOnPointerMove = this.onPointerMove.bind(this);
+    this.boundOnPointerUp = this.onPointerUp.bind(this);
 
     this.addEventListeners();
 
@@ -477,7 +477,7 @@ export class SpiderSolitaireApp extends Application {
   }
 
   addEventListeners() {
-    this.container.addEventListener("mousedown", this.onMouseDown.bind(this));
+    this.container.addEventListener("pointerdown", this.onPointerDown.bind(this));
     this.container
       .querySelector(".stock-pile")
       .addEventListener("click", this.onStockClick.bind(this));
@@ -504,8 +504,8 @@ export class SpiderSolitaireApp extends Application {
     });
   }
 
-  onMouseDown(event) {
-    if (event.button !== 0) return; // Only main button
+  onPointerDown(event) {
+    if (event.button !== 0 && event.pointerType === 'mouse') return; // Only main button for mouse
     const cardDiv = event.target.closest(".card");
     if (!cardDiv) return;
 
@@ -556,12 +556,18 @@ export class SpiderSolitaireApp extends Application {
       this.draggedElement.style.left = `${cardRect.left - containerRect.left}px`;
       this.draggedElement.style.top = `${cardRect.top - containerRect.top}px`;
 
-      window.addEventListener("mousemove", this.boundOnMouseMove);
-      window.addEventListener("mouseup", this.boundOnMouseUp);
+      window.addEventListener("pointermove", this.boundOnPointerMove);
+      window.addEventListener("pointerup", this.boundOnPointerUp);
+
+      if (event.pointerId !== undefined) {
+        try {
+          cardDiv.setPointerCapture(event.pointerId);
+        } catch (e) {}
+      }
     }
   }
 
-  onMouseMove(event) {
+  onPointerMove(event) {
     if (!this.isDragging) return;
     const containerRect = this.container.getBoundingClientRect();
     this.draggedElement.style.left = `${event.clientX - containerRect.left - this.dragOffsetX}px`;
@@ -579,12 +585,12 @@ export class SpiderSolitaireApp extends Application {
     const toPileDiv = bestTarget;
   }
 
-  async onMouseUp(event) {
+  async onPointerUp(event) {
     if (!this.isDragging) return;
 
     this.isDragging = false;
-    window.removeEventListener("mousemove", this.boundOnMouseMove);
-    window.removeEventListener("mouseup", this.boundOnMouseUp);
+    window.removeEventListener("pointermove", this.boundOnPointerMove);
+    window.removeEventListener("pointerup", this.boundOnPointerUp);
 
     this.container
       .querySelectorAll(".dragging")

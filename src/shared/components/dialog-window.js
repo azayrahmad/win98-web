@@ -43,7 +43,7 @@ function ShowDialogWindow(options) {
     resizable: false,
     minimizeButton: false,
     maximizeButton: false,
-    width: 400,
+    width: Math.min(400, window.innerWidth - 20),
     height: "auto",
     parentWindow: parentWindow || null,
   };

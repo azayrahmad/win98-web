@@ -157,3 +157,25 @@
   display: flex;
   justify-content: space-between;
 }
+
+@media (max-width: 600px) {
+    .freecell-container .game-board {
+        transform-origin: top left;
+        scale: 0.8;
+        width: 125%;
+    }
+}
+
+@media (max-width: 450px) {
+    .freecell-container .game-board {
+        scale: 0.6;
+        width: 166%;
+    }
+}
+
+@media (max-width: 350px) {
+    .freecell-container .game-board {
+        scale: 0.45;
+        width: 222%;
+    }
+}

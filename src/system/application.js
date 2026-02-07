@@ -1,6 +1,7 @@
 import { ShowDialogWindow } from '../shared/components/dialog-window.js';
 import { createTaskbarButton, createTrayIcon } from '../shell/taskbar/taskbar.js';
 import { appManager } from './app-manager.js';
+import { MobileManager } from './mobile-manager.js';
 
 const openWindows = new Map();
 export const openApps = new Map();
@@ -130,7 +131,11 @@ export class Application {
       this.win.setMinimizeTarget(taskbarButton);
     }
 
-    this.win.center();
+    if (MobileManager.isMobile() && this.win.maximize && this.config.maximizeButton !== false && this.config.resizable !== false) {
+      this.win.maximize();
+    } else {
+      this.win.center();
+    }
     this.win.focus();
   }
 

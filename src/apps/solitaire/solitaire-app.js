@@ -85,9 +85,9 @@ export class SolitaireApp extends Application {
     this.lastClickedCardUid = null;
     this.doubleClickThreshold = 400;
 
-    this.boundOnMouseMove = this.onMouseMove.bind(this);
-    this.boundOnMouseUp = this.onMouseUp.bind(this);
-    this.boundOnMouseDown = this.onMouseDown.bind(this);
+    this.boundOnPointerMove = this.onPointerMove.bind(this);
+    this.boundOnPointerUp = this.onPointerUp.bind(this);
+    this.boundOnPointerDown = this.onPointerDown.bind(this);
     this.boundOnClick = this.onClick.bind(this);
 
     this.animationTimer = null;
@@ -531,7 +531,7 @@ export class SolitaireApp extends Application {
   }
 
   addEventListeners() {
-    this.container.addEventListener("mousedown", this.boundOnMouseDown);
+    this.container.addEventListener("pointerdown", this.boundOnPointerDown);
     this.container.addEventListener("click", this.boundOnClick);
     this.win.element.addEventListener("keydown", (event) => {
       if (event.key === "F2") {
@@ -542,7 +542,7 @@ export class SolitaireApp extends Application {
   }
 
   removeEventListeners() {
-    this.container.removeEventListener("mousedown", this.boundOnMouseDown);
+    this.container.removeEventListener("pointerdown", this.boundOnPointerDown);
     this.container.removeEventListener("click", this.boundOnClick);
   }
 
@@ -570,8 +570,8 @@ export class SolitaireApp extends Application {
     }
   }
 
-  onMouseDown(event) {
-    if (event.button !== 0) return; // Only main button
+  onPointerDown(event) {
+    if (event.button !== 0 && event.pointerType === 'mouse') return; // Only main button for mouse
     this.wasDragged = false;
 
     const cardDiv = event.target.closest(".card");
@@ -680,11 +680,18 @@ export class SolitaireApp extends Application {
       this.draggedElement.style.top = `${cardRect.top - containerRect.top}px`;
     }
 
-    window.addEventListener("mousemove", this.boundOnMouseMove);
-    window.addEventListener("mouseup", this.boundOnMouseUp);
+    window.addEventListener("pointermove", this.boundOnPointerMove);
+    window.addEventListener("pointerup", this.boundOnPointerUp);
+
+    // For touch devices, we might need to capture the pointer
+    if (event.pointerId !== undefined) {
+      try {
+        cardDiv.setPointerCapture(event.pointerId);
+      } catch (e) {}
+    }
   }
 
-  onMouseMove(event) {
+  onPointerMove(event) {
     if (!this.isDragging) return;
     this.wasDragged = true;
 
@@ -754,12 +761,12 @@ export class SolitaireApp extends Application {
     }
   }
 
-  onMouseUp(event) {
+  onPointerUp(event) {
     if (!this.isDragging) return;
 
     this.isDragging = false;
-    window.removeEventListener("mousemove", this.boundOnMouseMove);
-    window.removeEventListener("mouseup", this.boundOnMouseUp);
+    window.removeEventListener("pointermove", this.boundOnPointerMove);
+    window.removeEventListener("pointerup", this.boundOnPointerUp);
 
     if (this.hoveredTarget) {
       this.hoveredTarget.classList.remove("invert-colors");

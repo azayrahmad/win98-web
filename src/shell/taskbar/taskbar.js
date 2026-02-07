@@ -8,6 +8,7 @@ import { ICONS } from "../../config/icons.js";
 import StartMenu from "../start-menu/start-menu.js";
 import { showClippyContextMenu } from "../../apps/clippy/clippy.js";
 import { launchApp } from "../../system/app-manager.js";
+import { TouchUtils } from "../../shared/utils/touch-utils.js";
 
 // Constants for better maintainability
 const SELECTORS = {
@@ -278,7 +279,7 @@ class Taskbar {
     });
 
     // Add context menu handler
-    this.addTrackedEventListener(taskbarButton, "contextmenu", (e) => {
+    const showContextMenu = (e) => {
       e.preventDefault();
       e.stopPropagation();
 
@@ -308,7 +309,10 @@ class Taskbar {
       ];
 
       new window.ContextMenu(contextMenuItems, e);
-    });
+    };
+
+    this.addTrackedEventListener(taskbarButton, "contextmenu", showContextMenu);
+    TouchUtils.addLongPressListener(taskbarButton, showContextMenu);
 
     taskbarAppArea.appendChild(taskbarButton);
 

@@ -162,3 +162,32 @@
 .spider-statistics-content fieldset {
     margin-bottom: 10px;
 }
+
+@media (max-width: 800px) {
+    .spider-solitaire-container .game-board {
+        transform-origin: top left;
+        scale: 0.8;
+        width: 125%;
+    }
+}
+
+@media (max-width: 650px) {
+    .spider-solitaire-container .game-board {
+        scale: 0.6;
+        width: 166%;
+    }
+}
+
+@media (max-width: 500px) {
+    .spider-solitaire-container .game-board {
+        scale: 0.45;
+        width: 222%;
+    }
+}
+
+@media (max-width: 400px) {
+    .spider-solitaire-container .game-board {
+        scale: 0.35;
+        width: 285%;
+    }
+}

@@ -403,7 +403,7 @@ export class FreeCellApp extends Application {
   }
 
   addEventListeners() {
-    this.container.addEventListener("click", this.boundOnClick);
+    this.container.addEventListener("pointerdown", this.boundOnClick);
     this.container.addEventListener("dblclick", this.boundHandleDoubleClick);
     this.win.element.addEventListener("keydown", this.boundHandleKeyDown);
 
@@ -411,17 +411,23 @@ export class FreeCellApp extends Application {
     const foundations = this.container.querySelector(".foundations");
 
     freeCells.addEventListener("mouseover", this.boundHandleFreeCellsMouseOver);
+    freeCells.addEventListener("pointerenter", this.boundHandleFreeCellsMouseOver);
     foundations.addEventListener(
       "mouseover",
       this.boundHandleFoundationsMouseOver,
     );
+    foundations.addEventListener(
+      "pointerenter",
+      this.boundHandleFoundationsMouseOver,
+    );
 
-    this.container.addEventListener("mousemove", this.boundHandleMouseMove);
+    this.container.addEventListener("pointermove", this.boundHandleMouseMove);
     this.container.addEventListener("mouseout", this.boundHandleMouseOut);
+    this.container.addEventListener("pointerleave", this.boundHandleMouseOut);
   }
 
   removeEventListeners() {
-    this.container.removeEventListener("click", this.boundOnClick);
+    this.container.removeEventListener("pointerdown", this.boundOnClick);
     this.container.removeEventListener("dblclick", this.boundHandleDoubleClick);
     this.win.element.removeEventListener("keydown", this.boundHandleKeyDown);
 
@@ -433,16 +439,25 @@ export class FreeCellApp extends Application {
         "mouseover",
         this.boundHandleFreeCellsMouseOver,
       );
+      freeCells.removeEventListener(
+        "pointerenter",
+        this.boundHandleFreeCellsMouseOver,
+      );
     }
     if (foundations) {
       foundations.removeEventListener(
         "mouseover",
         this.boundHandleFoundationsMouseOver,
       );
+      foundations.removeEventListener(
+        "pointerenter",
+        this.boundHandleFoundationsMouseOver,
+      );
     }
 
-    this.container.removeEventListener("mousemove", this.boundHandleMouseMove);
+    this.container.removeEventListener("pointermove", this.boundHandleMouseMove);
     this.container.removeEventListener("mouseout", this.boundHandleMouseOut);
+    this.container.removeEventListener("pointerleave", this.boundHandleMouseOut);
   }
 
   handleFreeCellsMouseOver() {

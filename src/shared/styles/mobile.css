@@ -1,0 +1,142 @@
+/* Mobile-friendly overrides for Windows 98 Web Edition */
+
+body.is-mobile {
+    /* Larger font sizes for better readability */
+    --font-size-base: 14px;
+    --font-size-menu: 14px;
+    --font-size-title: 14px;
+}
+
+body.is-mobile .taskbar {
+    height: 36px; /* Increased from 24px */
+}
+
+body.is-mobile .desktop-area {
+    height: calc(100% - 40px - env(safe-area-inset-bottom) - 1px);
+}
+
+body.is-mobile .start-button {
+    height: 30px;
+    padding: 0 8px;
+}
+
+body.is-mobile .start-button img {
+    height: 20px;
+    width: 20px;
+}
+
+body.is-mobile .taskbar-app-area {
+    gap: 5px;
+}
+
+body.is-mobile .taskbar-button {
+    height: 30px;
+    min-width: 40px; /* Allow buttons to shrink more on small screens */
+}
+
+body.is-mobile .taskbar-button img {
+    height: 20px;
+    width: 20px;
+}
+
+body.is-mobile .taskbar-clock {
+    width: 80px;
+    font-size: 14px;
+}
+
+body.is-mobile .system-tray {
+    height: 30px;
+}
+
+body.is-mobile .system-tray img {
+    height: 20px;
+}
+
+/* Larger desktop icons for touch */
+body.is-mobile .desktop {
+    grid-template-rows: repeat(auto-fill, 100px);
+    grid-auto-columns: 90px;
+}
+
+body.is-mobile .explorer-icon .icon img {
+    width: 48px !important;
+    height: 48px !important;
+}
+
+body.is-mobile .explorer-icon .icon-label {
+    font-size: 12px;
+}
+
+/* Larger window title bars and buttons */
+body.is-mobile .window-titlebar {
+    height: 30px !important;
+}
+
+body.is-mobile .window-title {
+    font-size: 14px;
+}
+
+body.is-mobile .window-button {
+    width: 26px !important;
+    height: 24px !important;
+}
+
+body.is-mobile .window-button-icon {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+/* Larger menus */
+body.is-mobile .menu-item {
+    height: 32px !important;
+    padding: 4px 12px !important;
+}
+
+body.is-mobile .start-menu li {
+    height: 44px; /* Increased from 32px */
+    padding-right: 15px !important;
+}
+
+body.is-mobile .start-menu li img {
+    width: 32px;
+    height: 32px;
+}
+
+body.is-mobile .blue-rectangle {
+    width: 30px;
+}
+
+body.is-mobile .start-menu-divider {
+    width: calc(100% - 10px);
+}
+
+body.is-mobile .start-menu-wrapper {
+    bottom: 40px; /* Account for larger taskbar */
+}
+
+/* Ensure submenus are also larger */
+body.is-mobile .menu-popup-table .menu-row {
+    height: 36px;
+}
+
+/* Make sure buttons in dialogs are easy to tap */
+body.is-mobile button {
+    min-height: 28px;
+    padding: 0 12px;
+}
+
+/* Scrollbars on mobile should be a bit wider */
+body.is-mobile ::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+}
+
+/* Common status bar adjustments */
+body.is-mobile .status-bar {
+    height: 28px !important;
+    font-size: 14px !important;
+}
+
+body.is-mobile .status-bar-field {
+    line-height: 24px !important;
+}

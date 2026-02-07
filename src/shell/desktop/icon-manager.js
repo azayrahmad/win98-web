@@ -1,4 +1,5 @@
 // src/shell/desktop/icon-manager.js
+import { TouchUtils } from "../../shared/utils/touch-utils.js";
 
 export class IconManager {
   constructor(container, options = {}) {
@@ -15,7 +16,7 @@ export class IconManager {
 
   init() {
     this.container.addEventListener(
-      "mousedown",
+      "pointerdown",
       this.handleMouseDown.bind(this),
     );
     this.container.addEventListener("click", this.handleClick.bind(this));
@@ -23,6 +24,12 @@ export class IconManager {
       "contextmenu",
       this.handleContextMenu.bind(this),
     );
+
+    TouchUtils.addLongPressListener(this.container, (e) => {
+      if (e.target === this.container) {
+        this.handleContextMenu(e);
+      }
+    });
   }
 
   // Internal methods that don't trigger the callback
@@ -113,7 +120,7 @@ export class IconManager {
 
   handleMouseDown(e) {
     if (e.target !== this.container) return; // Only start lasso on container itself
-    if (e.button !== 0) return; // Only for left click
+    if (e.button !== 0 && e.pointerType === 'mouse') return; // Only for left click on mouse
 
     this.isLassoing = true;
     const containerRect = this.container.getBoundingClientRect();
@@ -165,15 +172,15 @@ export class IconManager {
         this.lasso.parentElement.removeChild(this.lasso);
       }
       this.lasso = null;
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener("pointermove", onMouseMove);
+      document.removeEventListener("pointerup", onMouseUp);
       setTimeout(() => {
         this.wasLassoing = false;
       }, 0);
     };
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("pointermove", onMouseMove);
+    document.addEventListener("pointerup", onMouseUp);
   }
 
   handleClick(e) {
@@ -210,17 +217,21 @@ export class IconManager {
   }
 
   configureIcon(icon) {
-    icon.addEventListener("mousedown", (e) =>
+    icon.addEventListener("pointerdown", (e) =>
       this.handleIconMouseDown(e, icon),
     );
     icon.addEventListener("click", (e) => this.handleIconClick(e, icon));
+
+    TouchUtils.addLongPressListener(icon, (e) => {
+      this.handleContextMenu(e);
+    });
 
     // Allow context menu events to propagate to the container for onItemContext handling
     // icon.addEventListener("contextmenu", e => e.stopPropagation());
   }
 
   handleIconMouseDown(e, icon) {
-    if (e.button !== 0) return; // Only left-click
+    if (e.button !== 0 && e.pointerType === 'mouse') return; // Only left-click for mouse
     e.stopPropagation();
 
     if (!e.ctrlKey && !this.selectedIcons.has(icon)) {
@@ -236,7 +247,7 @@ export class IconManager {
           Math.pow(moveEvent.clientY - startY, 2),
       );
       if (dist > 5) {
-        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("pointermove", onMouseMove);
         this.wasDragged = true;
         if (this.options.onDragStart) {
           this.options.onDragStart(e, icon, [...this.selectedIcons]);
@@ -245,12 +256,18 @@ export class IconManager {
     };
 
     const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener("pointermove", onMouseMove);
+      document.removeEventListener("pointerup", onMouseUp);
     };
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("pointermove", onMouseMove);
+    document.addEventListener("pointerup", onMouseUp);
+
+    if (e.pointerId !== undefined) {
+       try {
+         icon.setPointerCapture(e.pointerId);
+       } catch (err) {}
+    }
   }
 
   handleIconClick(e, icon) {
