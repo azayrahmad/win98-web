@@ -164,8 +164,18 @@ export class CommandPromptApp extends Application {
         this.terminal.write("  TYPE <file>       - Displays the contents of a text file\r\n");
         this.terminal.write("  COPY <src> <dest> - Copies a file\r\n");
         this.terminal.write("  CLS               - Clears the screen\r\n");
+        this.terminal.write("  DOSBOX [file]     - Launches DOSBox emulator\r\n");
         this.terminal.write("  HELP              - Displays this help message\r\n");
         this.terminal.write("  <app-id>          - Launches an application\r\n");
+        break;
+
+      case "dosbox":
+        if (args.length > 0) {
+          const exePath = this.resolvePath(args[0]);
+          launchApp("doswasmx", exePath);
+        } else {
+          launchApp("doswasmx");
+        }
         break;
 
       case "dir":

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>DosWasmX Container</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: black;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            image-rendering: pixelated;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    <script>
+        // Minimal mock for DosWasmX's script.js
+        window.myApp = {
+            setupInputController: () => {
+                if (window.InputController) {
+                    window.myApp.rivetsData.inputController = new InputController();
+                }
+            },
+            rivetsData: {
+                inputController: null,
+                cpu: 'auto'
+            },
+            updateCPU: (cpu) => {
+                if (window.Module && window.Module._neil_update_cpu) {
+                    window.Module._neil_update_cpu(cpu);
+                }
+            }
+        };
+
+        window.ROMLIST = [];
+        window.DOSWASMSETTINGS = {
+            CLOUDSAVEURL: "",
+            ISOURL: "",
+            DEFAULTIMG: ""
+        };
+    </script>
+    <script src="settings.js"></script>
+    <script src="input_controller.js"></script>
+    <script src="runtime.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

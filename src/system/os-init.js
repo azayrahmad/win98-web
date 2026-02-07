@@ -20,7 +20,8 @@ import { createMainUI } from '../shell/ui.js';
 import { initColorModeManager } from './color-mode-manager.js';
 import screensaver from './screensaver-utils.js';
 import { initScreenManager } from './screen-manager.js';
-import { fs, mounts } from "@zenfs/core";
+import { fs, mounts, resolveMountConfig } from "@zenfs/core";
+import { Zip } from "@zenfs/archives";
 import { initFileSystem } from './zenfs-init.js';
 import { RecycleBinManager } from '../shell/explorer/file-operations/recycle-bin-manager.js';
 import { appManager } from './app-manager.js';
@@ -210,6 +211,51 @@ export async function initializeOS() {
           logElement.firstChild.nodeValue = baseMsg;
         }
         finalizeBootProcessStep(logElement, "OK");
+      }
+    });
+
+    await executeBootStep(async () => {
+      const baseLocalPath = "/C:/GAMES/WOLF3D";
+      if (!fs.existsSync(baseLocalPath)) {
+        let logElement = startBootProcessStep("Downloading Wolfenstein 3D...");
+        try {
+          const response = await fetch("games/wolf3d.zip");
+          if (!response.ok) throw new Error("Failed to download Wolf3D");
+          const buffer = await response.arrayBuffer();
+          finalizeBootProcessStep(logElement, "OK");
+
+          logElement = startBootProcessStep("Extracting Wolfenstein 3D...");
+          const zipFs = await resolveMountConfig({
+            backend: Zip,
+            data: new Uint8Array(buffer),
+          });
+          fs.mount("/tmp-zip", zipFs);
+
+          await fs.promises.mkdir(baseLocalPath, { recursive: true });
+
+          const copyRecursive = async (src, dest) => {
+            const entries = await fs.promises.readdir(src);
+            for (const entry of entries) {
+              const s = `${src}/${entry}`;
+              const d = `${dest}/${entry}`;
+              const stat = await fs.promises.stat(s);
+              if (stat.isDirectory()) {
+                await fs.promises.mkdir(d, { recursive: true });
+                await copyRecursive(s, d);
+              } else {
+                const data = await fs.promises.readFile(s);
+                await fs.promises.writeFile(d, data);
+              }
+            }
+          };
+
+          await copyRecursive("/tmp-zip", baseLocalPath);
+          fs.umount("/tmp-zip");
+          finalizeBootProcessStep(logElement, "OK");
+        } catch (e) {
+          console.error("Failed to setup Wolf3D:", e);
+          finalizeBootProcessStep(logElement, "FAILED");
+        }
       }
     });
 

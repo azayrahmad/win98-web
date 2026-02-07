@@ -109,6 +109,7 @@ export async function initFileSystem(onProgress) {
       { name: "Diablo.lnk.json", appId: "diablo" },
       { name: "Quake.lnk.json", appId: "quake" },
       { name: "Prince of Persia.lnk.json", appId: "prince-of-persia" },
+      { name: "Wolfenstein 3D.lnk.json", appId: "doswasmx", data: "/C:/GAMES/WOLF3D/WOLF3D.EXE" },
     ];
 
     for (const game of games) {
@@ -120,6 +121,7 @@ export async function initFileSystem(onProgress) {
             {
               type: "shortcut",
               appId: game.appId,
+              data: game.data,
             },
             null,
             2,
