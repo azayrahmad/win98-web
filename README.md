@@ -62,15 +62,24 @@ Over time, it became a challenge: to push how far a **vanilla JavaScript applica
 
 **Why Windows 98?** The main inspiration for this is actually my (parents') first computer ever, a Windows 98 machine. It is my first experience with a computer, and I remember the excitement of tinkering with it. That feeling is what I'd like for you to experience as well. 
 
+## Why Windows 98 Web Edition?
+
+In a sea of web-based operating systems, Windows 98 Web Edition differentiates itself through several key principles:
+
+*   **Authenticity Over Parody**: Unlike many retro web projects that lean into parody, this is a serious attempt at a **pixel-perfect recreation**. Every icon, sound, and window behavior is crafted to match the original Windows 98 experience as closely as possible.
+*   **A "Pure" Tech Stack**: While many modern WebOS projects rely on heavy frameworks like React or Next.js, this is built with **Vanilla JavaScript (ES6+)**. This makes the codebase an excellent educational resource for understanding how to build complex, windowed environments using standard web technologies.
+*   **True File System Power**: Powered by **ZenFS**, it offers a fully persistent C: drive (via IndexedDB). More uniquely, it supports **mounting your real local folders and .ISO files** as virtual drives, allowing you to use the environment with your own actual files and media.
+*   **Modular & Extensible**: The architecture is highly decoupled. Adding a new application is as simple as extending a base class, making it one of the most "hackable" and extensible retro environments for developers.
+
 ## What You Can Do Here
 
-* Explore a browser-based desktop that behaves like a classic operating system.
-* Change themes, colors, wallpapers, and sound schemes to customize your experience.
-* Run classic games and utilities in an authentic retro environment.
-* Create, edit, and manage files in a persistent virtual file system.
-* Mount local folders and .ISO files as virtual drives (A:, D:, etc.) to work with your real files.
-* Install the project as a Progressive Web App for offline access.
-* Chat with an AI-powered assistant for help and nostalgia.
+*   **Experience a Serious Recreation**: Navigate a browser-based desktop that prioritizes pixel-perfect authenticity over parody.
+*   **Customizable Retro Interface**: Change themes, colors, wallpapers, and sound schemes to recreate your favorite 90s workspace.
+*   **Classic Software Library**: Run remade Windows games (Solitaire, Minesweeper) and classic DOS titles (Doom, SimCity 2000) via high-performance emulation.
+*   **Advanced File Management**: Create, edit, and manage files in a persistent virtual file system (ZenFS) that survives browser restarts.
+*   **Work with Real Files**: Mount your actual local folders and .ISO files as virtual drives to bridge the gap between simulation and utility.
+*   **Offline Ready**: Install as a Progressive Web App (PWA) for a standalone, app-like retro desktop experience.
+*   **AI-Powered Assistance**: Interact with a modern, AI-backed recreation of Clippy for a blend of nostalgia and utility.
 
 ## Applications Included
 
@@ -142,6 +151,8 @@ For detailed instructions, see the **[Application Development Guide](./src/apps/
 
 ## Architecture Overview
 
+Windows 98 Web Edition is designed with a **modular, event-driven architecture** using only Vanilla JavaScript. This decoupled approach ensures that the core system remains lightweight while making it easy for developers to add new features or applications.
+
 ### Core Components
 
 * **System Core** (`src/system/`): Handles the fundamental "OS" logic.
@@ -182,9 +193,9 @@ Clippy is reintroduced as an optional, AI-powered assistant that provides contex
 ## Technologies Used
 
 ### Core Technologies
-* **Frontend**: Vanilla JavaScript (ES6+), HTML5, and CSS3.
-* **Build Tool**: [Vite](https://vitejs.dev/) for development and production bundling.
-* **Virtual File System**: [ZenFS](https://zenfs.dev/) for persistent storage.
+*   **Frontend**: Pure **Vanilla JavaScript (ES6+)** — zero heavy frameworks (No React/Vue/Angular).
+*   **Build Tool**: [Vite](https://vitejs.dev/) for fast development and optimized production bundling.
+*   **Virtual File System**: [ZenFS](https://zenfs.dev/) for robust, persistent storage and real-world filesystem bridging.
 
 ### UI & Styling
 * [98.css](https://jdan.github.io/98.css/): For authentic Windows 98 styling.
