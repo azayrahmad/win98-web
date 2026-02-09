@@ -39,6 +39,12 @@
         // Minimal mock for what input_controller.js and main.js expect
         window.myApp = {
             onscreenKeyboard: false,
+            frameWidth: 640,
+            frameHeight: 480,
+            rgbaDestination: new Uint8ClampedArray(640 * 480 * 4),
+            get ctx() {
+                return document.getElementById('canvas').getContext('2d');
+            },
             setupInputController: function() {
                 console.log('Input controller setting up...');
             },
@@ -61,6 +67,30 @@
                 if (window.Module && window.Module._neil_toggle_onscreenkeyboard) {
                     window.Module._neil_toggle_onscreenkeyboard();
                 }
+            },
+            HandleMessage: function(name, props) {
+                if (name === 'neil-resolution-changed') {
+                    this.frameWidth = props.width;
+                    this.frameHeight = props.height;
+                    this.rgbaDestination = new Uint8ClampedArray(this.frameWidth * this.frameHeight * 4);
+                    Module.canvas.width = this.frameWidth;
+                    Module.canvas.height = this.frameHeight;
+                    return;
+                }
+                if (name === 'neil-update-frame') {
+                    const rgbSource = new Uint8Array(Module.HEAPU8.buffer, props.pointer, this.frameWidth * this.frameHeight * 4);
+                    this.updateCanvas(rgbSource);
+                    return;
+                }
+            },
+            updateCanvas: function(rgbSource) {
+                for (let i = 0; i < this.frameWidth * this.frameHeight; i++) {
+                    this.rgbaDestination[i * 4 + 0] = rgbSource[i * 4 + 0];
+                    this.rgbaDestination[i * 4 + 1] = rgbSource[i * 4 + 1];
+                    this.rgbaDestination[i * 4 + 2] = rgbSource[i * 4 + 2];
+                    this.rgbaDestination[i * 4 + 3] = 255;
+                }
+                this.ctx.putImageData(new ImageData(this.rgbaDestination, this.frameWidth, this.frameHeight), 0, 0);
             }
         };
 
