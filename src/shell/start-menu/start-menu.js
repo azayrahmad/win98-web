@@ -29,11 +29,6 @@ const CLASSES = {
   ACTIVE: "active",
 };
 
-const ANIMATIONS = {
-  SCROLL_UP: "scrollUp",
-  SCROLL_DOWN: "scrollDown",
-};
-
 /**
  * StartMenu class - encapsulates all start menu functionality
  */
@@ -97,8 +92,10 @@ class StartMenu {
       .map((item) => {
         const hasSubmenu = (item.submenu && item.submenu.length >= 0) || item.isDynamic;
         return `
-        <li class="start-menu-item ${hasSubmenu ? "has-submenu" : ""}" role="menuitem" tabindex="0" data-id="${this.escapeHtml(item.label)}">
-          <img src="${item.icon}" alt="${this.escapeHtml(item.label)}">
+        <li class="start-menu-item ${hasSubmenu ? "has-submenu" : ""}" role="menuitem" tabindex="0" data-id="${this.escapeHtml(item.label)}" style="--icon-url: url('${item.icon}')">
+          <div class="start-menu-icon-wrapper">
+            <img src="${item.icon}" alt="${this.escapeHtml(item.label)}">
+          </div>
           <span>${this.escapeHtml(item.label)}</span>
           ${hasSubmenu ? '<span class="submenu-arrow"></span>' : ""}
         </li>
@@ -107,25 +104,29 @@ class StartMenu {
       .join("");
 
     return `
-      <div id="start-menu" class="start-menu ${CLASSES.HIDDEN}">
+      <nav id="start-menu" class="start-menu ${CLASSES.HIDDEN}" aria-label="Start Menu">
         <div class="blue-rectangle">
           <img src="${windowsStartMenuBar}" alt="Start Menu Bar" loading="lazy" />
         </div>
-        <ul class="start-menu-list">
+        <menu class="start-menu-list">
           <li class="pinned-items-container" style="display: contents;"></li>
           <div class="start-menu-divider" role="separator"></div>
           ${dynamicItemsHTML}
           <div class="start-menu-divider" role="separator"></div>
-          <li class="logoff-menu-item" role="menuitem" tabindex="0">
-            <img src="${ICONS.logoff[32]}" alt="Log off" loading="lazy">
+          <li class="logoff-menu-item" role="menuitem" tabindex="0" style="--icon-url: url('${ICONS.logoff[32]}')">
+            <div class="start-menu-icon-wrapper">
+              <img src="${ICONS.logoff[32]}" alt="Log off" loading="lazy">
+            </div>
             <span id="logofftext">Log Off Guest...</span>
           </li>
-          <li role="menuitem" tabindex="0" data-action="shutdown">
-            <img src="${ICONS.shutdown[32]}" alt="Shutdown" loading="lazy">
+          <li role="menuitem" tabindex="0" data-action="shutdown" style="--icon-url: url('${ICONS.shutdown[32]}')">
+            <div class="start-menu-icon-wrapper">
+              <img src="${ICONS.shutdown[32]}" alt="Shutdown" loading="lazy">
+            </div>
             <span>Shut Down...</span>
           </li>
-        </ul>
-      </div>`;
+        </menu>
+      </nav>`;
   }
 
   bindEvents() {
@@ -171,8 +172,6 @@ class StartMenu {
 
       const menuWrapper = document.createElement("div");
       menuWrapper.className = "menu-popup-wrapper";
-      menuWrapper.style.position = "absolute";
-      menuWrapper.style.overflow = "hidden";
 
       activeMenu = new window.MenuPopup(submenuItems, {
         parentMenuPopup: null,
@@ -190,14 +189,15 @@ class StartMenu {
       const screen = document.getElementById("screen");
       screen.appendChild(menuWrapper);
 
-      menuWrapper.style.display = "block";
       menuWrapper.style.zIndex = window.os_gui_utils.get_new_menu_z_index();
-      menuWrapper.style.left = "-9999px";
-      menuWrapper.style.top = "-9999px";
 
       const rect = menuItem.getBoundingClientRect();
-      const menuRect = activeMenu.element.getBoundingClientRect();
       const screenRect = screen.getBoundingClientRect();
+
+      // Measure without showing
+      menuWrapper.classList.add("measuring");
+      const menuRect = activeMenu.element.getBoundingClientRect();
+      menuWrapper.classList.remove("measuring");
 
       let finalX = rect.right - screenRect.left;
       let finalY = rect.top - screenRect.top;
@@ -210,13 +210,8 @@ class StartMenu {
       menuWrapper.style.left = `${finalX}px`;
       menuWrapper.style.top = `${finalY}px`;
 
-      setTimeout(() => {
-        menuWrapper.style.setProperty("--width", `${menuRect.width}px`);
-        menuWrapper.style.setProperty("--height", `${menuRect.height}px`);
-        menuWrapper.style.width = "var(--width)";
-        menuWrapper.style.height = "var(--height)";
-        menuWrapper.classList.add("to-right");
-      }, 0);
+      menuWrapper.classList.add("to-right");
+      menuWrapper.classList.add("open");
 
       if (typeof window.playSound === "function") window.playSound("MenuPopup");
       this.openSubmenus.push(activeMenu);
@@ -274,8 +269,6 @@ class StartMenu {
 
       const menuWrapper = document.createElement("div");
       menuWrapper.className = "menu-popup-wrapper";
-      menuWrapper.style.position = "absolute";
-      menuWrapper.style.overflow = "hidden";
 
       activeMenu = new window.MenuPopup(submenuItems, {
         parentMenuPopup: null,
@@ -293,14 +286,15 @@ class StartMenu {
       const screen = document.getElementById("screen");
       screen.appendChild(menuWrapper);
 
-      menuWrapper.style.display = "block";
       menuWrapper.style.zIndex = window.os_gui_utils.get_new_menu_z_index();
-      menuWrapper.style.left = "-9999px";
-      menuWrapper.style.top = "-9999px";
 
       const rect = menuItem.getBoundingClientRect();
-      const menuRect = activeMenu.element.getBoundingClientRect();
       const screenRect = screen.getBoundingClientRect();
+
+      // Measure without showing
+      menuWrapper.classList.add("measuring");
+      const menuRect = activeMenu.element.getBoundingClientRect();
+      menuWrapper.classList.remove("measuring");
 
       let finalX = rect.right - screenRect.left;
       let finalY = rect.top - screenRect.top;
@@ -313,13 +307,8 @@ class StartMenu {
       menuWrapper.style.left = `${finalX}px`;
       menuWrapper.style.top = `${finalY}px`;
 
-      setTimeout(() => {
-        menuWrapper.style.setProperty("--width", `${menuRect.width}px`);
-        menuWrapper.style.setProperty("--height", `${menuRect.height}px`);
-        menuWrapper.style.width = "var(--width)";
-        menuWrapper.style.height = "var(--height)";
-        menuWrapper.classList.add("to-right");
-      }, 0);
+      menuWrapper.classList.add("to-right");
+      menuWrapper.classList.add("open");
 
       if (typeof window.playSound === "function") window.playSound("MenuPopup");
       this.openSubmenus.push(activeMenu);
@@ -439,8 +428,10 @@ class StartMenu {
       const pinnedItems = await getPinnedItemsFromZenFS(PINNED_PATH);
       pinnedContainer.innerHTML = pinnedItems
         .map((item) => `
-          <li class="start-menu-item pinned-item" role="menuitem" tabindex="0">
-            <img src="${item.icon}" alt="${this.escapeHtml(item.label)}">
+          <li class="start-menu-item pinned-item" role="menuitem" tabindex="0" style="--icon-url: url('${item.icon}')">
+            <div class="start-menu-icon-wrapper">
+              <img src="${item.icon}" alt="${this.escapeHtml(item.label)}">
+            </div>
             <span>${this.escapeHtml(item.label)}</span>
           </li>
         `)
@@ -481,25 +472,9 @@ class StartMenu {
     // Load pinned items before showing
     await this.renderPinnedItems();
 
-    // 1. Make menu visible but off-screen to measure it
     startMenu.classList.remove(CLASSES.HIDDEN);
-    startMenu.style.transform = "translateY(100%)"; // Move it down
-    startMenu.style.animationName = ""; // Clear animation
+    startMenuWrapper.classList.add("open");
 
-    // 2. Measure dimensions
-    const menuRect = startMenu.getBoundingClientRect();
-
-    // 3. Set wrapper size and position
-    startMenuWrapper.style.width = `${menuRect.width}px`;
-    startMenuWrapper.style.height = `${menuRect.height}px`;
-
-    // 4. Reset menu position and trigger animation
-    requestAnimationFrame(() => {
-      startMenu.style.transform = "";
-      startMenu.style.animationName = ANIMATIONS.SCROLL_UP;
-    });
-
-    startMenu.classList.add("is-animating");
     startButton.classList.add("selected");
     startButton.setAttribute("aria-pressed", "true");
     startMenu.setAttribute("aria-hidden", "false");
@@ -509,15 +484,6 @@ class StartMenu {
     if (firstMenuItem) {
       setTimeout(() => firstMenuItem.focus(), 50);
     }
-
-    const handleAnimationEnd = () => {
-      startMenu.style.animationName = "";
-      startMenu.classList.remove("is-animating");
-      startMenuWrapper.style.pointerEvents = "auto";
-    };
-    startMenu.addEventListener("animationend", handleAnimationEnd, {
-      once: true,
-    });
   }
 
   /**
@@ -531,23 +497,9 @@ class StartMenu {
     if (!startMenu || !startButton || !startMenuWrapper || !this.isVisible)
       return;
 
-    startMenu.style.animationName = "";
-    startMenu.classList.add("is-animating");
-    startMenuWrapper.style.pointerEvents = "none";
-    startMenu.style.animationName = ANIMATIONS.SCROLL_DOWN;
-
-    const handleAnimationEnd = () => {
-      startMenu.classList.add(CLASSES.HIDDEN);
-      startMenu.style.animationName = "";
-      startMenu.classList.remove("is-animating");
-      startMenu.setAttribute("aria-hidden", "true");
-      // Reset wrapper size
-      startMenuWrapper.style.width = "0px";
-      startMenuWrapper.style.height = "0px";
-    };
-    startMenu.addEventListener("animationend", handleAnimationEnd, {
-      once: true,
-    });
+    startMenuWrapper.classList.remove("open");
+    startMenu.classList.add(CLASSES.HIDDEN);
+    startMenu.setAttribute("aria-hidden", "true");
 
     startButton.classList.remove("selected");
     startButton.setAttribute("aria-pressed", "false");

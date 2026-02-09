@@ -79,9 +79,12 @@ function createShutdownDialogContent() {
     const textAndOptions = document.createElement('div');
     textAndOptions.className = 'shutdown-dialog-main';
 
-    const text = document.createElement('p');
-    text.textContent = 'What do you want the computer to do?';
-    textAndOptions.appendChild(text);
+    const optionsContainer = document.createElement('fieldset');
+    optionsContainer.className = 'shutdown-dialog-options';
+
+    const legend = document.createElement('legend');
+    legend.textContent = 'What do you want the computer to do?';
+    optionsContainer.appendChild(legend);
 
     const options = [
         { id: 'standby', label: 'Stand &by', checked: false, disabled: true },
@@ -89,9 +92,6 @@ function createShutdownDialogContent() {
         { id: 'restart', label: '&Restart', checked: false },
         { id: 'restart-msdos', label: 'Restart in MS-&DOS mode', checked: false, disabled: true }
     ];
-
-    const optionsContainer = document.createElement('div');
-    optionsContainer.className = 'shutdown-dialog-options';
 
     options.forEach(opt => {
         const fieldRow = document.createElement('div');

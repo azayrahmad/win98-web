@@ -63,10 +63,14 @@ body > .window-titlebar {
     display: flex;
     flex: 0 0 auto;
     flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 .menu-popup {
     position: absolute;
     box-sizing: border-box;
+    margin: 0;
 }
 .menu-popup-table {
     border-collapse: collapse;

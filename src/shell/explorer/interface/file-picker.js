@@ -99,7 +99,7 @@ export class FilePicker {
     this.content = document.createElement("div");
     this.content.className = "file-picker-content sunken-panel";
 
-    this.iconContainer = document.createElement("div");
+    this.iconContainer = document.createElement("ul");
     this.iconContainer.className = "explorer-icon-view list-icons";
     this.content.appendChild(this.iconContainer);
 

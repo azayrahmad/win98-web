@@ -707,6 +707,41 @@ so I think I'll imitate that. (I might change it later) */
     /* makes it visible */
     background: currentColor;
 }
+.menu-item-icon-area {
+    padding: 2px 4px !important;
+}
+.menu-item-icon-wrapper {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+.menu-item.highlight .menu-item-icon-wrapper {
+    background-image:
+        linear-gradient(
+            oklch(from var(--Hilight) l c h),
+            oklch(from var(--Hilight) l c h)
+        ),
+        linear-gradient(
+            oklch(from var(--Hilight) l c h),
+            oklch(from var(--Hilight) l c h)
+        ),
+        var(--icon-url);
+    background-blend-mode: color, saturation, normal;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    mask-image: var(--icon-url);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-image: var(--icon-url);
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+.menu-item.highlight .menu-item-icon-wrapper img {
+    visibility: hidden;
+}
 
 .menu-hr {
     border: 0;

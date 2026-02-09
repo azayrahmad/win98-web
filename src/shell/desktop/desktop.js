@@ -11,6 +11,7 @@ import {
 } from '../../system/local-storage.js';
 import { getActiveTheme, applyTheme } from '../../system/theme-manager.js';
 import { IconManager } from './icon-manager.js';
+import { isZenFSPath, getZenFSFileUrl } from '../../system/zenfs-utils.js';
 import { fs } from "@zenfs/core";
 import { ShellManager } from '../../shell/explorer/extensions/shell-manager.js';
 import { renderFileIcon } from '../../shell/explorer/interface/file-icon-renderer.js';
@@ -510,13 +511,31 @@ function getWallpaperMode() {
   return getItem(LOCAL_STORAGE_KEYS.WALLPAPER_MODE) || "tile";
 }
 
-function applyWallpaper() {
+let currentWallpaperBlobUrl = null;
+
+async function applyWallpaper() {
   const theme = getActiveTheme();
   const wallpaper = getItem(LOCAL_STORAGE_KEYS.WALLPAPER) || theme.wallpaper;
   const desktop = document.querySelector(".desktop");
+
+  if (currentWallpaperBlobUrl) {
+    URL.revokeObjectURL(currentWallpaperBlobUrl);
+    currentWallpaperBlobUrl = null;
+  }
+
   if (wallpaper) {
+    let wallpaperUrl = wallpaper;
+    if (isZenFSPath(wallpaper)) {
+      try {
+        wallpaperUrl = await getZenFSFileUrl(wallpaper);
+        currentWallpaperBlobUrl = wallpaperUrl;
+      } catch (e) {
+        console.error("Failed to load ZenFS wallpaper:", e);
+      }
+    }
+
     const mode = getWallpaperMode();
-    desktop.style.backgroundImage = `url(${wallpaper})`;
+    desktop.style.backgroundImage = `url(${wallpaperUrl})`;
     desktop.style.backgroundPosition = "left top";
     if (mode === "stretch") {
       desktop.style.backgroundRepeat = "no-repeat";
@@ -553,7 +572,7 @@ function applyMonitorType() {
 export async function initDesktop(profile = null) {
   console.log("Initializing Desktop Manager...");
   await applyTheme();
-  applyWallpaper();
+  await applyWallpaper();
   applyMonitorType();
 
   const desktop = document.querySelector(".desktop");

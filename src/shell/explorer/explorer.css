@@ -54,6 +54,8 @@
     padding: 10px;
     align-content: start;
     position: relative;
+    list-style: none;
+    margin: 0;
 }
 
 .explorer-icon-view.small-icons {
@@ -160,13 +162,50 @@
     opacity: 0.5;
 }
 
+/* Advanced Icon Selection Highlight using background-blend-mode */
+.explorer-icon.selected .icon-wrapper {
+    background-image:
+        linear-gradient(oklch(from var(--Hilight) l c h), oklch(from var(--Hilight) l c h)),
+        linear-gradient(oklch(from var(--Hilight) l c h), oklch(from var(--Hilight) l c h)),
+        var(--overlay-url-32, none),
+        var(--icon-url-32);
+    background-blend-mode: color, saturation, normal, normal;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    mask-image: var(--overlay-url-32, none), var(--icon-url-32);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-image: var(--overlay-url-32, none), var(--icon-url-32);
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+
+.explorer-icon-view.small-icons .explorer-icon.selected .icon-wrapper,
+.explorer-icon-view.list-icons .explorer-icon.selected .icon-wrapper,
+.explorer-icon-view.details-icons .explorer-icon.selected .icon-wrapper {
+    background-image:
+        linear-gradient(oklch(from var(--Hilight) l c h), oklch(from var(--Hilight) l c h)),
+        linear-gradient(oklch(from var(--Hilight) l c h), oklch(from var(--Hilight) l c h)),
+        var(--overlay-url-16, none),
+        var(--icon-url-16);
+    mask-image: var(--overlay-url-16, none), var(--icon-url-16);
+    -webkit-mask-image: var(--overlay-url-16, none), var(--icon-url-16);
+}
+
+.explorer-icon.selected .icon-wrapper img {
+    visibility: hidden;
+}
+
 .explorer-icon .highlighted-icon {
-    filter: var(--icon-filter);
+    /* filter: var(--icon-filter); */ /* Deprecated in favor of background-blend-mode on .icon-wrapper */
 }
 
 .explorer-icon.selected .highlighted-label {
-    background-color: var(--highlight-blue);
-    color: var(--highlight-text);
+    background-color: var(--Hilight);
+    color: var(--HilightText);
 }
 
 .explorer-icon-view.details-icons table {
@@ -260,12 +299,49 @@
 
 
 .drop-target-highlight {
-    background-color: var(--highlight-blue) !important;
-    color: var(--highlight-text) !important;
+    background-color: var(--Hilight) !important;
+    color: var(--HilightText) !important;
 }
 
 .drop-target-highlight .icon img {
-    filter: var(--icon-filter);
+    /* filter: var(--icon-filter); */ /* Deprecated in favor of background-blend-mode on .icon-wrapper */
+}
+
+/* Apply new highlight to drop target icons as well */
+.drop-target-highlight .icon-wrapper {
+    background-image:
+        linear-gradient(oklch(from var(--Hilight) l c h), oklch(from var(--Hilight) l c h)),
+        linear-gradient(oklch(from var(--Hilight) l c h), oklch(from var(--Hilight) l c h)),
+        var(--overlay-url-32, none),
+        var(--icon-url-32);
+    background-blend-mode: color, saturation, normal, normal;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    mask-image: var(--overlay-url-32, none), var(--icon-url-32);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-image: var(--overlay-url-32, none), var(--icon-url-32);
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+
+.explorer-icon-view.small-icons .drop-target-highlight .icon-wrapper,
+.explorer-icon-view.list-icons .drop-target-highlight .icon-wrapper,
+.explorer-icon-view.details-icons .drop-target-highlight .icon-wrapper {
+    background-image:
+        linear-gradient(oklch(from var(--Hilight) l c h), oklch(from var(--Hilight) l c h)),
+        linear-gradient(oklch(from var(--Hilight) l c h), oklch(from var(--Hilight) l c h)),
+        var(--overlay-url-16, none),
+        var(--icon-url-16);
+    mask-image: var(--overlay-url-16, none), var(--icon-url-16);
+    -webkit-mask-image: var(--overlay-url-16, none), var(--icon-url-16);
+}
+
+.drop-target-highlight .icon-wrapper img {
+    visibility: hidden;
 }
 
 body.dragging * {

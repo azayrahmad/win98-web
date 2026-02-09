@@ -43,11 +43,102 @@ export class PrinceOfPersiaApp extends Application {
     this.menuBar = new MenuBar(menuItems);
     win.setMenuBar(this.menuBar);
 
+    setTimeout(() => this.showStartDialog(), 0);
+
     return win;
   }
 
   async _onLaunch(data) {
     // No specific launch data handling needed for this app
+  }
+
+  showStartDialog() {
+    const content = document.createElement("div");
+    content.className = "pop-start-dialog";
+
+    const createDropdown = (label, options, currentValue, onChange) => {
+      const row = document.createElement("div");
+      row.style.display = "flex";
+      row.style.justifyContent = "space-between";
+      row.style.alignItems = "center";
+      row.style.marginBottom = "8px";
+
+      const id = `pop-select-${label.replace(/\s+/g, "-").toLowerCase().replace(":", "")}`;
+
+      const labelEl = document.createElement("label");
+      labelEl.textContent = label;
+      labelEl.style.marginRight = "10px";
+      labelEl.htmlFor = id;
+
+      const select = document.createElement("select");
+      select.id = id;
+      select.style.width = "120px";
+      options.forEach((opt) => {
+        const option = document.createElement("option");
+        option.value = opt.value;
+        option.textContent = opt.label;
+        if (opt.value === currentValue) option.selected = true;
+        select.appendChild(option);
+      });
+      select.onchange = (e) => onChange(e.target.value);
+
+      row.appendChild(labelEl);
+      row.appendChild(select);
+      content.appendChild(row);
+    };
+
+    const levels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(
+      (l) => ({ label: `Level ${l}`, value: l }),
+    );
+    const healths = [3, 4, 5, 6, 7, 8, 9, 10].map((h) => ({
+      label: `${h} Health`,
+      value: h,
+    }));
+    const times = [15, 30, 60, 90, 120].map((t) => ({
+      label: `${t} Minutes`,
+      value: t,
+    }));
+    const difficulties = [
+      { label: "Easy", value: 50 },
+      { label: "Normal", value: 100 },
+      { label: "Hard", value: 150 },
+    ];
+
+    const pendingState = { ...this.gameState };
+
+    createDropdown("Level:", levels, pendingState.level, (v) => {
+      pendingState.level = parseInt(v);
+    });
+    createDropdown("Max Health:", healths, pendingState.health, (v) => {
+      pendingState.health = parseInt(v);
+    });
+    createDropdown("Time Limit:", times, pendingState.time, (v) => {
+      pendingState.time = parseInt(v);
+    });
+    createDropdown("Difficulty:", difficulties, pendingState.strength, (v) => {
+      pendingState.strength = parseInt(v);
+    });
+
+    ShowDialogWindow({
+      title: "Prince of Persia - New Game",
+      content: content,
+      modal: true,
+      parentWindow: this.win,
+      buttons: [
+        {
+          label: "Start",
+          isDefault: true,
+          action: () => {
+            this.gameState = pendingState;
+            this.updateGameUrl();
+          },
+        },
+        {
+          label: "Cancel",
+          action: () => {},
+        },
+      ],
+    });
   }
 
   updateGameUrl() {
@@ -67,14 +158,7 @@ export class PrinceOfPersiaApp extends Application {
         {
           label: "&New Game",
           action: () => {
-            this.gameState = {
-              level: 1,
-              health: 3,
-              time: 60,
-              strength: 100, // Reset to normal
-            };
-            this.updateGameUrl();
-            this.menuBar.element.dispatchEvent(new CustomEvent("update"));
+            this.showStartDialog();
           },
         },
         {
@@ -83,75 +167,11 @@ export class PrinceOfPersiaApp extends Application {
             this.updateGameUrl();
           },
         },
-      ],
-      "&Difficulty": [
         {
-          radioItems: [
-            { label: "Easy", value: 50 },
-            { label: "Normal", value: 100 },
-            { label: "Hard", value: 150 },
-          ],
-          getValue: () => this.gameState.strength,
-          setValue: (value) => {
-            this.gameState.strength = value;
-            this.updateGameUrl();
-            this.menuBar.element.dispatchEvent(new CustomEvent("update"));
+          label: "E&xit",
+          action: () => {
+            this.win.close();
           },
-        },
-      ],
-      "&Cheats": [
-        {
-          label: "Level",
-          submenu: [
-            {
-              radioItems: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(
-                (level) => ({
-                  label: `Level ${level}`,
-                  value: level,
-                }),
-              ),
-              getValue: () => this.gameState.level,
-              setValue: (value) => {
-                this.gameState.level = value;
-                this.updateGameUrl();
-                this.menuBar.element.dispatchEvent(new CustomEvent("update"));
-              },
-            },
-          ],
-        },
-        {
-          label: "Max &Health",
-          submenu: [
-            {
-              radioItems: [3, 4, 5, 6, 7, 8, 9, 10].map((hp) => ({
-                label: `${hp} Health`,
-                value: hp,
-              })),
-              getValue: () => this.gameState.health,
-              setValue: (value) => {
-                this.gameState.health = value;
-                this.updateGameUrl();
-                this.menuBar.element.dispatchEvent(new CustomEvent("update"));
-              },
-            },
-          ],
-        },
-        {
-          label: "&Time",
-          submenu: [
-            {
-              radioItems: [15, 30, 60, 90, 120].map((time) => ({
-                label: `${time} Minutes`,
-                value: time,
-              })),
-              getValue: () => this.gameState.time,
-              setValue: (value) => {
-                this.gameState.time = value;
-                this.updateGameUrl();
-                this.menuBar.element.dispatchEvent(new CustomEvent("update"));
-              },
-            },
-          ],
         },
       ],
       "&Help": [

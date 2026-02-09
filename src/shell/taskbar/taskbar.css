@@ -188,12 +188,10 @@ button:not(:disabled):active img {
     pointer-events: auto;
     width: -moz-fit-content;
     width: fit-content;
-    animation-duration: 130ms;
-    animation-timing-function: linear;
-    animation-fill-mode: forwards;
+    transition: transform 130ms linear;
 }
 
-.start-menu ul {
+.start-menu menu {
     list-style: none;
     padding: 0;
     margin: 1px;
@@ -212,14 +210,46 @@ button:not(:disabled):active img {
     margin-left: 0;
     text-decoration: none;
 }
-.start-menu li img {
+.start-menu-icon-wrapper {
     width: 32px;
     height: 32px;
     margin-right: 7px;
+    flex-shrink: 0;
+}
+.start-menu li img {
+    width: 100%;
+    height: 100%;
 }
 .start-menu li:hover {
     background-color: var(--Hilight, #0000a8);
     color: var(--HilightText, #fff);
+}
+.start-menu li:hover .start-menu-icon-wrapper {
+    background-image:
+        linear-gradient(
+            oklch(from var(--Hilight) l c h),
+            oklch(from var(--Hilight) l c h)
+        ),
+        linear-gradient(
+            oklch(from var(--Hilight) l c h),
+            oklch(from var(--Hilight) l c h)
+        ),
+        var(--icon-url);
+    background-blend-mode: color, saturation, normal;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    mask-image: var(--icon-url);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-image: var(--icon-url);
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+.start-menu li:hover .start-menu-icon-wrapper img {
+    visibility: hidden;
 }
 
 .blue-rectangle {
@@ -248,10 +278,28 @@ button:not(:disabled):active img {
     position: absolute;
     bottom: 25px;
     left: 2px;
-    width: 0px;
-    height: 0px;
+    width: fit-content;
+    height: fit-content;
     overflow: hidden;
     z-index: 9999;
+    display: none;
+}
+
+.start-menu-wrapper.open {
+    display: block;
+}
+
+.start-menu-wrapper.open .start-menu {
+    transition:
+        transform 130ms linear,
+        opacity 130ms linear;
+}
+
+@starting-style {
+    .start-menu-wrapper.open .start-menu {
+        transform: translateY(100%);
+        opacity: 0;
+    }
 }
 
 .start-menu-divider {
@@ -260,28 +308,6 @@ button:not(:disabled):active img {
     background-color: var(--ButtonShadow, grey);
     border-bottom: var(--ButtonHilight, white) 1px solid;
     margin: 0 3px;
-}
-
-@keyframes scrollUp {
-    from {
-        transform: translateY(100%);
-    }
-    to {
-        transform: translateY(0);
-    }
-}
-
-.start-menu.is-animating {
-    pointer-events: none;
-}
-
-@keyframes scrollDown {
-    from {
-        transform: translateY(0);
-    }
-    to {
-        transform: translateY(100%);
-    }
 }
 
 .system-tray {

@@ -33,8 +33,8 @@
     --shadow-dark: var(--ButtonDkShadow);
     --shadow-medium-light: var(--ButtonLight);
     --shadow-medium-dark: var(--ButtonShadow);
-    --icon-filter: sepia(100%) hue-rotate(180deg) saturate(2000%)
-        brightness(0.6);
+    --base-color: var(--Hilight);
+    --icon-filter: none; /* Replaced by background-blend-mode selection highlight */
     --text-shadow: 1px 1px var(--ButtonDkShadow);
     --icon-label-font-size: var(--font-size-base);
 }
@@ -84,6 +84,8 @@ html {
     gap: 0;
     align-content: start;
     padding: 5px;
+    list-style: none;
+    margin: 0;
 }
 
 /* When dragging, disable grid so icons stay put */
@@ -101,8 +103,33 @@ html {
     word-break: break-word;
 }
 
+/* Advanced Icon Selection Highlight using background-blend-mode */
+.explorer-icon.selected .icon-wrapper {
+    background-image:
+        linear-gradient(oklch(from var(--Hilight) l c h), oklch(from var(--Hilight) l c h)),
+        linear-gradient(oklch(from var(--Hilight) l c h), oklch(from var(--Hilight) l c h)),
+        var(--overlay-url-32, none),
+        var(--icon-url-32);
+    background-blend-mode: color, saturation, normal, normal;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    mask-image: var(--overlay-url-32, none), var(--icon-url-32);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-image: var(--overlay-url-32, none), var(--icon-url-32);
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+
+.explorer-icon.selected .icon-wrapper img {
+    visibility: hidden;
+}
+
 .highlighted-icon {
-    filter: var(--icon-filter);
+    /* filter: var(--icon-filter); */ /* Deprecated in favor of background-blend-mode on .icon-wrapper */
 }
 
 .highlighted-label {

@@ -22,6 +22,8 @@ import screensaver from './screensaver-utils.js';
 import { initScreenManager } from './screen-manager.js';
 import { fs, mounts } from "@zenfs/core";
 import { initFileSystem } from './zenfs-init.js';
+import { wallpapers } from '../config/wallpapers.js';
+import { existsAsync } from './zenfs-utils.js';
 import { RecycleBinManager } from '../shell/explorer/file-operations/recycle-bin-manager.js';
 import { appManager } from './app-manager.js';
 import { WindowManager } from './window-manager.js';
@@ -164,6 +166,37 @@ export async function initializeOS() {
       let logElement = startBootProcessStep("Initializing Recycle Bin...");
       await RecycleBinManager.init();
       finalizeBootProcessStep(logElement, "OK");
+    });
+
+    await executeBootStep(async () => {
+      const wallpaperDir = "/C:/WINDOWS";
+      let needed = false;
+      for (const w of wallpapers.default) {
+        if (!(await existsAsync(`${wallpaperDir}/${w.filename}`))) {
+          needed = true;
+          break;
+        }
+      }
+
+      if (needed) {
+        let logElement = startBootProcessStep("Loading wallpapers...");
+        for (const w of wallpapers.default) {
+          const path = `${wallpaperDir}/${w.filename}`;
+          if (!(await existsAsync(path))) {
+            if (logElement && logElement.firstChild) {
+              logElement.firstChild.nodeValue = `Loading wallpaper: ${w.filename}...`;
+            }
+            try {
+              const response = await fetch(w.src);
+              const buffer = await response.arrayBuffer();
+              await fs.promises.writeFile(path, new Uint8Array(buffer));
+            } catch (e) {
+              console.error(`Failed to load wallpaper ${w.filename}:`, e);
+            }
+          }
+        }
+        finalizeBootProcessStep(logElement, "OK");
+      }
     });
 
     const createAssetLogCallbacks = (logElement, baseMessage) => {

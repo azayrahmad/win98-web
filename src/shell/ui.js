@@ -1,22 +1,24 @@
 function createMainUI() {
-  const appContainer = document.createElement('div');
-  appContainer.id = 'app-container';
-  appContainer.className = 'app-container';
+  const appContainer = document.createElement("main");
+  appContainer.id = "app-container";
+  appContainer.className = "app-container";
 
-  const desktopArea = document.createElement('div');
-  desktopArea.id = 'desktop-area';
-  desktopArea.className = 'desktop-area';
+  const desktopArea = document.createElement("section");
+  desktopArea.id = "desktop-area";
+  desktopArea.className = "desktop-area";
+  desktopArea.setAttribute("aria-label", "Desktop");
 
-  const desktop = document.createElement('div');
-  desktop.className = 'desktop';
+  const desktop = document.createElement("ul");
+  desktop.className = "desktop";
 
   desktopArea.appendChild(desktop);
   appContainer.appendChild(desktopArea);
 
-  const taskbar = document.createElement('div');
-  taskbar.className = 'taskbar';
+  const taskbar = document.createElement("footer");
+  taskbar.className = "taskbar";
+  taskbar.setAttribute("aria-label", "Taskbar");
 
-  const screen = document.getElementById('screen');
+  const screen = document.getElementById("screen");
   screen.appendChild(appContainer);
   screen.appendChild(taskbar);
 }

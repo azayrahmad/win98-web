@@ -14,14 +14,26 @@ export default defineConfig({
   },
   assetsInclude: ["**/*.ani"],
   base: "/win98-web/",
+  server: {
+    hmr: {
+      protocol: "ws",
+      host: "localhost",
+    },
+  },
   plugins: [
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
+      includeAssets: [
+        "favicon.ico",
+        "apple-touch-icon.png",
+        "masked-icon.svg",
+        "sitemap.xml",
+        "robots.txt",
+      ],
       manifest: {
-        name: "azOS Second Edition",
-        short_name: "azOS",
-        description: "A web-based OS simulation.",
+        name: "Windows 98 Web Edition",
+        short_name: "Win98Web",
+        description: "A nostalgic, fully functional Windows 98 simulation in your browser.",
         theme_color: "#008080",
         icons: [
           {

@@ -320,7 +320,7 @@ export class ZenExplorerApp extends Application {
     content.appendChild(this.titleElement);
 
     // 4c. Icon View
-    this.iconContainer = document.createElement("div");
+    this.iconContainer = document.createElement("ul");
     this.iconContainer.className = `explorer-icon-view ${this.viewMode}-icons`;
     content.appendChild(this.iconContainer);
 

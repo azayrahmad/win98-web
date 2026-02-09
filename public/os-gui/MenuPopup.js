@@ -15,7 +15,7 @@
     this.menuItems = menu_items;
     this.itemElements = [];
 
-    const menu_popup_el = E("div", {
+    const menu_popup_el = E("menu", {
       class: "menu-popup",
       id: `menu-popup-${uid()}`,
       tabIndex: "-1",
@@ -36,7 +36,7 @@
 
     menu_popup_el.addEventListener("pointerleave", () => {
       for (const submenu of submenus) {
-        if (submenu.submenu_popup_el.style.display !== "none") {
+        if (submenu.submenu_popup_el.classList.contains("open")) {
           this.highlight(submenu.item_el);
           return;
         }
@@ -87,7 +87,7 @@
       if (focus_parent_menu_popup) {
         this.parentMenuPopup?.element.focus({ preventScroll: true });
       }
-      (this.wrapperElement || menu_popup_el).style.display = "none";
+      (this.wrapperElement || menu_popup_el).classList.remove("open");
       this.highlight(-1);
       options.setActiveMenuPopup(this.parentMenuPopup);
     };
@@ -133,13 +133,17 @@
         const submenu_area_el = E("td", { class: "menu-item-submenu-area" });
 
         if (item.icon) {
+          const icon_area_el = E("td", { class: "menu-item-icon-area" });
+          const icon_wrapper = E("div", { class: "menu-item-icon-wrapper" });
           const icon_el = E("img", {
             src: item.icon,
             width: 16,
             height: 16,
-            style: "margin-right: 4px; margin-left: 2px;",
           });
-          item_el.appendChild(icon_el);
+          icon_wrapper.appendChild(icon_el);
+          icon_area_el.appendChild(icon_wrapper);
+          item_el.appendChild(icon_area_el);
+          item_el.style.setProperty("--icon-url", `url("${item.icon}")`);
         } else {
           item_el.appendChild(checkbox_area_el);
         }
@@ -178,7 +182,7 @@
         });
         item_el.addEventListener("pointerleave", (event) => {
           if (
-            menu_popup_el.style.display !== "none" &&
+            (this.wrapperElement || menu_popup_el).classList.contains("open") &&
             event.pointerType !== "touch"
           ) {
             options.send_info_event();
@@ -207,7 +211,7 @@
           submenu_popup_el.appendChild(submenu_popup_el_actual);
 
           document.body?.appendChild(submenu_popup_el);
-          submenu_popup_el.style.display = "none";
+          // submenu_popup_el.style.display = "none"; // Managed by .open class
           item_el.setAttribute("aria-haspopup", "true");
           item_el.setAttribute("aria-expanded", "false");
           item_el.setAttribute("aria-controls", submenu_popup_el.id);
@@ -222,7 +226,7 @@
             if (typeof window.playSound === "function") {
               window.playSound("MenuPopup");
             }
-            if (submenu_popup_el.style.display !== "none") {
+            if (submenu_popup_el.classList.contains("open")) {
               return;
             }
             if (item_el.getAttribute("aria-disabled") === "true") {
@@ -231,12 +235,8 @@
             close_submenus_at_this_level();
             item_el.setAttribute("aria-expanded", "true");
 
-            // Make visible off-screen to measure
-            submenu_popup_el.style.display = "";
             submenu_popup_el.style.zIndex = `${get_new_menu_z_index()}`;
             submenu_popup_el.style.position = "absolute";
-            submenu_popup_el.style.left = "-9999px";
-            submenu_popup_el.style.top = "-9999px";
             submenu_popup_el.setAttribute("dir", get_direction());
             if (window.inheritTheme) {
               window.inheritTheme(submenu_popup_el, menu_popup_el);
@@ -246,54 +246,13 @@
             }
             submenu_popup_el.dispatchEvent(new CustomEvent("update", {}));
 
-            // Temporarily make the actual menu content (submenu_popup.element) visible and unconstrained for measurement
-            const actualMenuElement = submenu_popup.element; // This is the div.menu-popup
+            const rect = item_el.getBoundingClientRect();
 
-            // Save original styles of the actual menu element (div.menu-popup)
-            const actualOriginalParent = actualMenuElement.parentNode;
-            const actualOriginalDisplay = actualMenuElement.style.display;
-            const actualOriginalVisibility = actualMenuElement.style.visibility;
-            const actualOriginalPosition = actualMenuElement.style.position;
-            const actualOriginalLeft = actualMenuElement.style.left;
-            const actualOriginalTop = actualMenuElement.style.top;
-            const actualOriginalZIndex = actualMenuElement.style.zIndex;
+            // Measure without showing
+            submenu_popup_el.classList.add("measuring");
+            const submenu_popup_rect = submenu_popup_el.getBoundingClientRect();
+            submenu_popup_el.classList.remove("measuring");
 
-            // Detach actual menu content and append to body for accurate measurement
-            if (actualOriginalParent) {
-              actualOriginalParent.removeChild(actualMenuElement);
-            }
-            document.body.appendChild(actualMenuElement);
-
-            // Set temporary styles for measurement
-            actualMenuElement.style.display = "block";
-            actualMenuElement.style.visibility = "hidden";
-            actualMenuElement.style.position = "absolute";
-            actualMenuElement.style.left = "-9999px";
-            actualMenuElement.style.top = "-9999px";
-            // Assign a high z-index to ensure it's on top and fully rendered if needed
-            actualMenuElement.style.zIndex = `${get_new_menu_z_index() + 100}`;
-
-            // Force reflow to ensure layout calculation
-            actualMenuElement.offsetHeight;
-
-            const rect = item_el.getBoundingClientRect(); // Still need parent item's rect for positioning calculations
-            const submenu_popup_rect =
-              actualMenuElement.getBoundingClientRect();
-
-            // Re-attach to original parent (the wrapper) and restore original styles
-            if (actualOriginalParent) {
-              actualOriginalParent.appendChild(actualMenuElement);
-            }
-            actualMenuElement.style.display = actualOriginalDisplay;
-            actualMenuElement.style.visibility = actualOriginalVisibility;
-            actualMenuElement.style.position = actualOriginalPosition;
-            actualMenuElement.style.left = actualOriginalLeft;
-            actualMenuElement.style.top = actualOriginalTop;
-            actualMenuElement.style.zIndex = actualOriginalZIndex;
-            // The wrapper (submenu_popup_el) itself will then get its initial 0px width/height from CSS variables
-            // and the setTimeout will correctly apply the measured dimensions.
-
-            // Position and animate
             let final_x =
               (get_direction() === "rtl"
                 ? rect.left - submenu_popup_rect.width
@@ -318,31 +277,15 @@
 
             submenu_popup_el.style.left = `${final_x}px`;
             submenu_popup_el.style.top = `${final_y}px`;
-            // Initial width/height are handled by CSS variables with default 0px,
-            // and will be updated asynchronously.
 
-            setTimeout(() => {
-              // Ensure both the wrapper and the content are set to display: block
-              submenu_popup_el.style.display = "block";
-              actualMenuElement.style.display = "block";
+            submenu_popup_el.classList.remove("to-left", "to-right");
+            if (from_left) {
+              submenu_popup_el.classList.add("to-left");
+            } else {
+              submenu_popup_el.classList.add("to-right");
+            }
 
-              submenu_popup_el.style.setProperty(
-                "--width",
-                `${submenu_popup_rect.width}px`,
-              );
-              submenu_popup_el.style.setProperty(
-                "--height",
-                `${submenu_popup_rect.height}px`,
-              );
-              submenu_popup_el.style.width = "var(--width)";
-              submenu_popup_el.style.height = "var(--height)";
-
-              if (from_left) {
-                submenu_popup_el.classList.add("to-left");
-              } else {
-                submenu_popup_el.classList.add("to-right");
-              }
-            }, 0);
+            submenu_popup_el.classList.add("open");
 
             if (highlight_first) {
               submenu_popup.highlight(0);
@@ -351,7 +294,7 @@
               submenu_popup.highlight(-1);
             }
 
-            submenu_popup_el_actual.focus({ preventScroll: true });
+            submenu_popup.element.focus({ preventScroll: true });
             options.setActiveMenuPopup(submenu_popup);
           };
           submenus.push({
@@ -366,7 +309,7 @@
               item_el,
             } of submenus) {
               submenu_popup.close(false);
-              submenu_popup_el.style.display = "none"; // Explicitly hide the wrapper
+              submenu_popup_el.classList.remove("open");
               item_el.setAttribute("aria-expanded", "false");
             }
             menu_popup_el.focus({ preventScroll: true });
@@ -392,9 +335,7 @@
               clearTimeout(close_tid);
               close_tid = null;
             }
-            open_tid = setTimeout(() => {
-              open_submenu(false);
-            }, 501);
+            open_submenu(false);
           });
           item_el.addEventListener("pointerleave", () => {
             if (open_tid) {
@@ -407,7 +348,7 @@
               return;
             }
             if (!close_tid) {
-              if (submenu_popup_el.style.display !== "none") {
+              if (submenu_popup_el.classList.contains("open")) {
                 close_tid = setTimeout(() => {
                   if (!window.debugKeepMenusOpen) {
                     close_submenus_at_this_level();

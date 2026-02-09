@@ -2,9 +2,10 @@ import { ICONS } from '../../config/icons.js';
 
 export class StatusBar {
   constructor() {
-    this.element = window.os_gui_utils.E("div", {
+    this.element = window.os_gui_utils.E("footer", {
       className: "status-bar",
       style: "display: flex; gap: 2px;",
+      "aria-label": "Status Bar",
     });
 
     const leftSection = window.os_gui_utils.E("div", {

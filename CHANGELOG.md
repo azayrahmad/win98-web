@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.0](https://github.com/azayrahmad/win98-web/compare/win98-web-v0.3.1...win98-web-v0.4.0) (2026-02-06)
+
+
+### Features
+
+* final SEO and social media refinements ([bfc8116](https://github.com/azayrahmad/win98-web/commit/bfc811685bfca0f1836cb01ec5fbad538625602e))
+* finalize SEO, fix HMR, and improve GH Pages deployment ([bfe682a](https://github.com/azayrahmad/win98-web/commit/bfe682a96acc4303a6a4a6997f508b9f6e643ddc))
+* improve SEO and discoverability ([00a6fcf](https://github.com/azayrahmad/win98-web/commit/00a6fcfaa6d59d2d90810fd39da9e81379944ae6))
+* improve SEO and stabilize development HMR ([5470506](https://github.com/azayrahmad/win98-web/commit/54705060d81cdd503e59864fa2502da318434f3d))
+
+## [0.3.1](https://github.com/azayrahmad/win98-web/compare/win98-web-v0.3.0...win98-web-v0.3.1) (2026-02-06)
+
+
+### Bug Fixes
+
+* refactor kebab-case issues ([af66fca](https://github.com/azayrahmad/win98-web/commit/af66fcae89d751ed8388f68d89a09416955da61d))
+* resolve desktop icon dragging to (0,0) when Auto Arrange is off ([ce5cc52](https://github.com/azayrahmad/win98-web/commit/ce5cc5244f6d79d7bbbab917357f5142be16c544))
+
 ## [0.3.0](https://github.com/azayrahmad/win98-web/compare/win98-web-v0.2.0...win98-web-v0.3.0) (2026-02-05)
 
 

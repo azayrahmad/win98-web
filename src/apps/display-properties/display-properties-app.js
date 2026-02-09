@@ -70,7 +70,7 @@ class DisplayPropertiesApp extends Application {
     this._setupButtons(win);
 
     // Initialize tabs
-    backgroundTab.init(win, this);
+    await backgroundTab.init(win, this);
     screensaverTab.init(win, this);
     settingsTab.init(win, this);
     appearanceTab.init(win, this);

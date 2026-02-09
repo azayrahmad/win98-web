@@ -8,7 +8,55 @@
             href="/src/assets/icons/windows-4.png"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Windows 98 Web Edition</title>
+        <title>Windows 98 Web Edition - Nostalgic Browser Experience</title>
+        <meta
+            name="description"
+            content="Relive the nostalgia with Windows 98 Web Edition. A fully functional web-based OS simulation featuring classic games like Doom and Pinball, iconic apps like Paint and Webamp, and everyone's favorite assistant, Clippy."
+        />
+        <meta
+            name="keywords"
+            content="Windows 98, Web OS, Simulation, Retro Gaming, Doom, Pinball, SimCity 2000, Clippy, Retro Tech, Nostalgia"
+        />
+        <meta name="author" content="azayrahmad" />
+        <link rel="canonical" href="https://azayrahmad.github.io/win98-web/" />
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta
+            property="og:url"
+            content="https://azayrahmad.github.io/win98-web/"
+        />
+        <meta property="og:title" content="Windows 98 Web Edition" />
+        <meta property="og:site_name" content="Windows 98 Web Edition" />
+        <meta
+            property="og:description"
+            content="Experience Windows 98 right in your browser. Classic games, apps, and nostalgia included!"
+        />
+        <meta
+            property="og:image"
+            content="https://azayrahmad.github.io/win98-web/img/og-image.png"
+        />
+        <meta
+            property="og:image:alt"
+            content="Windows 98 Desktop Simulation with various applications open"
+        />
+
+        <!-- Twitter -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+            name="twitter:url"
+            content="https://azayrahmad.github.io/win98-web/"
+        />
+        <meta name="twitter:title" content="Windows 98 Web Edition" />
+        <meta
+            name="twitter:description"
+            content="Experience Windows 98 right in your browser. Classic games, apps, and nostalgia included!"
+        />
+        <meta
+            name="twitter:image"
+            content="https://azayrahmad.github.io/win98-web/img/og-image.png"
+        />
+
         <link rel="stylesheet" href="/src/shared/styles/scanlines-css.css" />
         <link rel="stylesheet" href="/src/shared/styles/98.css" />
         <link href="./os-gui/layout.css" rel="stylesheet" type="text/css" />
@@ -18,7 +66,10 @@
             rel="stylesheet"
             type="text/css"
         />
-        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+        <link
+            rel="stylesheet"
+            href="https://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css"
+        />
         <link
             href="/src/shared/styles/tooltip.css"
             rel="stylesheet"
@@ -183,14 +234,14 @@
 
     <body class="scanlines">
         <div id="screen">
-            <div id="boot-screen">
+            <section id="boot-screen" aria-live="polite" aria-label="Boot Screen">
                 <!-- Initial boot message, visible by default -->
                 <div id="initial-boot-message">Initializing Windows 98...</div>
 
                 <!-- Main boot screen content (two columns), initially hidden, shown by main.js -->
-                <div id="splash-screen">
+                <section id="splash-screen" aria-label="Splash Screen">
                     <div class="loading-banner"></div>
-                </div>
+                </section>
                 <div id="boot-screen-content">
                     <div id="boot-screen-main-flex-container">
                         <!-- Left Column for boot text -->
@@ -224,7 +275,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
             <svg style="position: absolute; pointer-events: none; bottom: 100%">
                 <defs>
                     <filter

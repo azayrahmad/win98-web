@@ -129,22 +129,28 @@
     }
 
     // WOW, this is ugly. It's kind of impressive, almost.
+    const tagName = options.tagName || (options.modal ? "dialog" : "article");
     var $w = /** @type {OSGUI$Window} */ (
       $(
         /** @type {HTMLElement & { $window: OSGUI$Window; }}*/ (
-          /** @type {unknown} */ (E("div"))
+          /** @type {unknown} */ (E(tagName))
         ),
       )
         .addClass("window os-window")
         .appendTo("#screen")
     );
+
+    if (tagName === "article") {
+      $w.attr("role", "window");
+    }
+
     // TODO: A $Window.fromElement (or similar) static method using a Map would be better for type checking.
     $w[0].$window = $w;
     $w.element = $w[0];
     /** @type {OSGUI$Window[]} */
     $w.child_$windows = []; // Initialize as an instance property
     $w[0].id = `os-window-${Math.random().toString(36).substr(2, 9)}`;
-    $w.$titlebar = $(E("div")).addClass("window-titlebar").appendTo($w);
+    $w.$titlebar = $(E("header")).addClass("window-titlebar").appendTo($w);
     $w.$title_area = $(E("div"))
       .addClass("window-title-area")
       .appendTo($w.$titlebar);
@@ -183,7 +189,7 @@
         $w.$x.prop("disabled", true);
       }
     }
-    $w.$content = $(E("div")).addClass("window-content").appendTo($w);
+    $w.$content = $(E("section")).addClass("window-content").appendTo($w);
     $w.$content.attr("tabIndex", "-1");
     $w.$content.css("outline", "none");
     if (options.toolWindow) {

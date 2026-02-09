@@ -16,7 +16,7 @@
 
     class AddressBar {
         constructor(items) {
-            this.element = E("div", { class: "address-bar" });
+            this.element = E("nav", { class: "address-bar", role: "combobox", "aria-label": "Address Bar" });
             this.items = items;
             this.selectedItem = null;
             this.dropdownVisible = false;

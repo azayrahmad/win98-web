@@ -53,7 +53,7 @@
 
   class Toolbar {
     constructor(items, options = {}) {
-      this.element = E("div", { class: "toolbar" });
+      this.element = E("nav", { class: "toolbar", role: "toolbar" });
       this.items = items;
       this.options = options;
       this.itemElements = [];

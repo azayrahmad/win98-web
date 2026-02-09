@@ -156,7 +156,26 @@ export class DirectoryView {
             const td = document.createElement("td");
             if (i === 0) {
               td.className = "name-cell";
-              const iconObj = await renderFileIcon(file, fullPath, isDir, { metadata, recycleBinEmpty, stat: fileStat });
+              const iconObj = await renderFileIcon(file, fullPath, isDir, {
+                metadata,
+                recycleBinEmpty,
+                stat: fileStat,
+              });
+
+              // Copy CSS variables from the rendered icon to the table row
+              // This ensures selection highlight URLs are available in details view
+              [
+                "--icon-url-32",
+                "--icon-url-16",
+                "--overlay-url-32",
+                "--overlay-url-16",
+              ].forEach((prop) => {
+                tr.style.setProperty(
+                  prop,
+                  iconObj.style.getPropertyValue(prop),
+                );
+              });
+
               const iconPart = iconObj.querySelector(".icon");
               const labelPart = iconObj.querySelector(".icon-label");
               if (iconPart) td.appendChild(iconPart);

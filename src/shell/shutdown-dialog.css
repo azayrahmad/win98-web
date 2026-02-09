@@ -14,14 +14,20 @@
     flex-direction: column;
 }
 
-.shutdown-dialog-main p {
+.shutdown-dialog-main p,
+.shutdown-dialog-main legend {
     margin: 0 0 12px;
+    display: block;
+    padding: 0;
 }
 
 .shutdown-dialog-options {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    border: none;
+    margin: 0;
+    padding: 0;
 }
 
 .shutdown-dialog-options .field-row {

@@ -123,7 +123,7 @@ class Taskbar {
       </div>
       <div class="taskbar-divider"></div>
       <div class="taskbar-divider-handler"></div>
-      <div class="taskbar-icon-area">
+      <nav class="taskbar-icon-area" aria-label="Quick Launch">
         <button class="taskbar-icon lightweight show-desktop" title="Show Desktop" aria-label="Show Desktop">
           <img src="${ICONS.desktop_old[16]}" alt="Show Desktop" loading="lazy">
         </button>
@@ -141,17 +141,19 @@ class Taskbar {
           <img src="https://www.google.com/s2/favicons?domain=github.com"
                alt="GitHub" loading="lazy">
         </button>
-      </div>
+      </nav>
       <div class="taskbar-divider"></div>
       <div class="taskbar-divider-handler"></div>
-      <div class="taskbar-app-area" role="group" aria-label="Application buttons">
-      </div>
+      <nav class="taskbar-app-area" aria-label="Running Applications">
+      </nav>
       <div class="taskbar-divider"></div>
-      <div class="system-tray" role="group" aria-label="System tray">
-        <img src="${ICONS.systray[16]}" alt="Volume" loading="lazy">
-        <div class="taskbar-clock" title="" role="timer" aria-live="polite">
-          <span id="clock" aria-label="Current time"></span>
-        </div>
+      <div class="system-tray-wrapper">
+        <section class="system-tray" aria-label="System Tray">
+          <img src="${ICONS.systray[16]}" alt="Volume" loading="lazy">
+          <div class="taskbar-clock" title="" role="timer" aria-live="polite">
+            <span id="clock" aria-label="Current time"></span>
+          </div>
+        </section>
       </div>`;
   }
 
