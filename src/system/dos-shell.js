@@ -301,22 +301,35 @@ export class DOSShell {
           this.launchApp(app.id);
         } else {
           // Check if it's a file in current directory
-          const filePath = this.resolvePath(cmd);
-          try {
-            const stats = await fs.promises.stat(filePath);
-            if (stats.isFile()) {
-              const association = getAssociation(cmd);
-              if (association && association.appId) {
-                this.launchApp(association.appId, filePath);
-              } else {
-                this.terminal.write(`No association found for file: ${cmd}\r\n`);
+          const pathsToTry = [
+              this.resolvePath(cmd),
+              this.resolvePath(cmd.toUpperCase()),
+              this.resolvePath(cmd.toLowerCase())
+          ];
+          const extensions = ["", ".exe", ".com", ".bat", ".EXE", ".COM", ".BAT"];
+          let found = false;
+
+          for (const filePath of pathsToTry) {
+            if (found) break;
+            for (const ext of extensions) {
+              const pathWithExt = filePath + ext;
+              try {
+                const stats = await fs.promises.stat(pathWithExt);
+                if (stats.isFile()) {
+                  const association = getAssociation(pathWithExt);
+                  if (association && association.appId) {
+                    this.launchApp(association.appId, pathWithExt);
+                    found = true;
+                    break;
+                  }
+                }
+              } catch (e) {
+                // Ignore and try next extension
               }
-            } else {
-              this.terminal.write(
-                `'${cmd}' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n`,
-              );
             }
-          } catch (e) {
+          }
+
+          if (!found) {
             this.terminal.write(
               `'${cmd}' is not recognized as an internal or external command,\r\noperable program or batch file.\r\n`,
             );
@@ -348,6 +361,11 @@ export class DOSShell {
 
   _launchFullScreen(appId, data) {
       const appConfig = apps.find(a => a.id === appId);
+      if (!appConfig && appId !== 'dosbox') {
+          this.terminal.write(`Application '${appId}' not found.\r\n`);
+          return;
+      }
+
       const gameUrls = {
         'doom': 'games/doom/index.html',
         'keen': 'games/keen/index.html',
@@ -355,11 +373,16 @@ export class DOSShell {
         'quake': 'https://www.netquake.io/quake',
         'sim-city-2000': 'games/dos/simcity2000/index.html',
         'diablo': 'https://d07riv.github.io/diabloweb/',
+        'dosbox': 'games/dos/doswasmx/host.html',
         'minesweeper': null, // Windows app
         'solitaire': null, // Windows app
       };
 
-      let src = appConfig.gameUrl || (appConfig.config && appConfig.config.gameUrl) || gameUrls[appId];
+      let src = (appConfig && (appConfig.gameUrl || (appConfig.config && appConfig.config.gameUrl))) || gameUrls[appId];
+
+      if (appId === 'dosbox' && data) {
+          src += `#${encodeURIComponent(data)}`;
+      }
 
       if (!src) {
           this.terminal.write("Cannot launch this application in MS-DOS mode.\r\n");

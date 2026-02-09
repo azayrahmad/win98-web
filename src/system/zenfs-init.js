@@ -62,6 +62,15 @@ export async function initFileSystem(onProgress) {
     if (!(await existsAsync("/C:/Program Files/Doom"))) {
       await fs.promises.mkdir("/C:/Program Files/Doom");
     }
+
+    // Ensure Games/WOLF3D exists
+    if (!(await existsAsync("/C:/Games"))) {
+      await fs.promises.mkdir("/C:/Games");
+    }
+    if (!(await existsAsync("/C:/Games/WOLF3D"))) {
+      await fs.promises.mkdir("/C:/Games/WOLF3D");
+    }
+
     // Ensure WINDOWS/Desktop directory exists for the Desktop shell extension
     if (!(await existsAsync("/C:/WINDOWS/Desktop"))) {
       await fs.promises.mkdir("/C:/WINDOWS/Desktop");
@@ -106,6 +115,7 @@ export async function initFileSystem(onProgress) {
       { name: "Commander Keen.lnk.json", appId: "keen" },
       { name: "Doom.lnk.json", appId: "doom" },
       { name: "SimCity 2000.lnk.json", appId: "sim-city-2000" },
+      { name: "Wolfenstein 3D.lnk.json", appId: "dosbox", data: "/C:/Games/WOLF3D/WOLF3D.EXE" },
       { name: "Diablo.lnk.json", appId: "diablo" },
       { name: "Quake.lnk.json", appId: "quake" },
       { name: "Prince of Persia.lnk.json", appId: "prince-of-persia" },
@@ -120,6 +130,7 @@ export async function initFileSystem(onProgress) {
             {
               type: "shortcut",
               appId: game.appId,
+              data: game.data,
             },
             null,
             2,

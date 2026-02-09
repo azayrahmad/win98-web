@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DosBox Host</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            image-rendering: pixelated;
+        }
+        #status {
+            color: white;
+            font-family: monospace;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="status">Initializing...</div>
+    <canvas id="canvas"></canvas>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+        // Minimal mock for what input_controller.js and main.js expect
+        window.myApp = {
+            onscreenKeyboard: false,
+            setupInputController: function() {
+                console.log('Input controller setting up...');
+            },
+            sendKey: function(k) {
+                if (window.Module && window.Module._neil_send_key) {
+                    window.Module._neil_send_key(k);
+                }
+            },
+            sendMouseMovement: function(x, y) {
+                if (window.Module && window.Module.sendMouseMovement) {
+                    window.Module.sendMouseMovement(x, y);
+                }
+            },
+            sendDosControls: function(s1, s2, s3, a, n) {
+                if (window.Module && window.Module.sendDosControls) {
+                    window.Module.sendDosControls(s1, s2, s3, a, n);
+                }
+            },
+            toggleOnscreenKeyboard: function() {
+                if (window.Module && window.Module._neil_toggle_onscreenkeyboard) {
+                    window.Module._neil_toggle_onscreenkeyboard();
+                }
+            }
+        };
+
+        var Module = {
+            canvas: document.getElementById('canvas'),
+            print: function(text) {
+                console.log('DOSBox:', text);
+                if (text.includes('x == 0')) { // Shutdown/Restart
+                    window.parent.postMessage({ type: 'EXIT' }, window.location.origin);
+                }
+            },
+            printErr: function(text) {
+                console.error('DOSBox Error:', text);
+            },
+            onRuntimeInitialized: function() {
+                console.log('Runtime initialized');
+
+                // Expose some functions to myApp
+                window.Module.sendMouseMovement = Module.cwrap('neil_send_mouse_movement', null, ['number','number']);
+                window.Module.sendDosControls = Module.cwrap('neil_send_dos_controls', null,
+                    ['string','string','string','array','number','string','string']);
+
+                document.getElementById('status').innerText = 'Ready';
+
+                const hash = window.location.hash.substring(1);
+                if (hash) {
+                    autoStartFromHash(decodeURIComponent(hash));
+                } else {
+                    window.parent.postMessage({ type: 'READY' }, window.location.origin);
+                }
+            }
+        };
+
+        window.addEventListener('message', async function(event) {
+            const { type, payload } = event.data;
+
+            if (type === 'START_DOSBOX') {
+                document.getElementById('status').innerText = 'Starting...';
+                await startDosBox(payload);
+            } else if (type === 'REQUEST_SAVE') {
+                saveFiles();
+            }
+        });
+
+        async function autoStartFromHash(executable) {
+            const fs = window.parent.fs;
+            if (!fs) {
+                console.error('ZenFS not found in parent window');
+                return;
+            }
+
+            const syncPath = executable.substring(0, executable.lastIndexOf('/')) || '/C:';
+            const files = [];
+
+            async function readDir(path) {
+                const entries = await fs.promises.readdir(path, { withFileTypes: true });
+                for (const entry of entries) {
+                    const fullPath = (path.endsWith('/') ? path : path + '/') + entry.name;
+                    if (entry.isDirectory()) {
+                        await readDir(fullPath);
+                    } else {
+                        const content = await fs.promises.readFile(fullPath);
+                        files.push({
+                            path: fullPath.replace('/C:', 'C:').replace(/\//g, '\\'),
+                            content: content.buffer
+                        });
+                    }
+                }
+            }
+
+            await readDir(syncPath);
+            await startDosBox({
+                files,
+                executable: executable.replace('/C:', 'C:').replace(/\//g, '\\'),
+                workingDir: syncPath.replace('/C:', 'C:').replace(/\//g, '\\')
+            });
+        }
+
+        async function startDosBox(payload) {
+            const { files, executable, workingDir } = payload;
+
+            // Create directories and write files
+            try { Module.FS.mkdir('/C'); } catch(e) {}
+            for (const file of files) {
+                const parts = file.path.split('\\');
+                let current = '';
+                for (let i = 0; i < parts.length - 1; i++) {
+                    current += '/' + parts[i];
+                    try {
+                        Module.FS.mkdir(current);
+                    } catch (e) {}
+                }
+                Module.FS.writeFile('/' + file.path.replace(/\\/g, '/'), new Uint8Array(file.content));
+            }
+
+            // Write dosbox.conf
+            let configText = "";
+            try {
+                configText = await $.get('dosbox-x-for-web.conf');
+            } catch(e) {
+                // Fallback minimal config
+                configText = "[autoexec]\n";
+            }
+
+            let autoexec = `
+[autoexec]
+mount c /C
+c:
+`;
+            if (workingDir) {
+                autoexec += `cd ${workingDir.replace('C:', '')}\n`;
+            }
+            if (executable) {
+                autoexec += `${executable.replace('C:', '')}\n`;
+            }
+
+            configText = configText.replace('[autoexec]', autoexec);
+            Module.FS.writeFile('dosbox.conf', configText);
+
+            // Start
+            document.getElementById('status').style.display = 'none';
+            Module.callMain();
+
+            // Re-initialize input controller if it exists
+            if (window.InputController) {
+                window.myApp.inputController = new InputController();
+                window.myApp.inputController.setupMouseMode();
+
+                // Start animation frame for input controller
+                function onAnimationFrame() {
+                    window.requestAnimationFrame(onAnimationFrame);
+                    window.myApp.inputController.updateControls();
+                    window.myApp.inputController.updateDosControls();
+                }
+                onAnimationFrame();
+            }
+        }
+
+        function saveFiles() {
+            const savedFiles = [];
+
+            function traverse(path) {
+                try {
+                    const entries = Module.FS.readdir(path);
+                    for (const entry of entries) {
+                        if (entry === '.' || entry === '..') continue;
+                        const fullPath = path + '/' + entry;
+                        const stat = Module.FS.stat(fullPath);
+                        if (Module.FS.isDir(stat.mode)) {
+                            traverse(fullPath);
+                        } else {
+                            const content = Module.FS.readFile(fullPath);
+                            savedFiles.push({
+                                path: fullPath.substring(1).replace(/\//g, '\\'),
+                                content: content.buffer
+                            });
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            traverse('/C');
+            window.parent.postMessage({ type: 'SAVE_FILES', payload: savedFiles }, window.location.origin);
+        }
+
+        window.onbeforeunload = function() {
+            saveFiles();
+        };
+
+    </script>
+    <script src="main.js"></script>
+    <script src="input_controller.js"></script>
+</body>
+</html>

@@ -191,6 +191,46 @@ export async function initializeOS() {
       }
     });
 
+    await executeBootStep(async () => {
+      const wolfFiles = [
+        "WOLF3D.EXE", "AUDIOHED.WL6", "AUDIOT.WL6", "CONFIG.WL6",
+        "GAMEMAPS.WL6", "MAPHEAD.WL6", "VGADICT.WL6", "VGAGRAPH.WL6",
+        "VGAHEAD.WL6", "VSWAP.WL6"
+      ];
+      const baseRemotePath = "games/dos/wolf3d/";
+      const baseLocalPath = "/C:/Games/WOLF3D/";
+
+      let needed = false;
+      for (const file of wolfFiles) {
+        if (!fs.existsSync(baseLocalPath + file)) {
+          needed = true;
+          break;
+        }
+      }
+
+      if (needed) {
+        let logElement = startBootProcessStep("Loading Wolfenstein 3D data...");
+        for (const file of wolfFiles) {
+          if (!fs.existsSync(baseLocalPath + file)) {
+            if (logElement && logElement.firstChild) {
+              logElement.firstChild.nodeValue = `Loading Wolf3D: ${file}...`;
+            }
+            try {
+              const response = await fetch(baseRemotePath + file);
+              const buffer = await response.arrayBuffer();
+              await fs.promises.writeFile(baseLocalPath + file, new Uint8Array(buffer));
+            } catch (e) {
+              console.error(`Failed to load Wolf3D file ${file}:`, e);
+            }
+          }
+        }
+        if (logElement && logElement.firstChild) {
+          logElement.firstChild.nodeValue = "Loading Wolfenstein 3D data...";
+        }
+        finalizeBootProcessStep(logElement, "OK");
+      }
+    });
+
     const createAssetLogCallbacks = (logElement, baseMessage) => {
       const onAssetLogStart = (name) => {
         if (logElement && logElement.firstChild) {
