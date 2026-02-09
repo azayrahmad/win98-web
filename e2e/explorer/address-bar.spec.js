@@ -3,8 +3,18 @@ import { test, expect } from '@playwright/test';
 test('ZenExplorer address bar enhancement', async ({ page }, testInfo) => {
   await page.goto('./'); // Uses baseURL from config
 
+  // Handle "Press any key to continue" boot prompt if it appears
+  const bootScreen = page.locator('#boot-screen');
+  if (await bootScreen.isVisible()) {
+    const prompt = page.locator('text=Press any key to continue');
+    try {
+      await prompt.waitFor({ state: 'visible', timeout: 5000 });
+      await page.keyboard.press('Enter');
+    } catch (e) { }
+  }
+
   // Wait for boot
-  await page.waitForFunction(() => window.System && typeof window.System.launchApp === 'function');
+  await page.waitForFunction(() => window.System && typeof window.System.launchApp === 'function', { timeout: 60000 });
 
   // Launch ZenExplorer
   await page.evaluate(() => window.System.launchApp('explorer'));

@@ -3,10 +3,23 @@ import { test, expect } from '@playwright/test';
 test.describe('Desktop Component', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:5173/win98-web/');
+
+    // Handle "Press any key to continue" boot prompt if it appears
+    const bootScreen = page.locator('#boot-screen');
+    if (await bootScreen.isVisible()) {
+      const prompt = page.locator('text=Press any key to continue');
+      try {
+        await prompt.waitFor({ state: 'visible', timeout: 5000 });
+        await page.keyboard.press('Enter');
+      } catch (e) { }
+    }
+
     // Wait for the OS to initialize (azOS Ready!)
     await page.waitForSelector('text=azOS Ready!', { timeout: 30000 });
     // Wait for splash screen to hide
     await page.waitForSelector('#splash-screen', { state: 'hidden' });
+    // Wait for System API
+    await page.waitForFunction(() => window.System && typeof window.System.launchApp === 'function', { timeout: 30000 });
   });
 
   test('should show My Computer on the desktop', async ({ page }) => {
@@ -20,8 +33,8 @@ test.describe('Desktop Component', () => {
     await myComputerIcon.dblclick();
 
     // It should launch ZenExplorer at /
-    await page.waitForSelector('.window[data-app-id="zenexplorer"]');
-    const addressBar = page.locator('.window[data-app-id="zenexplorer"] .address-bar input');
+    await page.waitForSelector('.window[data-app-id="explorer"]');
+    const addressBar = page.locator('.window[data-app-id="explorer"] .address-bar input');
     await expect(addressBar).toHaveValue('My Computer');
   });
 

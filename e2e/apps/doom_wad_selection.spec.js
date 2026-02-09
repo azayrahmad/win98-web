@@ -3,10 +3,23 @@ import { test, expect } from '@playwright/test';
 test.describe('Doom WAD Selection', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:5173/win98-web/');
+
+    // Handle "Press any key to continue" boot prompt if it appears
+    const bootScreen = page.locator('#boot-screen');
+    if (await bootScreen.isVisible()) {
+      const prompt = page.locator('text=Press any key to continue');
+      try {
+        await prompt.waitFor({ state: 'visible', timeout: 5000 });
+        await page.keyboard.press('Enter');
+      } catch (e) { }
+    }
+
     // Wait for the OS to initialize
     await page.waitForSelector('text=azOS Ready!', { timeout: 60000 });
     // Wait for splash screen to hide
     await page.waitForSelector('#splash-screen', { state: 'hidden' });
+    // Wait for System API
+    await page.waitForFunction(() => window.System && typeof window.System.launchApp === 'function', { timeout: 30000 });
   });
 
   test('should launch Doom with default WAD when only one is available', async ({ page }) => {

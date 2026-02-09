@@ -3,27 +3,40 @@ import { test, expect } from '@playwright/test';
 test.describe('Desktop Shell Extension', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:5173/win98-web/');
+
+    // Handle "Press any key to continue" boot prompt if it appears
+    const bootScreen = page.locator('#boot-screen');
+    if (await bootScreen.isVisible()) {
+      const prompt = page.locator('text=Press any key to continue');
+      try {
+        await prompt.waitFor({ state: 'visible', timeout: 5000 });
+        await page.keyboard.press('Enter');
+      } catch (e) { }
+    }
+
     // Wait for the OS to initialize (azOS Ready!)
     await page.waitForSelector('text=azOS Ready!', { timeout: 30000 });
     // Wait for splash screen to hide
     await page.waitForSelector('#splash-screen', { state: 'hidden' });
+    // Wait for System API
+    await page.waitForFunction(() => window.System && typeof window.System.launchApp === 'function', { timeout: 30000 });
   });
 
   test('should show My Computer in /Desktop and navigate to root', async ({ page }) => {
     // Launch ZenExplorer
-    await page.evaluate(() => window.System.launchApp('zenexplorer'));
-    await page.waitForSelector('.window[data-app-id="zenexplorer"]');
+    await page.evaluate(() => window.System.launchApp('explorer'));
+    await page.waitForSelector('.window[data-app-id="explorer"]');
 
     // Navigate to /Desktop
-    const addressBar = page.locator('.window[data-app-id="zenexplorer"] .address-bar input');
+    const addressBar = page.locator('.window[data-app-id="explorer"] .address-bar input');
     await addressBar.fill('Desktop');
     await addressBar.press('Enter');
 
     // Wait for directory contents to render
-    await page.waitForSelector('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="My Computer"]');
+    await page.waitForSelector('.window[data-app-id="explorer"] .explorer-icon[data-name="My Computer"]');
 
     // Verify "My Computer" icon exists and has the computer icon
-    const myComputerIcon = page.locator('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="My Computer"]');
+    const myComputerIcon = page.locator('.window[data-app-id="explorer"] .explorer-icon[data-name="My Computer"]');
     await expect(myComputerIcon).toBeVisible();
     await expect(myComputerIcon).toHaveAttribute('data-is-virtual', 'true');
 
@@ -32,16 +45,16 @@ test.describe('Desktop Shell Extension', () => {
 
     // Verify we navigated to root (My Computer)
     await expect(addressBar).toHaveValue('My Computer');
-    await expect(page.locator('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="C:"]')).toBeVisible();
+    await expect(page.locator('.window[data-app-id="explorer"] .explorer-icon[data-name="C:"]')).toBeVisible();
   });
 
   test('should NOT show My Computer in C:\\WINDOWS\\Desktop', async ({ page }) => {
     // Launch ZenExplorer
-    await page.evaluate(() => window.System.launchApp('zenexplorer'));
-    await page.waitForSelector('.window[data-app-id="zenexplorer"]');
+    await page.evaluate(() => window.System.launchApp('explorer'));
+    await page.waitForSelector('.window[data-app-id="explorer"]');
 
     // Navigate to C:\WINDOWS\Desktop
-    const addressBar = page.locator('.window[data-app-id="zenexplorer"] .address-bar input');
+    const addressBar = page.locator('.window[data-app-id="explorer"] .address-bar input');
     await addressBar.fill('C:\\WINDOWS\\Desktop');
     await addressBar.press('Enter');
 
@@ -49,28 +62,28 @@ test.describe('Desktop Shell Extension', () => {
     await expect(addressBar).toHaveValue('C:\\WINDOWS\\Desktop');
 
     // Check that "My Computer" icon DOES NOT exist
-    const myComputerIcon = page.locator('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="My Computer"]');
+    const myComputerIcon = page.locator('.window[data-app-id="explorer"] .explorer-icon[data-name="My Computer"]');
     await expect(myComputerIcon).not.toBeVisible();
   });
 
   test('should allow file operations and rename in /Desktop and reflect in C:\\WINDOWS\\Desktop', async ({ page }) => {
     // Launch ZenExplorer and go to /Desktop
-    await page.evaluate(() => window.System.launchApp('zenexplorer'));
-    await page.waitForSelector('.window[data-app-id="zenexplorer"]');
-    const addressBar = page.locator('.window[data-app-id="zenexplorer"] .address-bar input');
+    await page.evaluate(() => window.System.launchApp('explorer'));
+    await page.waitForSelector('.window[data-app-id="explorer"]');
+    const addressBar = page.locator('.window[data-app-id="explorer"] .address-bar input');
     await addressBar.fill('Desktop');
     await addressBar.press('Enter');
 
     // Wait for view
-    await page.waitForSelector('.window[data-app-id="zenexplorer"] .explorer-icon-view');
+    await page.waitForSelector('.window[data-app-id="explorer"] .explorer-icon-view');
 
     // Create a new folder via context menu
-    await page.click('.window[data-app-id="zenexplorer"] .explorer-icon-view', { button: 'right' });
+    await page.click('.window[data-app-id="explorer"] .explorer-icon-view', { button: 'right' });
     await page.click('.menu-item:has-text("New")');
     await page.click('.menu-item:has-text("Folder")');
 
     // Wait for the new folder to appear in /Desktop
-    await page.waitForSelector('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="New Folder"]');
+    await page.waitForSelector('.window[data-app-id="explorer"] .explorer-icon[data-name="New Folder"]');
 
     // Verify it exists in real filesystem
     let existsInRealFS = await page.evaluate(async () => {
@@ -84,7 +97,7 @@ test.describe('Desktop Shell Extension', () => {
     expect(existsInRealFS).toBe(true);
 
     // Rename the folder via UI (testing the fix)
-    const newFolderIcon = page.locator('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="New Folder"]');
+    const newFolderIcon = page.locator('.window[data-app-id="explorer"] .explorer-icon[data-name="New Folder"]');
     await newFolderIcon.click({ button: 'right' });
 
     // Ensure Rename is enabled in the context menu
@@ -98,8 +111,8 @@ test.describe('Desktop Shell Extension', () => {
     await renameInput.press('Enter');
 
     // Wait for UI to update
-    await page.waitForSelector('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="RenamedViaUI"]');
-    await expect(page.locator('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="New Folder"]')).not.toBeVisible();
+    await page.waitForSelector('.window[data-app-id="explorer"] .explorer-icon[data-name="RenamedViaUI"]');
+    await expect(page.locator('.window[data-app-id="explorer"] .explorer-icon[data-name="New Folder"]')).not.toBeVisible();
 
     // Verify rename reflected in real filesystem
     existsInRealFS = await page.evaluate(async () => {
@@ -113,7 +126,7 @@ test.describe('Desktop Shell Extension', () => {
     expect(existsInRealFS).toBe(true);
 
     // Delete it
-    const renamedFolder = page.locator('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="RenamedViaUI"]');
+    const renamedFolder = page.locator('.window[data-app-id="explorer"] .explorer-icon[data-name="RenamedViaUI"]');
     await renamedFolder.click({ button: 'right' });
     await page.locator('.menu-popup .menu-item:has-text("Delete")').first().click();
     const dialog = page.locator('.window:has-text("Confirm File Delete")');
@@ -129,17 +142,17 @@ test.describe('Desktop Shell Extension', () => {
     });
 
     // Launch ZenExplorer and go to C:\WINDOWS\Desktop
-    await page.evaluate(() => window.System.launchApp('zenexplorer'));
-    await page.waitForSelector('.window[data-app-id="zenexplorer"]');
-    const addressBar = page.locator('.window[data-app-id="zenexplorer"] .address-bar input');
+    await page.evaluate(() => window.System.launchApp('explorer'));
+    await page.waitForSelector('.window[data-app-id="explorer"]');
+    const addressBar = page.locator('.window[data-app-id="explorer"] .address-bar input');
     await addressBar.fill('C:\\WINDOWS\\Desktop');
     await addressBar.press('Enter');
 
     // Wait for view
-    await page.waitForSelector('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="RealFile.txt"]');
+    await page.waitForSelector('.window[data-app-id="explorer"] .explorer-icon[data-name="RealFile.txt"]');
 
     // Rename via UI
-    const fileIcon = page.locator('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="RealFile.txt"]');
+    const fileIcon = page.locator('.window[data-app-id="explorer"] .explorer-icon[data-name="RealFile.txt"]');
     await fileIcon.click({ button: 'right' });
     await page.locator('.menu-popup .menu-item:has-text("Rename")').first().click();
 
@@ -148,7 +161,7 @@ test.describe('Desktop Shell Extension', () => {
     await renameInput.press('Enter');
 
     // Wait for UI to update
-    await page.waitForSelector('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="RenamedRealFile.txt"]');
+    await page.waitForSelector('.window[data-app-id="explorer"] .explorer-icon[data-name="RenamedRealFile.txt"]');
 
     // Verify in real FS
     const existsInRealFS = await page.evaluate(async () => {
@@ -164,17 +177,17 @@ test.describe('Desktop Shell Extension', () => {
 
   test('should show Desktop folder with correct icon in C:\\WINDOWS', async ({ page }) => {
     // Launch ZenExplorer
-    await page.evaluate(() => window.System.launchApp('zenexplorer'));
-    await page.waitForSelector('.window[data-app-id="zenexplorer"]');
+    await page.evaluate(() => window.System.launchApp('explorer'));
+    await page.waitForSelector('.window[data-app-id="explorer"]');
 
     // Navigate to C:\WINDOWS
-    const addressBar = page.locator('.window[data-app-id="zenexplorer"] .address-bar input');
+    const addressBar = page.locator('.window[data-app-id="explorer"] .address-bar input');
     await addressBar.fill('C:\\WINDOWS');
     await addressBar.press('Enter');
 
     // Wait for directory contents
-    await page.waitForSelector('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="Desktop"]');
-    const desktopFolder = page.locator('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="Desktop"]');
+    await page.waitForSelector('.window[data-app-id="explorer"] .explorer-icon[data-name="Desktop"]');
+    const desktopFolder = page.locator('.window[data-app-id="explorer"] .explorer-icon[data-name="Desktop"]');
 
     // Verify it's a directory
     await expect(desktopFolder).toHaveAttribute('data-type', 'directory');
@@ -185,14 +198,14 @@ test.describe('Desktop Shell Extension', () => {
 
   test('should NOT allow renaming virtual My Computer in /Desktop', async ({ page }) => {
      // Launch ZenExplorer and go to /Desktop
-     await page.evaluate(() => window.System.launchApp('zenexplorer'));
-     await page.waitForSelector('.window[data-app-id="zenexplorer"]');
-     const addressBar = page.locator('.window[data-app-id="zenexplorer"] .address-bar input');
+     await page.evaluate(() => window.System.launchApp('explorer'));
+     await page.waitForSelector('.window[data-app-id="explorer"]');
+     const addressBar = page.locator('.window[data-app-id="explorer"] .address-bar input');
      await addressBar.fill('Desktop');
      await addressBar.press('Enter');
 
-     await page.waitForSelector('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="My Computer"]');
-     const myComputerIcon = page.locator('.window[data-app-id="zenexplorer"] .explorer-icon[data-name="My Computer"]');
+     await page.waitForSelector('.window[data-app-id="explorer"] .explorer-icon[data-name="My Computer"]');
+     const myComputerIcon = page.locator('.window[data-app-id="explorer"] .explorer-icon[data-name="My Computer"]');
 
      // Right click to open context menu
      await myComputerIcon.click({ button: 'right' });

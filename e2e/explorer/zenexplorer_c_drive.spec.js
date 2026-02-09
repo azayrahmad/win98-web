@@ -12,8 +12,8 @@ test('ZenExplorer C: formatting', async ({ page }, testInfo) => {
 
     await page.click('button:has-text("Start")');
     await page.click('text=Programs');
-    await page.click('text=File Manager (ZenFS)');
-    const zenWin = page.locator('#zenexplorer');
+    await page.click('text=Windows Explorer');
+    const zenWin = page.locator('#explorer');
     await expect(zenWin).toBeVisible();
 
     const cDriveIcon = zenWin.locator('.explorer-icon').filter({ hasText: '(C:)' });
