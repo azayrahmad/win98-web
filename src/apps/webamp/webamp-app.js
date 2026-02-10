@@ -1,9 +1,4 @@
 import { Application } from '../../system/application.js';
-import {
-  createTaskbarButton,
-  removeTaskbarButton,
-  updateTaskbarButton,
-} from '../../shell/taskbar/taskbar.js';
 import { ICONS } from '../../config/icons.js';
 import { appManager } from '../../system/app-manager.js';
 import { getWebampMenuItems } from './webamp.js';
@@ -11,15 +6,14 @@ import { isZenFSPath, getZenFSFileUrl, getZenFSFileAsText } from '../../system/z
 
 let webampInstance = null;
 let webampContainer = null;
-let webampTaskbarButton = null;
-let isMinimized = false;
 
 export class WebampApp extends Application {
   static config = {
     id: "webamp",
     title: "Winamp",
     description: "A classic music player.",
-    icon: ICONS.webamp, category: "",
+    icon: ICONS.webamp,
+    category: "",
     hasTaskbarButton: true,
     isSingleton: true,
     tray: {
@@ -35,6 +29,7 @@ export class WebampApp extends Application {
     super(config);
     this.hasTaskbarButton = true;
     this.blobUrls = [];
+    this.webampInstance = null;
   }
 
   _revokeBlobUrls() {
@@ -43,9 +38,96 @@ export class WebampApp extends Application {
   }
 
   _createWindow() {
-    // Webamp doesn't use a standard OS-GUI window, it renders directly to the body.
-    // We manage its container and lifecycle here.
-    return null; // Return null to prevent default window creation.
+    if (!webampContainer) {
+      webampContainer = document.createElement("div");
+      webampContainer.id = "webamp-container";
+      webampContainer.classList.add("window", "os-window", "app-window");
+      webampContainer.style.position = "absolute";
+      webampContainer.style.zIndex = window.System
+        ? window.System.incrementZIndex()
+        : $Window.Z_INDEX++;
+
+      const screen =
+        document.getElementById("desktop-area") ||
+        document.getElementById("screen") ||
+        document.body;
+      screen.appendChild(webampContainer);
+
+      webampContainer.addEventListener(
+        "mousedown",
+        () => {
+          if (this.win) this.win.focus();
+        },
+        true,
+      );
+    }
+
+    const shim = {
+      element: webampContainer,
+      onClosed: (cb) => {
+        this._onClosedCallback = cb;
+        return () => {
+          this._onClosedCallback = null;
+        };
+      },
+      onFocus: (cb) => {
+        this._onFocusCallback = cb;
+        return () => {
+          this._onFocusCallback = null;
+        };
+      },
+      onBlur: (cb) => {
+        this._onBlurCallback = cb;
+        return () => {
+          this._onBlurCallback = null;
+        };
+      },
+      center: () => {
+        webampContainer.style.left = "calc(50% - 137px)";
+        webampContainer.style.top = "calc(50% - 58px)";
+      },
+      focus: () => {
+        this.bringToFront();
+        webampContainer.classList.add("focused");
+        if (this._onFocusCallback) this._onFocusCallback();
+      },
+      blur: () => {
+        webampContainer.classList.remove("focused");
+        if (this._onBlurCallback) this._onBlurCallback();
+      },
+      bringToFront: () => {
+        if (window.System) {
+          webampContainer.style.zIndex = window.System.incrementZIndex();
+        } else {
+          webampContainer.style.zIndex = $Window.Z_INDEX++;
+        }
+      },
+      minimize: () => {
+        this.minimizeWebamp();
+      },
+      unminimize: () => {
+        this.showWebamp();
+      },
+      restore: () => {
+        this.showWebamp();
+      },
+      close: () => {
+        appManager.closeApp(this.id);
+      },
+      setTitlebarIconSize: () => {},
+      getTitlebarIconSize: () => 16,
+      icons: this.config.icon,
+      title: (t) => {
+        if (t === undefined) return this.config.title;
+        return shim;
+      },
+      setMinimizeTarget: (target) => {
+        this._minimizeTarget = target;
+      },
+    };
+
+    webampContainer.$window = shim;
+    return shim;
   }
 
   async _onLaunch(filePath) {
@@ -142,22 +224,6 @@ export class WebampApp extends Application {
     }
 
     return new Promise((resolve, reject) => {
-      webampContainer = document.createElement("div");
-      webampContainer.id = "webamp-container";
-      webampContainer.style.position = "absolute";
-      webampContainer.style.zIndex = $Window.Z_INDEX++;
-      webampContainer.style.left = "50px";
-      webampContainer.style.top = "50px";
-      document.body.appendChild(webampContainer);
-
-      webampContainer.addEventListener(
-        "mousedown",
-        () => {
-          webampContainer.style.zIndex = $Window.Z_INDEX++;
-        },
-        true,
-      );
-
       const initialTracks = [
         {
           metaData: {
@@ -189,14 +255,18 @@ export class WebampApp extends Application {
             ],
             initialTracks,
           });
+          this.webampInstance = webampInstance;
 
-          webampInstance.onMinimize(() => this.minimizeWebamp());
-          webampInstance.onClose(() => appManager.closeApp(this.id));
+          webampInstance.onMinimize(() => {
+            if (this.win) this.win.minimize();
+          });
+          webampInstance.onClose(() => {
+            if (this.win) this.win.close();
+          });
 
           webampInstance
             .renderWhenReady(webampContainer)
             .then(() => {
-              this.setupTaskbarButton();
               this.showWebamp();
               handleFile(filePath);
               resolve(); // Resolve the promise once Webamp is ready
@@ -207,54 +277,36 @@ export class WebampApp extends Application {
     });
   }
 
-  setupTaskbarButton() {
-    const taskbarButtonId = "webamp-taskbar-button";
-    webampTaskbarButton = createTaskbarButton(
-      taskbarButtonId,
-      ICONS.webamp,
-      "Winamp",
-    );
-
-    if (webampTaskbarButton) {
-      webampTaskbarButton.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        if (isMinimized) {
-          this.showWebamp();
-        } else {
-          this.minimizeWebamp();
-        }
-      });
-    }
-  }
-
   showWebamp() {
-    const webampElement = document.getElementById("webamp");
-    if (!webampElement) return;
-
-    webampElement.style.display = "block";
-    webampElement.style.visibility = "visible";
-    isMinimized = false;
-    webampContainer.style.zIndex = $Window.Z_INDEX++;
-    if (webampTaskbarButton) {
-      updateTaskbarButton("webamp-taskbar-button", true, false);
+    if (webampContainer) {
+      webampContainer.style.display = "block";
+      webampContainer.style.visibility = "visible";
     }
+    this.isMinimized = false;
+    this.bringToFront();
+    if (this._onFocusCallback) this._onFocusCallback();
   }
 
   minimizeWebamp() {
-    const webampElement = document.getElementById("webamp");
-    if (!webampElement) return;
+    if (webampContainer) {
+      webampContainer.style.display = "none";
+      webampContainer.style.visibility = "hidden";
+    }
+    this.isMinimized = true;
+    if (this._onBlurCallback) this._onBlurCallback();
+  }
 
-    webampElement.style.display = "none";
-    webampElement.style.visibility = "hidden";
-    isMinimized = true;
-    if (webampTaskbarButton) {
-      updateTaskbarButton("webamp-taskbar-button", false, true);
+  bringToFront() {
+    if (this.win && this.win.bringToFront) {
+      this.win.bringToFront();
     }
   }
 
   _cleanup() {
     this._revokeBlobUrls();
+    if (this._onClosedCallback) {
+      this._onClosedCallback();
+    }
     if (webampContainer) {
       webampContainer.remove();
       webampContainer = null;
@@ -264,11 +316,6 @@ export class WebampApp extends Application {
       webampInstance.dispose();
       webampInstance = null;
     }
-
-    if (webampTaskbarButton) {
-      removeTaskbarButton("webamp-taskbar-button");
-      webampTaskbarButton = null;
-    }
-    isMinimized = false;
+    this.isMinimized = false;
   }
 }
