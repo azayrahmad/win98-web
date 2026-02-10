@@ -30,7 +30,8 @@
 - [x] Register the `dos-box` app in `src/config/apps.js`.
 
 ## Phase 6: Verification and Testing
-- [ ] Verify Wolf3D launches from the Games folder.
-- [ ] Verify Wolf3D launches from the Command Prompt.
-- [ ] Verify save games are persisted in the `C:` drive and visible in File Explorer.
+- [x] Verify Wolf3D launches from the Games folder.
+- [x] Verify Wolf3D launches from the Command Prompt.
+- [x] Verify save games are persisted in the `C:` drive and visible in File Explorer.
+- [x] Support multi-drive mounting (A:, C:, E:) and persistence.
 - [ ] Complete pre-commit steps.

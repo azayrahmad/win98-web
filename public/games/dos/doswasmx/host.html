@@ -100,11 +100,21 @@
             try {
                 const confResp = await fetch('dosbox-x-for-web.conf');
                 let confText = await confResp.text();
-                confText += `\r\n[autoexec]\r\n@echo off\r\nmount c .\r\nc:\r\n${commands}\r\n`;
+
+                let autoexec = `\r\n[autoexec]\r\n@echo off\r\n`;
+                if (!commands.includes("mount c") && !commands.includes("MOUNT C")) {
+                    autoexec += `mount c .\r\nc:\r\n`;
+                }
+                confText += autoexec + commands + `\r\n`;
+
                 Module.FS.writeFile('dosbox.conf', confText);
             } catch (e) {
                 // Fallback config if fetch fails
-                Module.FS.writeFile('dosbox.conf', `[dosbox]\r\nmemsize=32\r\n[cpu]\r\ncycles=auto\r\n[autoexec]\r\nmount c .\r\nc:\r\n${commands}\r\n`);
+                let autoexec = `\r\n[autoexec]\r\n@echo off\r\n`;
+                if (!commands.includes("mount c") && !commands.includes("MOUNT C")) {
+                    autoexec += `mount c .\r\nc:\r\n`;
+                }
+                Module.FS.writeFile('dosbox.conf', `[dosbox]\r\nmemsize=32\r\n[cpu]\r\ncycles=auto\r\n` + autoexec + commands + `\r\n`);
             }
 
             if (window.myApp.initAudio) window.myApp.initAudio();

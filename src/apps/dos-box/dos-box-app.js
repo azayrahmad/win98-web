@@ -1,6 +1,6 @@
 import { Application } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
-import { fs } from "@zenfs/core";
+import { fs, mounts } from "@zenfs/core";
 import { Emscripten } from "@zenfs/emscripten";
 
 export class DosBoxApp extends Application {
@@ -32,10 +32,10 @@ export class DosBoxApp extends Application {
     super(config);
     this.iframe = null;
     this.isMounted = false;
-    this.baseLocalPath = "/C:"; // Mount root of C: drive
     this._boundHandleMessage = this._handleMessage.bind(this);
     this.executablePath = null;
     this.args = [];
+    this.syncedDrives = [];
   }
 
   async _createWindow(data) {
@@ -93,48 +93,61 @@ export class DosBoxApp extends Application {
 
     const FS = guestModule.FS;
 
-    // 1. Sync files from host ZenFS to iframe MEMFS
-    // We sync the game directory to a matching path in the guest
+    // 1. Identify all mounted drives in host ZenFS
+    const drivesToSync = [];
+    for (const [path, mount] of mounts) {
+        if (path.match(/^\/[A-Z]:$/i)) {
+            drivesToSync.push(path);
+        }
+    }
+    // Always ensure C: is included
+    if (!drivesToSync.includes("/C:")) drivesToSync.push("/C:");
 
-    let localSyncPath = "/C:/Games";
-    if (this.executablePath) {
-        const parts = this.executablePath.split('/');
-        parts.pop(); // Remove filename
-        localSyncPath = parts.join('/') || "/C:/Games";
+    this.syncedDrives = [];
+
+    const loadRecursive = async (localPath, emPath) => {
+      if (!fs.existsSync(localPath)) return;
+      const entries = await fs.promises.readdir(localPath);
+      for (const entry of entries) {
+        const fullLocalPath = `${localPath}/${entry}`;
+        const fullEmPath = emPath === "/" ? `/${entry}` : `${emPath}/${entry}`;
+        try {
+            const stat = await fs.promises.stat(fullLocalPath);
+            if (stat.isDirectory()) {
+              try { FS.mkdir(fullEmPath); } catch (e) {}
+              await loadRecursive(fullLocalPath, fullEmPath);
+            } else {
+              const data = await fs.promises.readFile(fullLocalPath);
+              FS.writeFile(fullEmPath, new Uint8Array(data));
+            }
+        } catch (e) {
+            console.warn(`Failed to sync ${fullLocalPath}`, e);
+        }
+      }
+    };
+
+    for (const localDrivePath of drivesToSync) {
+        const driveLetter = localDrivePath.substring(1, 2).toUpperCase();
+        const guestDrivePath = `/mnt/${driveLetter.toLowerCase()}`;
+
+        try {
+            if (this.iframe.contentWindow.showStatus) {
+                this.iframe.contentWindow.showStatus(`Syncing Drive ${driveLetter}:...`, 0);
+            }
+            await this._ensureEmDir(FS, guestDrivePath);
+            await loadRecursive(localDrivePath, guestDrivePath);
+            this.syncedDrives.push({
+                local: localDrivePath,
+                guest: guestDrivePath,
+                letter: driveLetter
+            });
+        } catch (e) {
+            console.warn(`Failed to sync drive ${localDrivePath}:`, e);
+        }
     }
 
-    // Convert local path (e.g. /C:/Games/WOLF3D) to guest path (e.g. /Games/WOLF3D)
-    // by removing the /C: prefix if present
-    const guestSyncPath = localSyncPath.startsWith("/C:") ? localSyncPath.substring(3) || "/" : localSyncPath;
-
-    try {
-      const loadRecursive = async (localPath, emPath) => {
-        if (!fs.existsSync(localPath)) return;
-        const entries = await fs.promises.readdir(localPath);
-        for (const entry of entries) {
-          const fullLocalPath = `${localPath}/${entry}`;
-          const fullEmPath = emPath === "/" ? `/${entry}` : `${emPath}/${entry}`;
-          try {
-              const stat = await fs.promises.stat(fullLocalPath);
-              if (stat.isDirectory()) {
-                try { FS.mkdir(fullEmPath); } catch (e) {}
-                await loadRecursive(fullLocalPath, fullEmPath);
-              } else {
-                const data = await fs.promises.readFile(fullLocalPath);
-                FS.writeFile(fullEmPath, new Uint8Array(data));
-              }
-          } catch (e) {
-              console.warn(`Failed to sync ${fullLocalPath}`, e);
-          }
-        }
-      };
-
-      await this._ensureEmDir(FS, guestSyncPath);
-      await loadRecursive(localSyncPath, guestSyncPath);
-      this.syncedPath = localSyncPath;
-      this.guestSyncedPath = guestSyncPath;
-    } catch (e) {
-      console.warn("Failed to load persistent files from ZenFS:", e);
+    if (this.iframe.contentWindow.showStatus) {
+        this.iframe.contentWindow.showStatus("Sync complete.", 1000);
     }
 
     // 2. Mount iframe's FS to host ZenFS
@@ -164,16 +177,29 @@ export class DosBoxApp extends Application {
     if (!this.iframe || !this.iframe.contentWindow) return;
     const guestWindow = this.iframe.contentWindow;
 
-    let dosCommands = "c:\n";
+    let dosCommands = "";
+
+    // Mount all synced drives
+    for (const drive of this.syncedDrives) {
+        dosCommands += `mount ${drive.letter.toLowerCase()} ${drive.guest}\n`;
+    }
+
     if (this.executablePath) {
       const parts = this.executablePath.split("/").filter(Boolean);
+      const drivePart = parts[0].toUpperCase(); // e.g. "C:" or "A:"
       const exe = parts.pop();
-      const dirParts =
-        parts.length > 0 && parts[0].toUpperCase() === "C:"
-          ? parts.slice(1)
-          : parts;
+
+      const dirParts = drivePart.match(/^[A-Z]:$/) ? parts.slice(1) : parts;
       const dir = dirParts.join("\\");
-      dosCommands = `C:\ncd \\${dir}\n${exe} ${this.args.join(" ")}\n`;
+      const driveLetter = drivePart.charAt(0);
+
+      dosCommands += `${driveLetter}:\n`;
+      if (dir) {
+          dosCommands += `cd \\${dir}\n`;
+      }
+      dosCommands += `${exe} ${this.args.join(" ")}\n`;
+    } else {
+      dosCommands += "C:\n";
     }
 
     if (guestWindow.startWithCommands) {
@@ -184,7 +210,7 @@ export class DosBoxApp extends Application {
   async _onClose() {
     window.removeEventListener("message", this._boundHandleMessage);
 
-    if (this.isMounted && this.iframe && this.iframe.contentWindow) {
+    if (this.iframe && this.iframe.contentWindow && this.iframe.contentWindow.Module) {
       const FS = this.iframe.contentWindow.Module.FS;
 
       // 1. Collect files from iframe FS to sync back
@@ -211,14 +237,21 @@ export class DosBoxApp extends Application {
             }
         } catch (e) {}
       };
-      collectFiles(this.guestSyncedPath, this.guestSyncedPath, this.syncedPath);
+
+      for (const drive of this.syncedDrives) {
+          // Skip E: (CD-ROM) as it's typically read-only or an ISO we don't want to persist back to host ZenFS root
+          if (drive.letter === 'E') continue;
+          collectFiles(drive.guest, drive.guest, drive.local);
+      }
 
       // 2. Unmount from host ZenFS
-      try {
-        fs.umount(this.mountPath);
-        this.isMounted = false;
-      } catch (e) {
-        console.error("Failed to unmount DOSBox FS:", e);
+      if (this.isMounted) {
+          try {
+            fs.umount(this.mountPath);
+            this.isMounted = false;
+          } catch (e) {
+            console.error("Failed to unmount DOSBox FS:", e);
+          }
       }
 
       // 3. Persist changed files back to host ZenFS (IndexedDB)
@@ -232,9 +265,13 @@ export class DosBoxApp extends Application {
         await fs.promises.writeFile(targetPath, item.data);
       }
 
-      document.dispatchEvent(
-        new CustomEvent("zen-fs-change", { detail: { path: this.syncedPath } }),
-      );
+      // Notify system of changes for each writable drive
+      for (const drive of this.syncedDrives) {
+          if (drive.letter === 'E') continue;
+          document.dispatchEvent(
+            new CustomEvent("zen-fs-change", { detail: { path: drive.local } }),
+          );
+      }
     }
   }
 
