@@ -6,15 +6,17 @@ This guide details how to integrate **Boxedwine**, a Linux emulator that runs WI
 
 Boxedwine requires several core files to run. These should be placed in `public/apps/boxedwine/`.
 
-*   **boxedwine.wasm**: The core WebAssembly engine.
-*   **boxedwine.js**: The Emscripten glue code.
-*   **boxedwine.zip**: The root filesystem containing a minimal Linux environment and WINE.
+### Mandatory Files:
+*   **`public/apps/boxedwine/boxedwine.wasm`**: The core WebAssembly engine.
+*   **`public/apps/boxedwine/boxedwine.js`**: The Emscripten glue code.
+*   **`public/apps/boxedwine/boxedwine.zip`**: The root filesystem (approx. 36MB).
 
 You can download the latest versions (e.g., 25R1) from [boxedwine.org](http://boxedwine.org/).
 
 ### Demo Game: SkiFree
 To test the implementation, you can use **SkiFree** (a 32-bit classic).
-*   Place `ski32.exe` in `/C:/Games/SkiFree/` within the virtual filesystem.
+*   Place `ski32.exe` in `public/games/win32/skifree/ski32.exe`.
+*   The system will automatically install it to `/C:/Games/SkiFree/SKI32.EXE` on first boot.
 
 ## 2. Host Environment (`host.html`)
 
