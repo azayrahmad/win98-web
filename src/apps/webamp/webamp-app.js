@@ -1,18 +1,8 @@
 import { Application } from '../../system/application.js';
-import {
-  createTaskbarButton,
-  removeTaskbarButton,
-  updateTaskbarButton,
-} from '../../shell/taskbar/taskbar.js';
 import { ICONS } from '../../config/icons.js';
-import { appManager } from '../../system/app-manager.js';
 import { getWebampMenuItems } from './webamp.js';
 import { isZenFSPath, getZenFSFileUrl, getZenFSFileAsText } from '../../system/zenfs-utils.js';
-
-let webampInstance = null;
-let webampContainer = null;
-let webampTaskbarButton = null;
-let isMinimized = false;
+import './webamp.css';
 
 export class WebampApp extends Application {
   static config = {
@@ -35,6 +25,12 @@ export class WebampApp extends Application {
     super(config);
     this.hasTaskbarButton = true;
     this.blobUrls = [];
+    this.webampInstance = null;
+    this.webampContainer = null;
+  }
+
+  _getWindowId(filePath) {
+    return "webamp-app-window";
   }
 
   _revokeBlobUrls() {
@@ -43,14 +39,33 @@ export class WebampApp extends Application {
   }
 
   _createWindow() {
-    // Webamp doesn't use a standard OS-GUI window, it renders directly to the body.
-    // We manage its container and lifecycle here.
-    return null; // Return null to prevent default window creation.
+    const win = new $Window({
+      id: "webamp-app-window",
+      title: this.title,
+      icons: this.icon,
+      resizable: false,
+      maximizable: false,
+      width: 275,
+      height: 116,
+    });
+    win.element.classList.add("webamp-window");
+
+    // Disable window animations for Webamp
+    win.animateTitlebar = (from, to, callback) => {
+      if (callback) callback();
+    };
+
+    return win;
   }
 
-  async _onLaunch(filePath) {
+  _onLaunch(filePath) {
+    this._doLaunch(filePath);
+  }
+
+  async _doLaunch(filePath) {
     const handleFile = async (path) => {
       if (!path) return;
+      if (!this.webampInstance) return;
 
       if (path instanceof File) {
         const track = {
@@ -60,7 +75,7 @@ export class WebampApp extends Application {
           },
           url: URL.createObjectURL(path),
         };
-        webampInstance.setTracksToPlay([track]);
+        this.webampInstance.setTracksToPlay([track]);
         return;
       }
 
@@ -101,7 +116,7 @@ export class WebampApp extends Application {
                 url: url,
               };
             }));
-            webampInstance.setTracksToPlay(tracks);
+            this.webampInstance.setTracksToPlay(tracks);
           } catch (error) {
             console.error("Error loading M3U playlist:", error);
           }
@@ -120,7 +135,7 @@ export class WebampApp extends Application {
             },
             url: url,
           };
-          webampInstance.setTracksToPlay([track]);
+          this.webampInstance.setTracksToPlay([track]);
         }
       } else if (path && typeof path === "object") {
         // Handle virtual file object (e.g. from briefcase)
@@ -131,32 +146,27 @@ export class WebampApp extends Application {
           },
           url: path.contentUrl || path.content,
         };
-        webampInstance.setTracksToPlay([track]);
+        this.webampInstance.setTracksToPlay([track]);
       }
     };
 
-    if (webampInstance) {
+    if (this.webampInstance) {
       this.showWebamp();
       handleFile(filePath);
       return;
     }
 
-    return new Promise((resolve, reject) => {
-      webampContainer = document.createElement("div");
-      webampContainer.id = "webamp-container";
-      webampContainer.style.position = "absolute";
-      webampContainer.style.zIndex = $Window.Z_INDEX++;
-      webampContainer.style.left = "50px";
-      webampContainer.style.top = "50px";
-      document.body.appendChild(webampContainer);
+    try {
+      // Create container in body initially, then move it to the window
+      // Webamp sometimes has issues rendering directly into deeply nested elements
+      const container = document.createElement("div");
+      container.id = "webamp-container";
+      document.body.appendChild(container);
+      this.webampContainer = container;
 
-      webampContainer.addEventListener(
-        "mousedown",
-        () => {
-          webampContainer.style.zIndex = $Window.Z_INDEX++;
-        },
-        true,
-      );
+      // Ensure no stale webamp nodes exist before rendering
+      const staleWebamp = document.getElementById("webamp");
+      if (staleWebamp) staleWebamp.remove();
 
       const initialTracks = [
         {
@@ -172,7 +182,7 @@ export class WebampApp extends Application {
         .then((Webamp) => {
           const { default: WebampClass } = Webamp;
 
-          webampInstance = new WebampClass({
+          this.webampInstance = new WebampClass({
             availableSkins: [
               {
                 url: "https://archive.org/cors/winampskin_Expensive_Hi-Fi_1_2/ExpensiveHi-Fi.wsz",
@@ -190,85 +200,121 @@ export class WebampApp extends Application {
             initialTracks,
           });
 
-          webampInstance.onMinimize(() => this.minimizeWebamp());
-          webampInstance.onClose(() => appManager.closeApp(this.id));
+          this.webampInstance.onMinimize(() => this.win.minimize());
+          this.webampInstance.onClose(() => this.win.close());
 
-          webampInstance
-            .renderWhenReady(webampContainer)
+          this.webampInstance
+            .renderWhenReady(this.webampContainer)
             .then(() => {
-              this.setupTaskbarButton();
+              // Move the entire container into our window
+              this.win.$content.append(this.webampContainer);
+
+              // Reset container positioning to be relative to the window content area
+              this.webampContainer.style.position = "absolute";
+              this.webampContainer.style.left = "0";
+              this.webampContainer.style.top = "0";
+
+              // Ensure Webamp root is inside the container
+              const webampNode = document.getElementById("webamp");
+              if (webampNode && webampNode.parentElement !== this.webampContainer) {
+                this.webampContainer.appendChild(webampNode);
+              }
+
+              // Webamp windows (Main, EQ, PL) are absolutely positioned.
+              // When reparented, we want them to be at 0,0 relative to our window content area.
+              const resetWebampPositions = () => {
+                const windows = ["#main-window", "#equalizer-window", "#playlist-window"];
+                windows.forEach(selector => {
+                  const el = document.querySelector(selector);
+                  if (el) {
+                    el.style.left = "0px";
+                    el.style.top = "0px";
+                  }
+                });
+              };
+              resetWebampPositions();
+
+              // Sync focus state
+              this.win.onFocus(() => {
+                const webampNode = document.getElementById("webamp");
+                if (webampNode) webampNode.classList.remove("webamp-inactive");
+              });
+              this.win.onBlur(() => {
+                const webampNode = document.getElementById("webamp");
+                if (webampNode) webampNode.classList.add("webamp-inactive");
+              });
+
+              // Initial focus state
+              const webampNodeInitial = document.getElementById("webamp");
+              if (webampNodeInitial) {
+                if (this.win.element.classList.contains("focused")) {
+                  webampNodeInitial.classList.remove("webamp-inactive");
+                } else {
+                  webampNodeInitial.classList.add("webamp-inactive");
+                }
+              }
+
+              // Support Shade Mode and Resizing of the system window to match Webamp
+              const updateWindowSize = () => {
+                const mainWin = document.getElementById("main-window");
+                if (mainWin) {
+                  const isShade = mainWin.classList.contains("shade");
+                  this.win.setDimensions({
+                    outerWidth: 275,
+                    outerHeight: isShade ? 14 : 116
+                  });
+                }
+              };
+
+              const mainWin = document.getElementById("main-window");
+              if (mainWin) {
+                this.shadeObserver = new MutationObserver(updateWindowSize);
+                this.shadeObserver.observe(mainWin, { attributes: true, attributeFilter: ["class"] });
+                updateWindowSize();
+              }
+
               this.showWebamp();
               handleFile(filePath);
-              resolve(); // Resolve the promise once Webamp is ready
             })
-            .catch(reject);
+            .catch(err => console.error("WebampApp: render error", err));
         })
-        .catch(reject);
-    });
-  }
-
-  setupTaskbarButton() {
-    const taskbarButtonId = "webamp-taskbar-button";
-    webampTaskbarButton = createTaskbarButton(
-      taskbarButtonId,
-      ICONS.webamp,
-      "Winamp",
-    );
-
-    if (webampTaskbarButton) {
-      webampTaskbarButton.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        if (isMinimized) {
-          this.showWebamp();
-        } else {
-          this.minimizeWebamp();
-        }
-      });
+        .catch(err => console.error("WebampApp: import error", err));
+    } catch (err) {
+      console.error("WebampApp: launch error", err);
     }
   }
 
   showWebamp() {
-    const webampElement = document.getElementById("webamp");
-    if (!webampElement) return;
-
-    webampElement.style.display = "block";
-    webampElement.style.visibility = "visible";
-    isMinimized = false;
-    webampContainer.style.zIndex = $Window.Z_INDEX++;
-    if (webampTaskbarButton) {
-      updateTaskbarButton("webamp-taskbar-button", true, false);
+    if (this.win) {
+      this.win.unminimize();
+      this.win.focus();
     }
   }
 
   minimizeWebamp() {
-    const webampElement = document.getElementById("webamp");
-    if (!webampElement) return;
+    if (this.win) {
+      this.win.minimize();
+    }
+  }
 
-    webampElement.style.display = "none";
-    webampElement.style.visibility = "hidden";
-    isMinimized = true;
-    if (webampTaskbarButton) {
-      updateTaskbarButton("webamp-taskbar-button", false, true);
+  close() {
+    if (this.win) {
+      this.win.close();
     }
   }
 
   _cleanup() {
     this._revokeBlobUrls();
-    if (webampContainer) {
-      webampContainer.remove();
-      webampContainer = null;
+    this.webampContainer = null;
+
+    if (this.shadeObserver) {
+      this.shadeObserver.disconnect();
+      this.shadeObserver = null;
     }
 
-    if (webampInstance) {
-      webampInstance.dispose();
-      webampInstance = null;
+    if (this.webampInstance) {
+      this.webampInstance.dispose();
+      this.webampInstance = null;
     }
-
-    if (webampTaskbarButton) {
-      removeTaskbarButton("webamp-taskbar-button");
-      webampTaskbarButton = null;
-    }
-    isMinimized = false;
   }
 }
