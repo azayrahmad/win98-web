@@ -29,6 +29,10 @@ export class WebampApp extends Application {
     this.webampContainer = null;
   }
 
+  _getWindowId(filePath) {
+    return "webamp-app-window";
+  }
+
   _revokeBlobUrls() {
     this.blobUrls.forEach((url) => URL.revokeObjectURL(url));
     this.blobUrls = [];
@@ -36,6 +40,7 @@ export class WebampApp extends Application {
 
   _createWindow() {
     const win = new $Window({
+      id: "webamp-app-window",
       title: this.title,
       icons: this.icon,
       resizable: false,
@@ -53,7 +58,11 @@ export class WebampApp extends Application {
     return win;
   }
 
-  async _onLaunch(filePath) {
+  _onLaunch(filePath) {
+    this._doLaunch(filePath);
+  }
+
+  async _doLaunch(filePath) {
     const handleFile = async (path) => {
       if (!path) return;
       if (!this.webampInstance) return;
@@ -147,9 +156,17 @@ export class WebampApp extends Application {
       return;
     }
 
-    return new Promise((resolve, reject) => {
-      this.webampContainer = this.win.$content[0];
-      this.webampContainer.id = "webamp-container";
+    try {
+      // Create container in body initially, then move it to the window
+      // Webamp sometimes has issues rendering directly into deeply nested elements
+      const container = document.createElement("div");
+      container.id = "webamp-container";
+      document.body.appendChild(container);
+      this.webampContainer = container;
+
+      // Ensure no stale webamp nodes exist before rendering
+      const staleWebamp = document.getElementById("webamp");
+      if (staleWebamp) staleWebamp.remove();
 
       const initialTracks = [
         {
@@ -189,14 +206,82 @@ export class WebampApp extends Application {
           this.webampInstance
             .renderWhenReady(this.webampContainer)
             .then(() => {
+              // Move the entire container into our window
+              this.win.$content.append(this.webampContainer);
+
+              // Reset container positioning to be relative to the window content area
+              this.webampContainer.style.position = "absolute";
+              this.webampContainer.style.left = "0";
+              this.webampContainer.style.top = "0";
+
+              // Ensure Webamp root is inside the container
+              const webampNode = document.getElementById("webamp");
+              if (webampNode && webampNode.parentElement !== this.webampContainer) {
+                this.webampContainer.appendChild(webampNode);
+              }
+
+              // Webamp windows (Main, EQ, PL) are absolutely positioned.
+              // When reparented, we want them to be at 0,0 relative to our window content area.
+              const resetWebampPositions = () => {
+                const windows = ["#main-window", "#equalizer-window", "#playlist-window"];
+                windows.forEach(selector => {
+                  const el = document.querySelector(selector);
+                  if (el) {
+                    el.style.left = "0px";
+                    el.style.top = "0px";
+                  }
+                });
+              };
+              resetWebampPositions();
+
+              // Sync focus state
+              this.win.onFocus(() => {
+                const webampNode = document.getElementById("webamp");
+                if (webampNode) webampNode.classList.remove("webamp-inactive");
+              });
+              this.win.onBlur(() => {
+                const webampNode = document.getElementById("webamp");
+                if (webampNode) webampNode.classList.add("webamp-inactive");
+              });
+
+              // Initial focus state
+              const webampNodeInitial = document.getElementById("webamp");
+              if (webampNodeInitial) {
+                if (this.win.element.classList.contains("focused")) {
+                  webampNodeInitial.classList.remove("webamp-inactive");
+                } else {
+                  webampNodeInitial.classList.add("webamp-inactive");
+                }
+              }
+
+              // Support Shade Mode and Resizing of the system window to match Webamp
+              const updateWindowSize = () => {
+                const mainWin = document.getElementById("main-window");
+                if (mainWin) {
+                  const isShade = mainWin.classList.contains("shade");
+                  this.win.setDimensions({
+                    outerWidth: 275,
+                    outerHeight: isShade ? 14 : 116
+                  });
+                }
+              };
+
+              const mainWin = document.getElementById("main-window");
+              if (mainWin) {
+                this.shadeObserver = new MutationObserver(updateWindowSize);
+                this.shadeObserver.observe(mainWin, { attributes: true, attributeFilter: ["class"] });
+                updateWindowSize();
+              }
+
               this.showWebamp();
               handleFile(filePath);
-              resolve();
             })
-            .catch(reject);
+            .catch(err => console.error("WebampApp: render error", err));
         })
-        .catch(reject);
-    });
+        .catch(err => console.error("WebampApp: import error", err));
+    } catch (err) {
+      console.error("WebampApp: launch error", err);
+    }
   }
 
   showWebamp() {
@@ -221,6 +306,11 @@ export class WebampApp extends Application {
   _cleanup() {
     this._revokeBlobUrls();
     this.webampContainer = null;
+
+    if (this.shadeObserver) {
+      this.shadeObserver.disconnect();
+      this.shadeObserver = null;
+    }
 
     if (this.webampInstance) {
       this.webampInstance.dispose();

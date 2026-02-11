@@ -2,6 +2,7 @@
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
+    pointer-events: none !important;
 }
 
 .webamp-window .window-titlebar {
@@ -13,11 +14,20 @@
     margin: 0 !important;
     overflow: visible !important;
     background: transparent !important;
+    pointer-events: auto !important;
 }
 
-/* Ensure Webamp container doesn't have its own positioning that conflicts with the window */
 #webamp-container {
-    position: relative !important;
+    position: absolute !important;
     top: 0 !important;
     left: 0 !important;
+}
+
+#webamp {
+    position: absolute !important;
+}
+
+#webamp.webamp-inactive .window,
+#webamp.webamp-inactive .gen-window {
+    filter: saturate(0.5) brightness(0.9);
 }
