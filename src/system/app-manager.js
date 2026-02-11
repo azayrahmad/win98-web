@@ -37,10 +37,35 @@ const appManager = {
 };
 
 export async function launchApp(appId, data = null) {
-  const launchId = `launch-${appId}-${Date.now()}`;
+  let actualAppId = appId;
+
+  // Smart EXE launching: check if we should use Boxedwine instead of DOSBox
+  if (appId === "dos-box" && typeof data === "string" && data.toLowerCase().endsWith(".exe")) {
+    try {
+      const { getExeType } = await import('./exe-utils.js');
+      const exeType = await getExeType(data);
+      if (exeType === 'WIN32' || exeType === 'WIN16') {
+        actualAppId = "boxedwine";
+      }
+    } catch (e) {
+      console.warn("Failed to determine EXE type, defaulting to DOSBox", e);
+    }
+  } else if (appId === "dos-box" && data && data.path && data.path.toLowerCase().endsWith(".exe")) {
+    try {
+      const { getExeType } = await import('./exe-utils.js');
+      const exeType = await getExeType(data.path);
+      if (exeType === 'WIN32' || exeType === 'WIN16') {
+        actualAppId = "boxedwine";
+      }
+    } catch (e) {
+      console.warn("Failed to determine EXE type, defaulting to DOSBox", e);
+    }
+  }
+
+  const launchId = `launch-${actualAppId}-${Date.now()}`;
   requestWaitState(launchId);
 
-  const appConfig = appManager.getAppConfig(appId);
+  const appConfig = appManager.getAppConfig(actualAppId);
   playSound("Open");
   if (!appConfig) {
     console.error(`No application config found for ID: ${appId}`);

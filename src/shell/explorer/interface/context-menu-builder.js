@@ -89,6 +89,19 @@ export class ContextMenuBuilder {
         },
       ];
 
+      if (path.toLowerCase().endsWith(".exe") || path.toLowerCase().endsWith(".com")) {
+        menuItems.push(
+          {
+            label: "Open with DOSBox",
+            action: () => window.System.launchApp("dos-box", path),
+          },
+          {
+            label: "Open with Boxedwine",
+            action: () => window.System.launchApp("boxedwine", path),
+          }
+        );
+      }
+
       if (isFloppy) {
         if (isFloppyMounted) {
           menuItems.push({

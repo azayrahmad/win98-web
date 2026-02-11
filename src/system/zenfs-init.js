@@ -167,6 +167,7 @@ export async function initFileSystem(onProgress) {
       { name: "Quake.lnk.json", appId: "quake" },
       { name: "Prince of Persia.lnk.json", appId: "prince-of-persia" },
       { name: "Wolfenstein 3D.lnk.json", appId: "wolf3d" },
+      { name: "SkiFree.lnk.json", appId: "skifree" },
     ];
 
     for (const game of games) {
@@ -213,6 +214,23 @@ export async function initFileSystem(onProgress) {
         } catch (e) {
           console.error(`Failed to install ${file}:`, e);
         }
+      }
+    }
+
+    // Install SkiFree to C:\Games\SkiFree if it doesn't exist
+    if (!(await existsAsync("/C:/Games/SkiFree"))) {
+      if (onProgress) onProgress("Installing SkiFree...");
+      await fs.promises.mkdir("/C:/Games/SkiFree", { recursive: true });
+      try {
+        const response = await fetch(`games/win32/skifree/ski32.exe`);
+        if (response.ok) {
+            const buffer = await response.arrayBuffer();
+            await fs.promises.writeFile(`/C:/Games/SkiFree/SKI32.EXE`, new Uint8Array(buffer));
+        } else {
+            console.warn("SkiFree executable not found on server. Skipping installation.");
+        }
+      } catch (e) {
+        console.error(`Failed to install SkiFree:`, e);
       }
     }
 

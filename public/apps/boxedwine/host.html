@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <title>Boxedwine Host</title>
+    <style>
+        body { margin: 0; padding: 0; background: black; color: white; overflow: hidden; font-family: sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; image-rendering: pixelated; }
+        #status { position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.5); padding: 5px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.5s; z-index: 10; }
+        #status.visible { opacity: 1; }
+        #loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #c0c0c0; color: black;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 20;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db;
+            border-radius: 50%; animation: spin 2s linear infinite; margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loading-status">Loading Boxedwine...</div>
+        <progress id="progress" value="0" max="100" style="width: 200px; margin-top: 10px;"></progress>
+    </div>
+    <div id="status">Initializing...</div>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+
+    <script>
+        const statusEl = document.getElementById('status');
+        const loadingStatusEl = document.getElementById('loading-status');
+        const progressEl = document.getElementById('progress');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        let statusTimeout;
+
+        function showStatus(text, duration = 3000) {
+            statusEl.innerText = text;
+            statusEl.classList.add('visible');
+            clearTimeout(statusTimeout);
+            if (duration > 0) {
+                statusTimeout = setTimeout(() => {
+                    statusEl.classList.remove('visible');
+                }, duration);
+            }
+        }
+
+        function updateLoadingStatus(text, progress) {
+            loadingStatusEl.innerText = text;
+            if (progress !== undefined) {
+                progressEl.value = progress;
+            }
+        }
+
+        window.Module = {
+            preRun: [],
+            postRun: [],
+            print: (function() {
+                return function(text) {
+                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                    console.log(text);
+                };
+            })(),
+            printErr: function(text) {
+                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                console.error(text);
+            },
+            canvas: (function() {
+                var canvas = document.getElementById('canvas');
+                return canvas;
+            })(),
+            setStatus: function(text) {
+                if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+                if (text === Module.setStatus.last.text) return;
+                var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+                var now = Date.now();
+                if (m && now - Module.setStatus.last.time < 30) return;
+                Module.setStatus.last.time = now;
+                Module.setStatus.last.text = text;
+                if (m) {
+                    text = m[1];
+                    updateLoadingStatus(text, (parseInt(m[2]) / parseInt(m[4])) * 100);
+                } else {
+                    updateLoadingStatus(text);
+                }
+            },
+            totalDependencies: 0,
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            },
+            onRuntimeInitialized: function() {
+                console.log("Boxedwine Runtime Initialized");
+            }
+        };
+
+        Module["addRunDependency"]("setupBoxedWine");
+
+        async function loadBinary(url) {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Failed to load ${url}`);
+            const contentLength = response.headers.get('content-length');
+            const total = parseInt(contentLength, 10);
+
+            if (!total) return await response.arrayBuffer();
+
+            let loaded = 0;
+            const reader = response.body.getReader();
+            const chunks = [];
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                loaded += value.length;
+                updateLoadingStatus(`Downloading ${url.split('/').pop()}...`, (loaded / total) * 100);
+            }
+
+            const result = new Uint8Array(loaded);
+            let offset = 0;
+            for (const chunk of chunks) {
+                result.set(chunk, offset);
+                offset += chunk.length;
+            }
+            return result.buffer;
+        }
+
+        window.startWithArgs = async function(args) {
+            loadingOverlay.style.display = 'none';
+            showStatus("Starting Boxedwine...", 2000);
+
+            Module['arguments'] = args;
+            Module["removeRunDependency"]("setupBoxedWine");
+        };
+
+        async function init() {
+            try {
+                updateLoadingStatus("Loading core filesystem...", 0);
+                const rootZipData = await loadBinary('boxedwine.zip');
+
+                Module.preRun.push(() => {
+                    Module.FS.createDataFile("/", "boxedwine.zip", new Uint8Array(rootZipData), true, true);
+                });
+
+                updateLoadingStatus("Loading Boxedwine engine...", 100);
+                const script = document.createElement('script');
+                script.src = 'boxedwine.js';
+                script.onerror = () => {
+                    updateLoadingStatus("Error: boxedwine.js not found. Please follow instructions to add binaries.");
+                };
+                script.onload = () => {
+                     window.parent.postMessage({ type: "BOXEDWINE_READY" }, "*");
+                };
+                document.head.appendChild(script);
+            } catch (e) {
+                console.error("Failed to initialize Boxedwine", e);
+                updateLoadingStatus("Error: boxedwine.zip not found. Please follow instructions to add binaries.");
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
