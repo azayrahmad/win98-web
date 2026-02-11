@@ -14,6 +14,7 @@ let webampContainer = null;
 let webampTaskbarButton = null;
 let webampTaskbarClickHandler = null;
 let webampFocusHandler = null;
+let webampElementMouseDownHandler = null;
 let isMinimized = false;
 
 const focusWebampContainer = () => {
@@ -28,13 +29,18 @@ const focusWebampContainer = () => {
   }
 };
 
-const isWebampTarget = (target) => {
-  if (!target) return false;
+const isWebampEvent = (event) => {
+  const path = event?.composedPath?.() || [];
 
-  return Boolean(
-    target.closest?.("#webamp") ||
-    target.closest?.("#webamp-container"),
-  );
+  return path.some((node) => (
+    node?.id === "webamp" ||
+    node?.id === "webamp-container"
+  ));
+};
+
+const isWebampTaskbarEvent = (event) => {
+  const path = event?.composedPath?.() || [];
+  return path.includes(webampTaskbarButton);
 };
 
 export class WebampApp extends Application {
@@ -228,6 +234,7 @@ export class WebampApp extends Application {
               this._centerWebampContainer();
               this.setupTaskbarButton();
               this._setupFocusTracking();
+              this._setupWebampElementFocus();
               this.showWebamp();
               handleFile(filePath);
               resolve(); // Resolve the promise once Webamp is ready
@@ -244,7 +251,7 @@ export class WebampApp extends Application {
     webampFocusHandler = (event) => {
       if (isMinimized) return;
 
-      if (isWebampTarget(event.target)) {
+      if (isWebampEvent(event)) {
         focusWebampContainer();
         if (webampTaskbarButton) {
           updateTaskbarButton("webamp", true, false);
@@ -252,7 +259,7 @@ export class WebampApp extends Application {
         return;
       }
 
-      if (webampTaskbarButton?.contains(event.target)) {
+      if (isWebampTaskbarEvent(event)) {
         return;
       }
 
@@ -262,6 +269,22 @@ export class WebampApp extends Application {
     };
 
     document.addEventListener("mousedown", webampFocusHandler, true);
+  }
+
+  _setupWebampElementFocus() {
+    const webampElement = document.getElementById("webamp");
+    if (!webampElement || webampElementMouseDownHandler) return;
+
+    webampElementMouseDownHandler = () => {
+      if (isMinimized) return;
+
+      focusWebampContainer();
+      if (webampTaskbarButton) {
+        updateTaskbarButton("webamp", true, false);
+      }
+    };
+
+    webampElement.addEventListener("mousedown", webampElementMouseDownHandler, true);
   }
 
   setupTaskbarButton() {
@@ -350,6 +373,12 @@ export class WebampApp extends Application {
       document.removeEventListener("mousedown", webampFocusHandler, true);
       webampFocusHandler = null;
     }
+
+    const webampElement = document.getElementById("webamp");
+    if (webampElement && webampElementMouseDownHandler) {
+      webampElement.removeEventListener("mousedown", webampElementMouseDownHandler, true);
+    }
+    webampElementMouseDownHandler = null;
 
     isMinimized = false;
   }
