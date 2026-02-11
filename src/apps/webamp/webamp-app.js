@@ -37,11 +37,15 @@ export class WebampApp extends Application {
     this.blobUrls = [];
   }
 
+  _getWindowId(filePath) {
+    return "webamp-window";
+  }
+
   _createWindow() {
     if (!webampContainer) {
       webampContainer = document.createElement("div");
-      webampContainer.id = "webamp-container";
-      webampContainer.classList.add("window", "os-window", "app-window");
+      webampContainer.id = "webamp-window";
+      webampContainer.classList.add("app-window");
       webampContainer.style.position = "absolute";
       webampContainer.style.zIndex = window.System
         ? window.System.incrementZIndex()
@@ -258,15 +262,50 @@ export class WebampApp extends Application {
           this.webampInstance = webampInstance;
 
           webampInstance.onMinimize(() => {
+            if (this._isHandlingWebampState) return;
             if (this.win) this.win.minimize();
           });
           webampInstance.onClose(() => {
             if (this.win) this.win.close();
           });
 
+          // Move the webamp element into our container once it's rendered
+          // Webamp version 2.x often ignores the container passed to renderWhenReady
+          // and instead uses its own div.
           webampInstance
             .renderWhenReady(webampContainer)
             .then(() => {
+              // Ensure the webamp element is inside our container
+              const actualWebamp = document.getElementById("webamp");
+              if (
+                actualWebamp &&
+                actualWebamp !== webampContainer &&
+                actualWebamp.parentElement !== webampContainer
+              ) {
+                webampContainer.appendChild(actualWebamp);
+              }
+              // Center the window after rendering
+              if (this.win && this.win.center) {
+                this.win.center();
+              }
+
+              // Ensure internal Winamp windows are correctly positioned within our container
+              const mainWin = actualWebamp.querySelector("#main-window");
+              if (mainWin) {
+                mainWin.style.left = "0px";
+                mainWin.style.top = "0px";
+              }
+              const eqWin = actualWebamp.querySelector("#equalizer-window");
+              if (eqWin) {
+                eqWin.style.left = "0px";
+                eqWin.style.top = "116px";
+              }
+              const plWin = actualWebamp.querySelector("#playlist-window");
+              if (plWin) {
+                plWin.style.left = "0px";
+                plWin.style.top = "232px";
+              }
+
               this.showWebamp();
               handleFile(filePath);
               resolve(); // Resolve the promise once Webamp is ready
@@ -281,8 +320,17 @@ export class WebampApp extends Application {
     if (webampContainer) {
       webampContainer.style.display = "block";
       webampContainer.style.visibility = "visible";
+      webampContainer.isMinimized = false;
+      webampContainer.classList.add("focused");
     }
     this.isMinimized = false;
+
+    if (this.webampInstance && !this._isHandlingWebampState) {
+      this._isHandlingWebampState = true;
+      this.webampInstance.restore();
+      this._isHandlingWebampState = false;
+    }
+
     this.bringToFront();
     if (this._onFocusCallback) this._onFocusCallback();
   }
@@ -291,8 +339,17 @@ export class WebampApp extends Application {
     if (webampContainer) {
       webampContainer.style.display = "none";
       webampContainer.style.visibility = "hidden";
+      webampContainer.isMinimized = true;
+      webampContainer.classList.remove("focused");
     }
     this.isMinimized = true;
+
+    if (this.webampInstance && !this._isHandlingWebampState) {
+      this._isHandlingWebampState = true;
+      this.webampInstance.minimize();
+      this._isHandlingWebampState = false;
+    }
+
     if (this._onBlurCallback) this._onBlurCallback();
   }
 
