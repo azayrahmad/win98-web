@@ -16,7 +16,14 @@ let isMinimized = false;
 
 const focusWebampContainer = () => {
   if (!webampContainer) return;
-  webampContainer.style.zIndex = $Window.Z_INDEX++;
+
+  const zIndex = $Window.Z_INDEX++;
+  webampContainer.style.zIndex = zIndex;
+
+  const webampElement = document.getElementById("webamp");
+  if (webampElement) {
+    webampElement.style.zIndex = zIndex;
+  }
 };
 
 export class WebampApp extends Application {
@@ -220,7 +227,7 @@ export class WebampApp extends Application {
   }
 
   setupTaskbarButton() {
-    const taskbarButtonId = "webamp-taskbar-button";
+    const taskbarButtonId = "webamp";
     webampTaskbarButton = createTaskbarButton(
       taskbarButtonId,
       ICONS.webamp,
@@ -243,23 +250,35 @@ export class WebampApp extends Application {
   showWebamp() {
     if (!webampContainer) return;
 
+    const webampElement = document.getElementById("webamp");
+
     webampContainer.style.display = "block";
     webampContainer.style.visibility = "visible";
+    if (webampElement) {
+      webampElement.style.display = "block";
+      webampElement.style.visibility = "visible";
+    }
     isMinimized = false;
     focusWebampContainer();
     if (webampTaskbarButton) {
-      updateTaskbarButton("webamp-taskbar-button", true, false);
+      updateTaskbarButton("webamp", true, false);
     }
   }
 
   minimizeWebamp() {
     if (!webampContainer) return;
 
+    const webampElement = document.getElementById("webamp");
+
     webampContainer.style.display = "none";
     webampContainer.style.visibility = "hidden";
+    if (webampElement) {
+      webampElement.style.display = "none";
+      webampElement.style.visibility = "hidden";
+    }
     isMinimized = true;
     if (webampTaskbarButton) {
-      updateTaskbarButton("webamp-taskbar-button", false, true);
+      updateTaskbarButton("webamp", false, true);
     }
   }
 
@@ -276,7 +295,7 @@ export class WebampApp extends Application {
     }
 
     if (webampTaskbarButton) {
-      removeTaskbarButton("webamp-taskbar-button");
+      removeTaskbarButton("webamp");
       webampTaskbarButton = null;
     }
     isMinimized = false;
