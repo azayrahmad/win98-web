@@ -14,6 +14,11 @@ let webampContainer = null;
 let webampTaskbarButton = null;
 let isMinimized = false;
 
+const focusWebampContainer = () => {
+  if (!webampContainer) return;
+  webampContainer.style.zIndex = $Window.Z_INDEX++;
+};
+
 export class WebampApp extends Application {
   static config = {
     id: "webamp",
@@ -46,6 +51,16 @@ export class WebampApp extends Application {
     // Webamp doesn't use a standard OS-GUI window, it renders directly to the body.
     // We manage its container and lifecycle here.
     return null; // Return null to prevent default window creation.
+  }
+
+  _centerWebampContainer() {
+    if (!webampContainer) return;
+
+    const webampElement = webampContainer.querySelector("#webamp") || webampContainer;
+    const { width, height } = webampElement.getBoundingClientRect();
+
+    webampContainer.style.left = `${Math.max(0, Math.round((window.innerWidth - width) / 2))}px`;
+    webampContainer.style.top = `${Math.max(0, Math.round((window.innerHeight - height) / 2))}px`;
   }
 
   async _onLaunch(filePath) {
@@ -145,16 +160,12 @@ export class WebampApp extends Application {
       webampContainer = document.createElement("div");
       webampContainer.id = "webamp-container";
       webampContainer.style.position = "absolute";
-      webampContainer.style.zIndex = $Window.Z_INDEX++;
-      webampContainer.style.left = "50px";
-      webampContainer.style.top = "50px";
+      focusWebampContainer();
       document.body.appendChild(webampContainer);
 
       webampContainer.addEventListener(
         "mousedown",
-        () => {
-          webampContainer.style.zIndex = $Window.Z_INDEX++;
-        },
+        focusWebampContainer,
         true,
       );
 
@@ -196,6 +207,7 @@ export class WebampApp extends Application {
           webampInstance
             .renderWhenReady(webampContainer)
             .then(() => {
+              this._centerWebampContainer();
               this.setupTaskbarButton();
               this.showWebamp();
               handleFile(filePath);
@@ -229,24 +241,22 @@ export class WebampApp extends Application {
   }
 
   showWebamp() {
-    const webampElement = document.getElementById("webamp");
-    if (!webampElement) return;
+    if (!webampContainer) return;
 
-    webampElement.style.display = "block";
-    webampElement.style.visibility = "visible";
+    webampContainer.style.display = "block";
+    webampContainer.style.visibility = "visible";
     isMinimized = false;
-    webampContainer.style.zIndex = $Window.Z_INDEX++;
+    focusWebampContainer();
     if (webampTaskbarButton) {
       updateTaskbarButton("webamp-taskbar-button", true, false);
     }
   }
 
   minimizeWebamp() {
-    const webampElement = document.getElementById("webamp");
-    if (!webampElement) return;
+    if (!webampContainer) return;
 
-    webampElement.style.display = "none";
-    webampElement.style.visibility = "hidden";
+    webampContainer.style.display = "none";
+    webampContainer.style.visibility = "hidden";
     isMinimized = true;
     if (webampTaskbarButton) {
       updateTaskbarButton("webamp-taskbar-button", false, true);
