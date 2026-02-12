@@ -413,9 +413,12 @@ export class WordPadApp extends Application {
 
   async loadFile(path) {
     try {
-      const content = await getZenFSFileAsText(path);
+      let content = await getZenFSFileAsText(path);
       if (path.toLowerCase().endsWith(".rtf")) {
         try {
+          // Pre-process RTF to fix common parsing issues in @jonahschulte/rtf-toolkit
+          // 1. Remove spaces after opening braces that prevent destination recognition
+          content = content.replace(/\{\s+/g, "{");
           const doc = parseRTF(content);
           this.editor.innerHTML = toHTML(doc, { includeWrapper: false });
         } catch (parseError) {
