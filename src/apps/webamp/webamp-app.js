@@ -15,6 +15,7 @@ let webampTaskbarButton = null;
 let webampTaskbarClickHandler = null;
 let webampFocusHandler = null;
 let webampElementMouseDownHandler = null;
+let webampMenuObserver = null;
 let isMinimized = false;
 
 const focusWebampContainer = () => {
@@ -41,6 +42,18 @@ const isWebampEvent = (event) => {
 const isWebampTaskbarEvent = (event) => {
   const path = event?.composedPath?.() || [];
   return path.includes(webampTaskbarButton);
+};
+
+const bringWebampMenusToFront = () => {
+  const webampElement = document.getElementById("webamp");
+  if (!webampElement) return;
+
+  const webampZIndex = Number.parseInt(webampElement.style.zIndex || "0", 10) || 0;
+  const menuZIndex = webampZIndex + 1;
+
+  document.querySelectorAll(".webamp-context-menu").forEach((menuElement) => {
+    menuElement.style.zIndex = String(menuZIndex);
+  });
 };
 
 export class WebampApp extends Application {
@@ -235,6 +248,7 @@ export class WebampApp extends Application {
               this.setupTaskbarButton();
               this._setupFocusTracking();
               this._setupWebampElementFocus();
+              this._setupWebampMenuLayering();
               this.showWebamp();
               handleFile(filePath);
               resolve(); // Resolve the promise once Webamp is ready
@@ -287,6 +301,32 @@ export class WebampApp extends Application {
     webampElement.addEventListener("mousedown", webampElementMouseDownHandler, true);
   }
 
+  _setupWebampMenuLayering() {
+    if (webampMenuObserver) return;
+
+    webampMenuObserver = new MutationObserver((mutations) => {
+      const hasMenuMutation = mutations.some((mutation) => (
+        [...mutation.addedNodes].some((node) => (
+          node instanceof Element && (
+            node.matches?.(".webamp-context-menu") ||
+            node.querySelector?.(".webamp-context-menu")
+          )
+        ))
+      ));
+
+      if (!hasMenuMutation) return;
+
+      requestAnimationFrame(() => {
+        bringWebampMenusToFront();
+      });
+    });
+
+    webampMenuObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
   setupTaskbarButton() {
     const taskbarButtonId = "webamp";
     webampTaskbarButton = createTaskbarButton(
@@ -328,6 +368,8 @@ export class WebampApp extends Application {
     if (webampTaskbarButton) {
       updateTaskbarButton("webamp", true, false);
     }
+
+    bringWebampMenusToFront();
   }
 
   minimizeWebamp() {
@@ -379,6 +421,11 @@ export class WebampApp extends Application {
       webampElement.removeEventListener("mousedown", webampElementMouseDownHandler, true);
     }
     webampElementMouseDownHandler = null;
+
+    if (webampMenuObserver) {
+      webampMenuObserver.disconnect();
+      webampMenuObserver = null;
+    }
 
     isMinimized = false;
   }
