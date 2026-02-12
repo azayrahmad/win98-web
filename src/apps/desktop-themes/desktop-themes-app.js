@@ -1,4 +1,5 @@
 import { Application } from '../../system/application.js';
+import { fs } from "@zenfs/core";
 import { ICONS } from '../../config/icons.js';
 import { iconSchemes } from '../../config/icon-schemes.js';
 import {
@@ -11,6 +12,8 @@ import {
   getColorSchemeId,
   getActiveTheme,
   getIconSchemeName,
+  getSoundSchemeName,
+  getCursorSchemeId,
   getColorSchemes,
 } from '../../system/theme-manager.js';
 import {
@@ -21,6 +24,11 @@ import {
 } from '../display-properties/theme-preview.js';
 import { getItem, LOCAL_STORAGE_KEYS } from '../../system/local-storage.js';
 import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
+import { ShowFilePicker } from '../../shared/utils/file-picker.js';
+import {
+  getZenFSFileUrl,
+  isZenFSPath,
+} from '../../system/zenfs-utils.js';
 import {
   requestBusyState,
   releaseBusyState,
@@ -28,6 +36,8 @@ import {
 import screensaverManager from '../../system/screensaver-utils.js';
 import previewHtml from "./DesktopThemesPreview.html?raw";
 import "./desktop-themes.css";
+
+const THEME_PATH = "/C:/Program Files/Plus!/Themes";
 
 export class DesktopThemesApp extends Application {
   static config = {
@@ -204,6 +214,10 @@ export class DesktopThemesApp extends Application {
     const currentColorSchemeTheme = themes[currentColorSchemeId] || activeTheme;
     const currentWallpaper =
       getItem(LOCAL_STORAGE_KEYS.WALLPAPER) || activeTheme.wallpaper;
+    const currentWallpaperMode =
+      getItem(LOCAL_STORAGE_KEYS.WALLPAPER_MODE) ||
+      activeTheme.wallpaperMode ||
+      "center";
 
     let currentColors = {};
     if (currentColorSchemeTheme.isCustom && currentColorSchemeTheme.colors) {
@@ -223,11 +237,23 @@ export class DesktopThemesApp extends Application {
     }
 
     const currentIconScheme = getIconSchemeName();
+    const currentSoundScheme = getSoundSchemeName();
+    const currentCursorScheme = getCursorSchemeId();
 
     this.customThemeProperties = {
       ...currentColors,
       wallpaper: currentWallpaper,
-      iconScheme: currentIconScheme,
+      wallpaperMode: currentWallpaperMode,
+      iconScheme:
+        typeof currentIconScheme === "string" ? currentIconScheme : null,
+      icons: typeof currentIconScheme === "object" ? currentIconScheme : null,
+      soundScheme:
+        typeof currentSoundScheme === "string" ? currentSoundScheme : null,
+      sounds: typeof currentSoundScheme === "object" ? currentSoundScheme : null,
+      cursorScheme:
+        typeof currentCursorScheme === "string" ? currentCursorScheme : null,
+      cursors:
+        typeof currentCursorScheme === "object" ? currentCursorScheme : null,
     };
 
     await this.populateThemes();
@@ -270,6 +296,12 @@ export class DesktopThemesApp extends Application {
     return win;
   }
 
+  async _onLaunch(data) {
+    if (typeof data === "string") {
+      await this.loadFile(data);
+    }
+  }
+
   _createMenuBar(win) {
     return new MenuBar({
       "&File": [{ label: "E&xit", action: () => win.close() }],
@@ -292,7 +324,14 @@ export class DesktopThemesApp extends Application {
     style.textContent = cssContent;
     document.head.appendChild(style);
 
-    const { wallpaper, ...colors } = this.customThemeProperties;
+    const {
+      wallpaper,
+      wallpaperMode,
+      icons,
+      cursors,
+      sounds,
+      ...colors
+    } = this.customThemeProperties;
     const customTheme = {
       ...baseTheme,
       id: "custom",
@@ -300,182 +339,285 @@ export class DesktopThemesApp extends Application {
       colorSchemeId: null,
       colors: colors,
       wallpaper: wallpaper,
+      wallpaperMode: wallpaperMode,
+      icons: icons,
+      cursors: cursors,
+      sounds: sounds,
     };
 
     setTheme("custom", customTheme);
   }
 
-  handleCustomThemeLoad() {
+  async handleCustomThemeLoad() {
     this.previousThemeId = this.themeSelector.value;
 
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".theme";
-    input.onchange = (event) => {
-      const file = event.target.files[0];
-      if (!file) {
-        this.themeSelector.value = this.previousThemeId;
-        return;
-      }
-      this.loadFile(file);
-    };
-    input.click();
+    const path = await ShowFilePicker({
+      title: "Open Theme",
+      mode: "open",
+      initialPath: THEME_PATH,
+      fileTypes: [
+        { label: "Desktop Themes (*.theme)", extensions: ["theme"] },
+      ],
+    });
+
+    if (!path) {
+      this.themeSelector.value = this.previousThemeId;
+      return;
+    }
+    this.loadFile(path);
   }
 
-  loadFile(file) {
-    this.originalFilename = file.name.replace(/\.[^/.]+$/, "");
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const themeContent = e.target.result;
-      try {
-        await loadThemeParser();
-        const colors = window.getColorsFromThemeFile(themeContent);
-        const wallpaper = window.getWallpaperFromThemeFile(themeContent);
-        if (colors) {
-          this._showThemeWizard(colors, wallpaper, (updatedTheme) => {
-            const cssProperties = window.generateThemePropertiesFromColors(
-              updatedTheme.colors,
-            );
-            this.customThemeProperties = {
-              ...cssProperties,
-              wallpaper: updatedTheme.wallpaper,
-            };
-            this.addTemporaryThemeOption();
-            this.themeSelector.value = "current-settings";
-            this.handleThemeSelection(); // Use the handler to update state
-          });
-        } else {
-          this.themeSelector.value = this.previousThemeId;
-          ShowDialogWindow({
-            title: "Error",
-            text: "Could not parse the selected file.",
-            buttons: [{ label: "OK" }],
-          });
+  async _extractIcons(icoPath) {
+    if (!icoPath || !icoPath.toLowerCase().endsWith(".ico")) return null;
+    if (typeof ICO === "undefined") {
+      console.warn("ICO library not loaded");
+      return { 16: icoPath, 32: icoPath };
+    }
+    try {
+      const buffer = await fs.promises.readFile(icoPath);
+      const parseFunc = ICO.parseICO || ICO.parse;
+      if (typeof parseFunc !== "function") {
+        throw new Error("ICO parsing function not found.");
+      }
+      const images = await parseFunc(buffer.buffer);
+      const getIcon = (size) => {
+        let img = images.find((i) => i.width === size) || images[0];
+        if (img) {
+          const blob = new Blob([img.buffer], { type: "image/png" });
+          return URL.createObjectURL(blob);
         }
-      } catch (error) {
-        this.themeSelector.value = this.previousThemeId;
+        return null;
+      };
+      return {
+        16: getIcon(16),
+        32: getIcon(32),
+      };
+    } catch (e) {
+      console.error("Failed to extract icon", e);
+    }
+    return null;
+  }
+
+  async loadFile(path) {
+    const themeDir = path.substring(0, path.lastIndexOf("/"));
+    this.originalFilename = path.split("/").pop().replace(/\.[^/.]+$/, "");
+    try {
+      const themeContent = await fs.promises.readFile(path, "utf8");
+      await loadThemeParser();
+
+      const colors = window.getColorsFromThemeFile(themeContent);
+      if (!colors) {
+        throw new Error("Could not parse colors from theme file.");
+      }
+
+      const desktopConfig = window.getDesktopConfigFromThemeFile(
+        themeContent,
+        themeDir,
+      );
+      const icons = window.getIconsFromThemeFile(themeContent, themeDir);
+      const cursors = window.getCursorsFromThemeFile(themeContent, themeDir);
+      const sounds = window.getSoundsFromThemeFile(themeContent, themeDir);
+
+      const cssProperties = window.generateThemePropertiesFromColors(colors);
+
+      this.customThemeProperties = {
+        ...cssProperties,
+        wallpaper: desktopConfig?.wallpaper || "",
+        wallpaperMode:
+          desktopConfig?.tileWallpaper === "1"
+            ? "tile"
+            : desktopConfig?.wallpaperStyle === "2"
+              ? "stretch"
+              : "center",
+        icons,
+        cursors,
+        sounds,
+      };
+
+      this.addTemporaryThemeOption();
+      this.themeSelector.value = "current-settings";
+      await this.handleThemeSelection(); // Use the handler to update state
+    } catch (error) {
+      console.error("Error in loadFile:", error);
+      this.themeSelector.value = this.previousThemeId;
+      ShowDialogWindow({
+        title: "Error",
+        text: `An error occurred: ${error.message}`,
+        buttons: [{ label: "OK" }],
+      });
+    }
+  }
+
+  async handleSaveTheme() {
+    const path = await ShowFilePicker({
+      title: "Save Theme",
+      mode: "save",
+      initialPath: THEME_PATH,
+      suggestedName: this.originalFilename
+        ? `${this.originalFilename}.theme`
+        : "Untitled.theme",
+      fileTypes: [
+        { label: "Desktop Themes (*.theme)", extensions: ["theme"] },
+      ],
+    });
+
+    if (path) {
+      const content = this._generateThemeFileContent();
+      try {
+        await fs.promises.writeFile(path, content);
+        this.originalFilename = path.split("/").pop().replace(/\.[^/.]+$/, "");
+
+        // Also save to custom themes in localStorage for easy access in the list
+        const themes = getThemes();
+        const finalName = this.originalFilename;
+        const newThemeId = `custom-${finalName
+          .toLowerCase()
+          .replace(/\s+/g, "-")}`;
+        const {
+          wallpaper,
+          wallpaperMode,
+          icons,
+          cursors,
+          sounds,
+          ...colors
+        } = this.customThemeProperties;
+        const newTheme = {
+          ...themes.default,
+          id: newThemeId,
+          name: finalName,
+          colorSchemeId: null,
+          colors: colors,
+          wallpaper: wallpaper,
+          wallpaperMode: wallpaperMode,
+          icons: icons,
+          cursors: cursors,
+          sounds: sounds,
+          isCustom: true,
+        };
+        saveCustomTheme(newThemeId, newTheme);
+        this.themeSelector.value = newThemeId;
+      } catch (e) {
         ShowDialogWindow({
           title: "Error",
-          text: `An error occurred: ${error.message}`,
+          text: `Could not save theme: ${e.message}`,
           buttons: [{ label: "OK" }],
         });
       }
-    };
-    reader.readAsText(file);
+    }
   }
 
-  _promptForThemeName() {
-    const win = new $Window({
-      title: "Save Theme",
-      outerWidth: 320,
-      outerHeight: "auto",
-      modal: true,
-      resizable: false,
-      toolWindow: true,
-      icons: this.icon,
-      className: "theme-name-prompt",
-    });
+  _generateThemeFileContent() {
+    let content = "[Control Panel\\Colors]\n";
+    for (const [key, value] of Object.entries(this.customThemeProperties)) {
+      if (key.startsWith("--")) {
+        const name = key.substring(2);
+        const match = value.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+        if (match) {
+          content += `${name}=${match[1]} ${match[2]} ${match[3]}\n`;
+        }
+      }
+    }
+    content += "\n[Control Panel\\Desktop]\n";
+    let wallpaper = this.customThemeProperties.wallpaper || "";
+    if (wallpaper.startsWith("/")) {
+      // Convert /C:/WINDOWS/Clouds.bmp to C:\WINDOWS\Clouds.bmp
+      wallpaper = wallpaper.substring(1).replace(/\//g, "\\");
+    }
+    content += `Wallpaper=${wallpaper}\n`;
+    content += `Tilewallpaper=${
+      this.customThemeProperties.wallpaperMode === "tile" ? "1" : "0"
+    }\n`;
+    content += `WallpaperStyle=${
+      this.customThemeProperties.wallpaperMode === "stretch" ? "2" : "0"
+    }\n`;
+    content += `Pattern=(None)\n`;
 
-    const content = document.createElement("div");
-    content.className = "dialog-content";
+    if (this.customThemeProperties.icons) {
+      const {
+        myComputer,
+        networkNeighborhood,
+        recycleBinFull,
+        recycleBinEmpty,
+      } = this.customThemeProperties.icons;
 
-    const textEl = document.createElement("p");
-    textEl.textContent = "Please enter a name for this theme:";
-    content.appendChild(textEl);
+      const formatIcon = (path) =>
+        path
+          ? path.substring(path.startsWith("/") ? 1 : 0).replace(/\//g, "\\")
+          : "";
 
-    const input = document.createElement("input");
-    input.type = "text";
-    input.value = this.originalFilename || "";
-    content.appendChild(input);
-
-    const buttonContainer = document.createElement("div");
-    buttonContainer.className = "dialog-buttons";
-
-    const okButton = document.createElement("button");
-    okButton.textContent = "OK";
-    okButton.classList.add("default");
-
-    const cancelButton = document.createElement("button");
-    cancelButton.textContent = "Cancel";
-
-    buttonContainer.appendChild(okButton);
-    buttonContainer.appendChild(cancelButton);
-
-    const updateOkButtonState = () => {
-      okButton.disabled = input.value.trim() === "";
-    };
-
-    input.addEventListener("input", updateOkButtonState);
-    updateOkButtonState();
-
-    okButton.onclick = () => {
-      const themeName = input.value.trim();
-      this._confirmAndSaveTheme(themeName);
-      win.close();
-    };
-
-    cancelButton.onclick = () => {
-      win.close();
-    };
-
-    win.$content.append(content, buttonContainer);
-    win.center();
-    input.focus();
-
-    // Auto-height adjustment
-    setTimeout(() => {
-      const contentHeight = content.offsetHeight + buttonContainer.offsetHeight;
-      const frameHeight = win.outerHeight() - win.$content.innerHeight();
-      win.outerHeight(contentHeight + frameHeight + 10);
-      win.center();
-    }, 0);
-  }
-
-  _confirmAndSaveTheme(themeName) {
-    ShowDialogWindow({
-      title: "Save Theme",
-      text: `Do you want to save this theme as "${themeName}"?`,
-      buttons: [
-        {
-          label: "OK",
-          action: () => {
-            this.saveTheme(themeName);
-          },
-        },
-        { label: "Cancel" },
-      ],
-    });
-  }
-
-  handleSaveTheme() {
-    this._promptForThemeName();
-  }
-
-  saveTheme(name) {
-    const themes = getThemes();
-    let finalName = name;
-    let counter = 2;
-    while (Object.values(themes).some((theme) => theme.name === finalName)) {
-      finalName = `${name} (${counter++})`;
+      content += `\n[CLSID\\{20D04FE0-3AEA-1069-A2D8-08002B30309D}\\DefaultIcon]\nDefaultValue=${formatIcon(
+        myComputer,
+      )}\n`;
+      content += `\n[CLSID\\{208D2C60-3AEA-1069-A2D7-08002B30309D}\\DefaultIcon]\nDefaultValue=${formatIcon(
+        networkNeighborhood,
+      )}\n`;
+      content += `\n[CLSID\\{645FF040-5081-101B-9F08-00AA002F954E}\\DefaultIcon]\nfull=${formatIcon(
+        recycleBinFull,
+      )}\nempty=${formatIcon(recycleBinEmpty)}\n`;
     }
 
-    const newThemeId = `custom-${finalName.toLowerCase().replace(/\s+/g, "-")}`;
-    const { wallpaper, ...colors } = this.customThemeProperties;
-    const newTheme = {
-      ...themes.default,
-      id: newThemeId,
-      name: finalName,
-      colorSchemeId: null,
-      colors: colors,
-      wallpaper: wallpaper,
-      isCustom: true,
-    };
+    if (this.customThemeProperties.cursors) {
+      content += "\n[Control Panel\\Cursors]\n";
+      const mapping = {
+        Arrow: "arrow",
+        Help: "help",
+        AppStarting: "wait",
+        Wait: "busy",
+        NWPen: "pen",
+        No: "no",
+        SizeNS: "sizeNS",
+        SizeWE: "sizeWE",
+        SizeNWSE: "sizeNWSE",
+        SizeNESW: "sizeNESW",
+        SizeAll: "move",
+        UpArrow: "up",
+        IBeam: "beam",
+        Crosshair: "cross",
+      };
+      for (const [winKey, appKey] of Object.entries(mapping)) {
+        const path = this.customThemeProperties.cursors[appKey];
+        if (path) {
+          content += `${winKey}=${path
+            .substring(path.startsWith("/") ? 1 : 0)
+            .replace(/\//g, "\\")}\n`;
+        }
+      }
+    }
 
-    saveCustomTheme(newThemeId, newTheme);
+    if (this.customThemeProperties.sounds) {
+      const sounds = this.customThemeProperties.sounds;
+      const events = [
+        "SystemAsterisk",
+        "SystemExclamation",
+        "SystemHand",
+        "SystemQuestion",
+        "SystemExit",
+        "WindowsLogon",
+        "AppGPFault",
+        "Maximize",
+        "Minimize",
+        "RestoreDown",
+        "RestoreUp",
+        "MenuCommand",
+        "MenuPopup",
+      ];
+      for (const event of events) {
+        if (sounds[event]) {
+          const path = sounds[event]
+            .substring(sounds[event].startsWith("/") ? 1 : 0)
+            .replace(/\//g, "\\");
+          content += `\n[AppEvents\\Schemes\\Apps\\.Default\\${event}\\.Current]\nDefaultValue=${path}\n`;
+        }
+      }
+      if (sounds.EmptyRecycleBin) {
+        const path = sounds.EmptyRecycleBin.substring(
+          sounds.EmptyRecycleBin.startsWith("/") ? 1 : 0,
+        ).replace(/\//g, "\\");
+        content += `\n[AppEvents\\Schemes\\Apps\\Explorer\\EmptyRecycleBin\\.Current]\nDefaultValue=${path}\n`;
+      }
+    }
 
-    // We don't call populateThemes directly anymore, the event listener handles it.
-    // The event listener will call populateThemes, which will then restore the selection.
-    this.themeSelector.value = newThemeId;
+    return content;
   }
 
   handleDeleteTheme() {
@@ -519,14 +661,29 @@ export class DesktopThemesApp extends Application {
       if (selectedValue === "current-settings") {
         const normalizedProperties = {};
         for (const [key, value] of Object.entries(this.customThemeProperties)) {
-          normalizedProperties[key.replace(/^--/, "")] = value;
+          if (key.startsWith("--")) {
+            normalizedProperties[key.replace(/^--/, "")] = value;
+          }
         }
+        // Also pass other properties
+        normalizedProperties.wallpaper = this.customThemeProperties.wallpaper;
+        normalizedProperties.wallpaperMode =
+          this.customThemeProperties.wallpaperMode;
+        normalizedProperties.icons = this.customThemeProperties.icons;
+        normalizedProperties.cursors = this.customThemeProperties.cursors;
+        normalizedProperties.sounds = this.customThemeProperties.sounds;
+        normalizedProperties.iconScheme = this.customThemeProperties.iconScheme;
+        normalizedProperties.soundScheme = this.customThemeProperties.soundScheme;
+        normalizedProperties.cursorScheme = this.customThemeProperties.cursorScheme;
+
         await this.previewCustomTheme(normalizedProperties);
         this.previewLabel.textContent = `Preview of 'Current Windows settings'`;
       } else if (selectedTheme) {
         await this.previewTheme(selectedValue);
         this.previewLabel.textContent = `Preview of '${selectedTheme.name}'`;
       }
+    } catch (e) {
+      console.error("Error in handleThemeSelection:", e);
     } finally {
       releaseBusyState(selectionId, this.win.$content[0]);
     }
@@ -591,8 +748,30 @@ export class DesktopThemesApp extends Application {
     await this.handleThemeSelection();
   }
 
-  updatePreviewIcons(schemeId = "default") {
-    const scheme = iconSchemes[schemeId] || iconSchemes.default;
+  async updatePreviewIcons(iconSchemeOrData) {
+    let scheme;
+    if (typeof iconSchemeOrData === "string") {
+      scheme = iconSchemes[iconSchemeOrData] || iconSchemes.default;
+    } else if (iconSchemeOrData) {
+      // Custom icon data
+      scheme = {};
+      for (const [key, path] of Object.entries(iconSchemeOrData)) {
+        if (path && path.toLowerCase().endsWith(".ico")) {
+          const extracted = await this._extractIcons(path);
+          if (extracted) {
+            scheme[key] = extracted;
+            continue;
+          }
+        }
+        let finalPath = path;
+        if (path && isZenFSPath(path)) {
+          finalPath = await getZenFSFileUrl(path);
+        }
+        scheme[key] = { 16: finalPath, 32: finalPath };
+      }
+    } else {
+      scheme = iconSchemes.default;
+    }
     const defaultScheme = iconSchemes.default;
 
     const getIconPath = (iconName) =>
@@ -617,184 +796,57 @@ export class DesktopThemesApp extends Application {
     const theme = getThemes()[themeId];
     if (!theme) return;
 
-    this.updatePreviewIcons(theme.iconScheme);
+    await this.updatePreviewIcons(theme.iconScheme);
 
     const variables = await applyThemeToPreview(themeId, this.previewContainer);
 
-    this.previewContainer.style.backgroundImage = theme.wallpaper
-      ? `url('${theme.wallpaper}')`
+    let wallpaperUrl = theme.wallpaper;
+    if (wallpaperUrl && isZenFSPath(wallpaperUrl)) {
+      wallpaperUrl = await getZenFSFileUrl(wallpaperUrl);
+    }
+
+    this.previewContainer.style.backgroundImage = wallpaperUrl
+      ? `url('${wallpaperUrl}')`
       : "none";
+
+    // Set default background properties for predefined themes
+    this.previewContainer.style.backgroundRepeat = "no-repeat";
+    this.previewContainer.style.backgroundPosition = "center";
+    this.previewContainer.style.backgroundSize = "cover";
+
     this.previewContainer.style.backgroundColor =
       variables["Background"] || "#008080";
   }
 
-  previewCustomTheme(properties) {
-    this.updatePreviewIcons(properties.iconScheme);
+  async previewCustomTheme(properties) {
+    await this.updatePreviewIcons(properties.icons || properties.iconScheme);
     applyPropertiesToPreview(properties, this.previewContainer);
-    this.previewContainer.style.backgroundImage = properties.wallpaper
-      ? `url('${properties.wallpaper}')`
+
+    let wallpaperUrl = properties.wallpaper;
+    if (wallpaperUrl && isZenFSPath(wallpaperUrl)) {
+      wallpaperUrl = await getZenFSFileUrl(wallpaperUrl);
+    }
+
+    this.previewContainer.style.backgroundImage = wallpaperUrl
+      ? `url('${wallpaperUrl}')`
       : "none";
+
+    if (properties.wallpaperMode === "tile") {
+      this.previewContainer.style.backgroundRepeat = "repeat";
+      this.previewContainer.style.backgroundPosition = "0 0";
+      this.previewContainer.style.backgroundSize = "auto";
+    } else if (properties.wallpaperMode === "stretch") {
+      this.previewContainer.style.backgroundRepeat = "no-repeat";
+      this.previewContainer.style.backgroundPosition = "center";
+      this.previewContainer.style.backgroundSize = "100% 100%";
+    } else {
+      // center
+      this.previewContainer.style.backgroundRepeat = "no-repeat";
+      this.previewContainer.style.backgroundPosition = "center";
+      this.previewContainer.style.backgroundSize = "auto";
+    }
+
     this.previewContainer.style.backgroundColor =
       properties["Background"] || "#008080";
-  }
-
-  _rgbToHex(rgbString) {
-    const match = rgbString.match(/rgb\((\d+), (\d+), (\d+)\)/);
-    if (!match) return "#000000";
-    const r = parseInt(match[1], 10);
-    const g = parseInt(match[2], 10);
-    const b = parseInt(match[3], 10);
-    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-  }
-
-  _hexToRgb(hex) {
-    const bigint = parseInt(hex.slice(1), 16);
-    const r = (bigint >> 16) & 255;
-    const g = (bigint >> 8) & 255;
-    const b = bigint & 255;
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-
-  _showThemeWizard(colors, wallpaper, callback) {
-    const wizardWin = new $Window({
-      title: "Theme Wizard",
-      outerWidth: 350,
-      outerHeight: 400,
-      resizable: false,
-      icons: this.icon,
-      className: "theme-wizard-app",
-    });
-
-    let currentColors = JSON.parse(JSON.stringify(colors)); // Deep copy
-    let currentWallpaper = wallpaper;
-    let wallpaperDataUrl = null;
-
-    const showStep1 = () => {
-      wizardWin.$content.html(""); // Clear content
-
-      const colorListContainer = document.createElement("div");
-      colorListContainer.className = "color-list-container";
-
-      currentColors.forEach((color) => {
-        const colorItem = document.createElement("div");
-        colorItem.className = "color-item";
-
-        const colorInput = document.createElement("input");
-        colorInput.type = "color";
-        colorInput.value = this._rgbToHex(color.value);
-        colorInput.addEventListener("change", (event) => {
-          color.value = this._hexToRgb(event.target.value);
-        });
-        colorItem.appendChild(colorInput);
-
-        const colorLabel = document.createElement("label");
-        colorLabel.textContent = color.name;
-        colorItem.appendChild(colorLabel);
-
-        colorListContainer.appendChild(colorItem);
-      });
-
-      wizardWin.$content.append(colorListContainer);
-
-      const buttonContainer = document.createElement("div");
-      buttonContainer.className = "wizard-buttons";
-
-      const nextButton = document.createElement("button");
-      nextButton.textContent = "Next";
-      nextButton.addEventListener("click", showStep2);
-      buttonContainer.appendChild(nextButton);
-
-      const cancelButton = document.createElement("button");
-      cancelButton.textContent = "Cancel";
-      cancelButton.addEventListener("click", () => wizardWin.close());
-      buttonContainer.appendChild(cancelButton);
-
-      wizardWin.$content.append(buttonContainer);
-    };
-
-    const showStep2 = () => {
-      wizardWin.$content.html(""); // Clear content
-
-      const wallpaperContainer = document.createElement("div");
-      wallpaperContainer.className = "wallpaper-container";
-
-      const fileInput = document.createElement("input");
-      fileInput.type = "file";
-      fileInput.accept = "image/*";
-      wallpaperContainer.appendChild(fileInput);
-
-      const preview = document.createElement("img");
-      preview.className = "wallpaper-preview";
-      preview.style.display = "none";
-      wallpaperContainer.appendChild(preview);
-
-      if (currentWallpaper) {
-        const initialWallpaperText = document.createElement("p");
-        initialWallpaperText.textContent = `Current wallpaper: ${currentWallpaper}`;
-        wallpaperContainer.insertBefore(
-          initialWallpaperText,
-          fileInput.nextSibling,
-        );
-      }
-
-      fileInput.addEventListener("change", (event) => {
-        const file = event.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            wallpaperDataUrl = e.target.result;
-            preview.src = wallpaperDataUrl;
-            preview.style.display = "block";
-          };
-          reader.readAsDataURL(file);
-        }
-      });
-
-      wizardWin.$content.append(wallpaperContainer);
-
-      const buttonContainer = document.createElement("div");
-      buttonContainer.className = "wizard-buttons";
-
-      const backButton = document.createElement("button");
-      backButton.textContent = "Back";
-      backButton.addEventListener("click", showStep1);
-      buttonContainer.appendChild(backButton);
-
-      const nextButton = document.createElement("button");
-      nextButton.textContent = "Next";
-      nextButton.addEventListener("click", showStep3);
-      buttonContainer.appendChild(nextButton);
-
-      wizardWin.$content.append(buttonContainer);
-    };
-
-    const showStep3 = () => {
-      wizardWin.$content.html(""); // Clear content
-
-      const confirmationText = document.createElement("p");
-      confirmationText.textContent =
-        "The theme will be previewed. Click Finish to apply the changes.";
-      wizardWin.$content.append(confirmationText);
-
-      const buttonContainer = document.createElement("div");
-      buttonContainer.className = "wizard-buttons";
-
-      const backButton = document.createElement("button");
-      backButton.textContent = "Back";
-      backButton.addEventListener("click", showStep2);
-      buttonContainer.appendChild(backButton);
-
-      const finishButton = document.createElement("button");
-      finishButton.textContent = "Finish";
-      finishButton.addEventListener("click", () => {
-        callback({ colors: currentColors, wallpaper: wallpaperDataUrl });
-        wizardWin.close();
-      });
-      buttonContainer.appendChild(finishButton);
-
-      wizardWin.$content.append(buttonContainer);
-    };
-
-    showStep1();
   }
 }

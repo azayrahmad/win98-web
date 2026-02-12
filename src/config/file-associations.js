@@ -7,6 +7,11 @@ export const fileAssociations = {
     appId: "notepad",
     icon: ICONS.textFile,
   },
+  theme: {
+    name: "Desktop Theme",
+    appId: "desktop-themes",
+    icon: ICONS.desktopthemes,
+  },
   js: {
     name: "JScript Script File",
     appId: "notepad",

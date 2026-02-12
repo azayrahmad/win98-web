@@ -4,9 +4,14 @@ import { getCursorSchemeId } from './theme-manager.js';
 
 const styleMap = new Map();
 
-export async function applyAniCursorTheme(theme, cursorType) {
+export async function applyAniCursorTheme(themeOrConfig, cursorType) {
   // `cursorType` directly corresponds to the key in the cursors object (e.g., 'busy', 'wait')
-  const cursorUrl = cursors[theme]?.[cursorType];
+  let cursorUrl;
+  if (themeOrConfig && typeof themeOrConfig === "object") {
+    cursorUrl = themeOrConfig[cursorType];
+  } else {
+    cursorUrl = cursors[themeOrConfig]?.[cursorType];
+  }
 
   if (!cursorUrl) {
     // If a specific theme doesn't have an animated cursor, fall back to default if it exists.
@@ -17,7 +22,7 @@ export async function applyAniCursorTheme(theme, cursorType) {
       return;
     }
     console.warn(
-      `Animated cursor not found for theme: ${theme}, type: ${cursorType}. No default fallback.`,
+      `Animated cursor not found for theme: ${themeOrConfig}, type: ${cursorType}. No default fallback.`,
     );
     return;
   }
@@ -27,7 +32,9 @@ export async function applyAniCursorTheme(theme, cursorType) {
     const data = new Uint8Array(await response.arrayBuffer());
 
     // Use a unique ID for the style element to manage it easily
-    const styleId = `ani-cursor-style-${theme}-${cursorType}`;
+    const themeKey =
+      typeof themeOrConfig === "object" ? "custom" : themeOrConfig;
+    const styleId = `ani-cursor-style-${themeKey}-${cursorType}`;
     let style = document.getElementById(styleId);
 
     if (!style) {

@@ -19,8 +19,11 @@ import { iconSchemes } from '../../../config/icon-schemes.js';
  * @returns {Object} Icon object with 16 and 32 sizes
  */
 export function getThemedIconObj(specialType, isEmpty = true) {
-  const schemeName = getIconSchemeName();
-  const scheme = iconSchemes[schemeName] || iconSchemes.default;
+  const schemeNameOrObj = getIconSchemeName();
+  const scheme =
+    schemeNameOrObj && typeof schemeNameOrObj === "object"
+      ? schemeNameOrObj
+      : iconSchemes[schemeNameOrObj] || iconSchemes.default;
   const defaultScheme = iconSchemes.default;
 
   switch (specialType) {
