@@ -932,7 +932,7 @@ export class WordPadApp extends Application {
       try {
         let content = this.editor.innerHTML;
         if (this.zenfsPath.toLowerCase().endsWith(".rtf")) {
-          content = convertHTMLToRTF(content);
+          content = this.htmlToRTF(content);
         }
         await fs.promises.writeFile(this.zenfsPath, content);
         this.isDirty = false;
@@ -968,7 +968,7 @@ export class WordPadApp extends Application {
       try {
         let content = this.editor.innerHTML;
         if (path.toLowerCase().endsWith(".rtf")) {
-          content = convertHTMLToRTF(content);
+          content = this.htmlToRTF(content);
         }
         await fs.promises.writeFile(path, content);
         this.zenfsPath = path;
