@@ -1,4 +1,5 @@
 import { Application } from '../../system/application.js';
+import { fs } from "@zenfs/core";
 import { ICONS } from '../../config/icons.js';
 import { iconSchemes } from '../../config/icon-schemes.js';
 import {
@@ -21,6 +22,11 @@ import {
 } from '../display-properties/theme-preview.js';
 import { getItem, LOCAL_STORAGE_KEYS } from '../../system/local-storage.js';
 import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
+import { ShowFilePicker } from '../../shared/utils/file-picker.js';
+import {
+  getZenFSFileUrl,
+  isZenFSPath,
+} from '../../system/zenfs-utils.js';
 import {
   requestBusyState,
   releaseBusyState,
@@ -28,6 +34,8 @@ import {
 import screensaverManager from '../../system/screensaver-utils.js';
 import previewHtml from "./DesktopThemesPreview.html?raw";
 import "./desktop-themes.css";
+
+const THEME_PATH = "/C:/Program Files/Plus!/Themes";
 
 export class DesktopThemesApp extends Application {
   static config = {
@@ -305,177 +313,129 @@ export class DesktopThemesApp extends Application {
     setTheme("custom", customTheme);
   }
 
-  handleCustomThemeLoad() {
+  async handleCustomThemeLoad() {
     this.previousThemeId = this.themeSelector.value;
 
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".theme";
-    input.onchange = (event) => {
-      const file = event.target.files[0];
-      if (!file) {
-        this.themeSelector.value = this.previousThemeId;
-        return;
-      }
-      this.loadFile(file);
-    };
-    input.click();
+    const path = await ShowFilePicker({
+      title: "Open Theme",
+      mode: "open",
+      initialPath: THEME_PATH,
+      fileTypes: [
+        { label: "Desktop Themes (*.theme)", extensions: ["theme"] },
+      ],
+    });
+
+    if (!path) {
+      this.themeSelector.value = this.previousThemeId;
+      return;
+    }
+    this.loadFile(path);
   }
 
-  loadFile(file) {
-    this.originalFilename = file.name.replace(/\.[^/.]+$/, "");
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const themeContent = e.target.result;
-      try {
-        await loadThemeParser();
-        const colors = window.getColorsFromThemeFile(themeContent);
-        const wallpaper = window.getWallpaperFromThemeFile(themeContent);
-        if (colors) {
-          this._showThemeWizard(colors, wallpaper, (updatedTheme) => {
-            const cssProperties = window.generateThemePropertiesFromColors(
-              updatedTheme.colors,
-            );
-            this.customThemeProperties = {
-              ...cssProperties,
-              wallpaper: updatedTheme.wallpaper,
-            };
-            this.addTemporaryThemeOption();
-            this.themeSelector.value = "current-settings";
-            this.handleThemeSelection(); // Use the handler to update state
-          });
-        } else {
-          this.themeSelector.value = this.previousThemeId;
-          ShowDialogWindow({
-            title: "Error",
-            text: "Could not parse the selected file.",
-            buttons: [{ label: "OK" }],
-          });
-        }
-      } catch (error) {
+  async loadFile(path) {
+    this.originalFilename = path.split("/").pop().replace(/\.[^/.]+$/, "");
+    try {
+      const themeContent = await fs.promises.readFile(path, "utf8");
+      await loadThemeParser();
+      const colors = window.getColorsFromThemeFile(themeContent);
+      const wallpaper = window.getWallpaperFromThemeFile(themeContent);
+      if (colors) {
+        this._showThemeWizard(colors, wallpaper, (updatedTheme) => {
+          const cssProperties = window.generateThemePropertiesFromColors(
+            updatedTheme.colors,
+          );
+          this.customThemeProperties = {
+            ...cssProperties,
+            wallpaper: updatedTheme.wallpaper,
+          };
+          this.addTemporaryThemeOption();
+          this.themeSelector.value = "current-settings";
+          this.handleThemeSelection(); // Use the handler to update state
+        });
+      } else {
         this.themeSelector.value = this.previousThemeId;
         ShowDialogWindow({
           title: "Error",
-          text: `An error occurred: ${error.message}`,
+          text: "Could not parse the selected file.",
           buttons: [{ label: "OK" }],
         });
       }
-    };
-    reader.readAsText(file);
+    } catch (error) {
+      this.themeSelector.value = this.previousThemeId;
+      ShowDialogWindow({
+        title: "Error",
+        text: `An error occurred: ${error.message}`,
+        buttons: [{ label: "OK" }],
+      });
+    }
   }
 
-  _promptForThemeName() {
-    const win = new $Window({
+  async handleSaveTheme() {
+    const path = await ShowFilePicker({
       title: "Save Theme",
-      outerWidth: 320,
-      outerHeight: "auto",
-      modal: true,
-      resizable: false,
-      toolWindow: true,
-      icons: this.icon,
-      className: "theme-name-prompt",
-    });
-
-    const content = document.createElement("div");
-    content.className = "dialog-content";
-
-    const textEl = document.createElement("p");
-    textEl.textContent = "Please enter a name for this theme:";
-    content.appendChild(textEl);
-
-    const input = document.createElement("input");
-    input.type = "text";
-    input.value = this.originalFilename || "";
-    content.appendChild(input);
-
-    const buttonContainer = document.createElement("div");
-    buttonContainer.className = "dialog-buttons";
-
-    const okButton = document.createElement("button");
-    okButton.textContent = "OK";
-    okButton.classList.add("default");
-
-    const cancelButton = document.createElement("button");
-    cancelButton.textContent = "Cancel";
-
-    buttonContainer.appendChild(okButton);
-    buttonContainer.appendChild(cancelButton);
-
-    const updateOkButtonState = () => {
-      okButton.disabled = input.value.trim() === "";
-    };
-
-    input.addEventListener("input", updateOkButtonState);
-    updateOkButtonState();
-
-    okButton.onclick = () => {
-      const themeName = input.value.trim();
-      this._confirmAndSaveTheme(themeName);
-      win.close();
-    };
-
-    cancelButton.onclick = () => {
-      win.close();
-    };
-
-    win.$content.append(content, buttonContainer);
-    win.center();
-    input.focus();
-
-    // Auto-height adjustment
-    setTimeout(() => {
-      const contentHeight = content.offsetHeight + buttonContainer.offsetHeight;
-      const frameHeight = win.outerHeight() - win.$content.innerHeight();
-      win.outerHeight(contentHeight + frameHeight + 10);
-      win.center();
-    }, 0);
-  }
-
-  _confirmAndSaveTheme(themeName) {
-    ShowDialogWindow({
-      title: "Save Theme",
-      text: `Do you want to save this theme as "${themeName}"?`,
-      buttons: [
-        {
-          label: "OK",
-          action: () => {
-            this.saveTheme(themeName);
-          },
-        },
-        { label: "Cancel" },
+      mode: "save",
+      initialPath: THEME_PATH,
+      suggestedName: this.originalFilename
+        ? `${this.originalFilename}.theme`
+        : "Untitled.theme",
+      fileTypes: [
+        { label: "Desktop Themes (*.theme)", extensions: ["theme"] },
       ],
     });
-  }
 
-  handleSaveTheme() {
-    this._promptForThemeName();
-  }
+    if (path) {
+      const content = this._generateThemeFileContent();
+      try {
+        await fs.promises.writeFile(path, content);
+        this.originalFilename = path.split("/").pop().replace(/\.[^/.]+$/, "");
 
-  saveTheme(name) {
-    const themes = getThemes();
-    let finalName = name;
-    let counter = 2;
-    while (Object.values(themes).some((theme) => theme.name === finalName)) {
-      finalName = `${name} (${counter++})`;
+        // Also save to custom themes in localStorage for easy access in the list
+        const themes = getThemes();
+        const finalName = this.originalFilename;
+        const newThemeId = `custom-${finalName
+          .toLowerCase()
+          .replace(/\s+/g, "-")}`;
+        const { wallpaper, ...colors } = this.customThemeProperties;
+        const newTheme = {
+          ...themes.default,
+          id: newThemeId,
+          name: finalName,
+          colorSchemeId: null,
+          colors: colors,
+          wallpaper: wallpaper,
+          isCustom: true,
+        };
+        saveCustomTheme(newThemeId, newTheme);
+        this.themeSelector.value = newThemeId;
+      } catch (e) {
+        ShowDialogWindow({
+          title: "Error",
+          text: `Could not save theme: ${e.message}`,
+          buttons: [{ label: "OK" }],
+        });
+      }
     }
+  }
 
-    const newThemeId = `custom-${finalName.toLowerCase().replace(/\s+/g, "-")}`;
-    const { wallpaper, ...colors } = this.customThemeProperties;
-    const newTheme = {
-      ...themes.default,
-      id: newThemeId,
-      name: finalName,
-      colorSchemeId: null,
-      colors: colors,
-      wallpaper: wallpaper,
-      isCustom: true,
-    };
-
-    saveCustomTheme(newThemeId, newTheme);
-
-    // We don't call populateThemes directly anymore, the event listener handles it.
-    // The event listener will call populateThemes, which will then restore the selection.
-    this.themeSelector.value = newThemeId;
+  _generateThemeFileContent() {
+    let content = "[Control Panel\\Colors]\n";
+    for (const [key, value] of Object.entries(this.customThemeProperties)) {
+      if (key.startsWith("--")) {
+        const name = key.substring(2);
+        const match = value.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+        if (match) {
+          content += `${name}=${match[1]} ${match[2]} ${match[3]}\n`;
+        }
+      }
+    }
+    content += "\n[Control Panel\\Desktop]\n";
+    let wallpaper = this.customThemeProperties.wallpaper || "";
+    if (wallpaper.startsWith("/")) {
+      // Convert /C:/WINDOWS/Clouds.bmp to C:\WINDOWS\Clouds.bmp
+      wallpaper = wallpaper.substring(1).replace(/\//g, "\\");
+    }
+    content += `Wallpaper=${wallpaper}\n`;
+    return content;
   }
 
   handleDeleteTheme() {
@@ -621,18 +581,29 @@ export class DesktopThemesApp extends Application {
 
     const variables = await applyThemeToPreview(themeId, this.previewContainer);
 
-    this.previewContainer.style.backgroundImage = theme.wallpaper
-      ? `url('${theme.wallpaper}')`
+    let wallpaperUrl = theme.wallpaper;
+    if (wallpaperUrl && isZenFSPath(wallpaperUrl)) {
+      wallpaperUrl = await getZenFSFileUrl(wallpaperUrl);
+    }
+
+    this.previewContainer.style.backgroundImage = wallpaperUrl
+      ? `url('${wallpaperUrl}')`
       : "none";
     this.previewContainer.style.backgroundColor =
       variables["Background"] || "#008080";
   }
 
-  previewCustomTheme(properties) {
+  async previewCustomTheme(properties) {
     this.updatePreviewIcons(properties.iconScheme);
     applyPropertiesToPreview(properties, this.previewContainer);
-    this.previewContainer.style.backgroundImage = properties.wallpaper
-      ? `url('${properties.wallpaper}')`
+
+    let wallpaperUrl = properties.wallpaper;
+    if (wallpaperUrl && isZenFSPath(wallpaperUrl)) {
+      wallpaperUrl = await getZenFSFileUrl(wallpaperUrl);
+    }
+
+    this.previewContainer.style.backgroundImage = wallpaperUrl
+      ? `url('${wallpaperUrl}')`
       : "none";
     this.previewContainer.style.backgroundColor =
       properties["Background"] || "#008080";
@@ -718,35 +689,56 @@ export class DesktopThemesApp extends Application {
       const wallpaperContainer = document.createElement("div");
       wallpaperContainer.className = "wallpaper-container";
 
-      const fileInput = document.createElement("input");
-      fileInput.type = "file";
-      fileInput.accept = "image/*";
-      wallpaperContainer.appendChild(fileInput);
+      const browseButton = document.createElement("button");
+      browseButton.textContent = "Browse...";
+      wallpaperContainer.appendChild(browseButton);
 
       const preview = document.createElement("img");
       preview.className = "wallpaper-preview";
       preview.style.display = "none";
       wallpaperContainer.appendChild(preview);
 
+      const updatePreview = async (wpPath) => {
+        if (wpPath) {
+          let url = wpPath;
+          if (isZenFSPath(wpPath)) {
+            url = await getZenFSFileUrl(wpPath);
+          }
+          preview.src = url;
+          preview.style.display = "block";
+        } else {
+          preview.style.display = "none";
+        }
+      };
+
       if (currentWallpaper) {
         const initialWallpaperText = document.createElement("p");
         initialWallpaperText.textContent = `Current wallpaper: ${currentWallpaper}`;
         wallpaperContainer.insertBefore(
           initialWallpaperText,
-          fileInput.nextSibling,
+          browseButton.nextSibling,
         );
+        updatePreview(currentWallpaper);
       }
 
-      fileInput.addEventListener("change", (event) => {
-        const file = event.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            wallpaperDataUrl = e.target.result;
-            preview.src = wallpaperDataUrl;
-            preview.style.display = "block";
-          };
-          reader.readAsDataURL(file);
+      browseButton.addEventListener("click", async () => {
+        const path = await ShowFilePicker({
+          title: "Browse for Wallpaper",
+          mode: "open",
+          initialPath: "/C:/WINDOWS",
+          fileTypes: [
+            {
+              label: "Image Files",
+              extensions: ["jpg", "jpeg", "png", "gif", "bmp"],
+            },
+            { label: "All Files", extensions: ["*"] },
+          ],
+        });
+
+        if (path) {
+          currentWallpaper = path;
+          wallpaperDataUrl = path;
+          updatePreview(path);
         }
       });
 

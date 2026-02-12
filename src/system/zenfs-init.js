@@ -124,6 +124,14 @@ export async function initFileSystem(onProgress) {
       await fs.promises.mkdir("/C:/WINDOWS/Desktop");
     }
 
+    // Ensure Program Files/Plus!/Themes directory exists
+    if (!(await existsAsync("/C:/Program Files/Plus!"))) {
+      await fs.promises.mkdir("/C:/Program Files/Plus!");
+    }
+    if (!(await existsAsync("/C:/Program Files/Plus!/Themes"))) {
+      await fs.promises.mkdir("/C:/Program Files/Plus!/Themes");
+    }
+
     // Add default shortcuts to Desktop
     const defaultShortcuts = [
       { name: "buggyprogram.exe.lnk.json", appId: "buggy-program" },

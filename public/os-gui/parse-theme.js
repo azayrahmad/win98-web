@@ -591,8 +591,12 @@ function getWallpaperFromThemeFile(themeIni) {
   }
   const wallpaperPath = desktopSection["Wallpaper"];
   if (wallpaperPath) {
-    // Extract filename from the path
-    return wallpaperPath.split("\\").pop();
+    // Convert Windows path back to ZenFS path if possible
+    let wp = wallpaperPath.replace(/\\/g, "/");
+    if (/^[A-Z]:\//i.test(wp)) {
+      wp = "/" + wp;
+    }
+    return wp;
   }
   return undefined;
 }
