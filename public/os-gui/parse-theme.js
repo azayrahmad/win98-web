@@ -580,25 +580,199 @@ function getColorsFromThemeFile(themeIni) {
 }
 
 /**
+ * Resolves theme paths like %ThemeDir% and %Windir% and normalizes backslashes.
+ * @param {string} path
+ * @param {string} themeDir
+ * @returns {string}
+ */
+function resolveThemePath(path, themeDir) {
+  if (!path || path === "(None)") return "";
+  let resolved = path
+    .replace(/%ThemeDir%/gi, themeDir)
+    .replace(/%Windir%/gi, "C:\\WINDOWS")
+    .replace(/\\/g, "/");
+
+  if (/^[A-Z]:\//i.test(resolved)) {
+    resolved = "/" + resolved;
+  }
+  return resolved;
+}
+
+/**
  * @param {string} themeIni
+ * @param {string} themeDir
  * @returns {string | undefined}
  */
-function getWallpaperFromThemeFile(themeIni) {
+function getWallpaperFromThemeFile(themeIni, themeDir = "C:\\WINDOWS") {
+  const config = getDesktopConfigFromThemeFile(themeIni, themeDir);
+  return config?.wallpaper;
+}
+
+/**
+ * @param {string} themeIni
+ * @param {string} themeDir
+ * @returns {Record<string, string> | undefined}
+ */
+function getIconsFromThemeFile(themeIni, themeDir = "C:\\WINDOWS") {
+  const theme = parseINIString(themeIni);
+  /** @type {Record<string, string>} */
+  const icons = {};
+
+  const myComputerSection =
+    theme["CLSID\\{20D04FE0-3AEA-1069-A2D8-08002B30309D}\\DefaultIcon"];
+  if (myComputerSection && typeof myComputerSection === "object") {
+    icons.myComputer = resolveThemePath(
+      myComputerSection["DefaultValue"]?.split(",")[0],
+      themeDir,
+    );
+  }
+
+  const networkSection =
+    theme["CLSID\\{208D2C60-3AEA-1069-A2D7-08002B30309D}\\DefaultIcon"];
+  if (networkSection && typeof networkSection === "object") {
+    icons.networkNeighborhood = resolveThemePath(
+      networkSection["DefaultValue"]?.split(",")[0],
+      themeDir,
+    );
+  }
+
+  const recycleBinSection =
+    theme["CLSID\\{645FF040-5081-101B-9F08-00AA002F954E}\\DefaultIcon"];
+  if (recycleBinSection && typeof recycleBinSection === "object") {
+    icons.recycleBinFull = resolveThemePath(
+      recycleBinSection["full"]?.split(",")[0],
+      themeDir,
+    );
+    icons.recycleBinEmpty = resolveThemePath(
+      recycleBinSection["empty"]?.split(",")[0],
+      themeDir,
+    );
+  }
+
+  return Object.keys(icons).length > 0 ? icons : undefined;
+}
+
+/**
+ * @param {string} themeIni
+ * @param {string} themeDir
+ * @returns {Record<string, string> | undefined}
+ */
+function getCursorsFromThemeFile(themeIni, themeDir = "C:\\WINDOWS") {
+  const theme = parseINIString(themeIni);
+  const cursorsSection = theme["Control Panel\\Cursors"];
+  if (!cursorsSection || typeof cursorsSection !== "object") return undefined;
+
+  /** @type {Record<string, string>} */
+  const cursors = {};
+  const mapping = {
+    Arrow: "arrow",
+    Help: "help",
+    AppStarting: "wait",
+    Wait: "busy",
+    NWPen: "pen",
+    No: "no",
+    SizeNS: "sizeNS",
+    SizeWE: "sizeWE",
+    SizeNWSE: "sizeNWSE",
+    SizeNESW: "sizeNESW",
+    SizeAll: "move",
+    UpArrow: "up",
+    IBeam: "beam",
+    Crosshair: "cross",
+  };
+
+  for (const [winKey, appKey] of Object.entries(mapping)) {
+    if (cursorsSection[winKey]) {
+      cursors[appKey] = resolveThemePath(cursorsSection[winKey], themeDir);
+    }
+  }
+
+  return Object.keys(cursors).length > 0 ? cursors : undefined;
+}
+
+/**
+ * @param {string} themeIni
+ * @param {string} themeDir
+ * @returns {Record<string, string> | undefined}
+ */
+function getSoundsFromThemeFile(themeIni, themeDir = "C:\\WINDOWS") {
+  const theme = parseINIString(themeIni);
+  /** @type {Record<string, string>} */
+  const sounds = {};
+
+  const prefix = "AppEvents\\Schemes\\Apps\\.Default\\";
+  const suffix = "\\.Current";
+
+  const events = [
+    "SystemAsterisk",
+    "SystemExclamation",
+    "SystemHand",
+    "SystemQuestion",
+    "SystemExit",
+    "WindowsLogon",
+    "AppGPFault",
+    "Maximize",
+    "Minimize",
+    "RestoreDown",
+    "RestoreUp",
+    "MenuCommand",
+    "MenuPopup",
+  ];
+
+  for (const event of events) {
+    const sectionName = `${prefix}${event}${suffix}`;
+    const section = theme[sectionName];
+    if (section && typeof section === "object") {
+      const path = section["DefaultValue"];
+      if (path) {
+        sounds[event] = resolveThemePath(path, themeDir);
+      }
+    }
+  }
+
+  // Explorer specific
+  const recycleSection =
+    theme[
+      "AppEvents\\Schemes\\Apps\\Explorer\\EmptyRecycleBin\\.Current"
+    ];
+  if (recycleSection && typeof recycleSection === "object") {
+    const path = recycleSection["DefaultValue"];
+    if (path) {
+      sounds.EmptyRecycleBin = resolveThemePath(path, themeDir);
+    }
+  }
+
+  return Object.keys(sounds).length > 0 ? sounds : undefined;
+}
+
+/**
+ * @param {string} themeIni
+ * @param {string} themeDir
+ * @returns {Record<string, any> | undefined}
+ */
+function getDesktopConfigFromThemeFile(themeIni, themeDir = "C:\\WINDOWS") {
   const theme = parseINIString(themeIni);
   const desktopSection = theme["Control Panel\\Desktop"];
-  if (!desktopSection || typeof desktopSection !== "object") {
-    return undefined;
+  if (!desktopSection || typeof desktopSection !== "object") return undefined;
+
+  const config = {};
+  if (desktopSection["Wallpaper"]) {
+    config.wallpaper = resolveThemePath(desktopSection["Wallpaper"], themeDir);
   }
-  const wallpaperPath = desktopSection["Wallpaper"];
-  if (wallpaperPath) {
-    // Convert Windows path back to ZenFS path if possible
-    let wp = wallpaperPath.replace(/\\/g, "/");
-    if (/^[A-Z]:\//i.test(wp)) {
-      wp = "/" + wp;
-    }
-    return wp;
+
+  if (desktopSection["Tilewallpaper"] !== undefined) {
+    config.tileWallpaper = desktopSection["Tilewallpaper"];
   }
-  return undefined;
+
+  if (desktopSection["WallpaperStyle"] !== undefined) {
+    config.wallpaperStyle = desktopSection["WallpaperStyle"];
+  }
+
+  if (desktopSection["Pattern"]) {
+    config.pattern = desktopSection["Pattern"];
+  }
+
+  return config;
 }
 
 /**
@@ -693,7 +867,9 @@ function makeThemeCSSFile(cssProperties) {
 :root {
 `;
   for (var k in cssProperties) {
-    css += `\t${k}: ${cssProperties[k]};\n`;
+    if (k.startsWith("--")) {
+      css += `\t${k}: ${cssProperties[k]};\n`;
+    }
   }
   css += `}
 `;
