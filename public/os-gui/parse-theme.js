@@ -588,9 +588,12 @@ function getColorsFromThemeFile(themeIni) {
 function resolveThemePath(path, themeDir) {
   if (!path || path === "(None)") return "";
   let resolved = path
-    .replace(/%ThemeDir%/gi, themeDir)
-    .replace(/%Windir%/gi, "C:\\WINDOWS")
+    .replace(/%ThemeDir%/gi, themeDir + "\\")
+    .replace(/%Windir%/gi, "C:\\WINDOWS\\")
     .replace(/\\/g, "/");
+
+  // Normalize multiple slashes to a single slash
+  resolved = resolved.replace(/\/+/g, "/");
 
   if (/^[A-Z]:\//i.test(resolved)) {
     resolved = "/" + resolved;
