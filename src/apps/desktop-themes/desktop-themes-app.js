@@ -12,6 +12,8 @@ import {
   getColorSchemeId,
   getActiveTheme,
   getIconSchemeName,
+  getSoundSchemeName,
+  getCursorSchemeId,
   getColorSchemes,
 } from '../../system/theme-manager.js';
 import {
