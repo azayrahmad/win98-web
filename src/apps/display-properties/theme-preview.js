@@ -65,6 +65,25 @@ function applyCssVariables(container, variables) {
     "--preview-hilight-text": variables["HilightText"] || "rgb(0, 0, 0)",
     "--preview-background": variables["Background"] || "rgb(240, 240, 240)",
 
+    "--preview-checker": variables["checker"] || "none",
+    "--preview-fieldset-border-image": variables["fieldset-border-image"] || "none",
+    "--preview-radio-button-svg": variables["radio-button-svg"] || "none",
+    "--preview-radio-button-active-svg": variables["radio-button-active-svg"] || "none",
+    "--preview-radio-button-disabled-svg": variables["radio-button-disabled-svg"] || "none",
+    "--preview-radio-dot-svg": variables["radio-dot-svg"] || "none",
+    "--preview-radio-dot-disabled-svg": variables["radio-dot-disabled-svg"] || "none",
+    "--preview-checkbox-svg": variables["checkbox-svg"] || "none",
+    "--preview-checkbox-disabled-svg": variables["checkbox-disabled-svg"] || "none",
+    "--preview-select-arrow-svg": variables["select-arrow-svg"] || "none",
+    "--preview-select-arrow-active-svg": variables["select-arrow-active-svg"] || "none",
+    "--preview-range-thumb-svg": variables["range-thumb-svg"] || "none",
+    "--preview-range-box-thumb-svg": variables["range-box-thumb-svg"] || "none",
+    "--preview-button-active-border-image": variables["button-active-border-image"] || "none",
+    "--preview-button-normal-border-image": variables["button-normal-border-image"] || "none",
+    "--preview-inset-deep-border-image": variables["inset-deep-border-image"] || "none",
+    "--preview-button-default-border-image": variables["button-default-border-image"] || "none",
+    "--preview-button-default-active-border-image": variables["button-default-active-border-image"] || "none",
+
     // Font properties
     "--preview-font-family-title":
       variables["font-family-title"] ||

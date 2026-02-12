@@ -15,27 +15,35 @@ function parseINIString(data) {
   /** @type {string | null} */
   var section = null;
   lines.forEach(function (line) {
-    if (regex.comment.test(line)) {
-      return;
-    } else if (regex.param.test(line)) {
-      var match = line.match(regex.param);
-      if (section) {
-        // @ts-ignore (could refactor to store section as an object, and use match result instead of test)
-        value[section][match[1]] = match[2];
-      } else {
-        // @ts-ignore (could refactor to use match result instead of test)
-        value[match[1]] = match[2];
+    try {
+      if (regex.comment.test(line)) {
+        return;
+      } else if (regex.param.test(line)) {
+        var match = line.match(regex.param);
+        if (match) {
+          if (section) {
+            // @ts-ignore
+            value[section][match[1]] = match[2];
+          } else {
+            // @ts-ignore
+            value[match[1]] = match[2];
+          }
+        }
+      } else if (regex.section.test(line)) {
+        var match = line.match(regex.section);
+        if (match) {
+          // @ts-ignore
+          value[match[1]] = {};
+          // @ts-ignore
+          section = match[1];
+        }
+      } else if (line.trim().length == 0 && section) {
+        // REALLY?? An empty line resets the section?? Dubious!
+        // What does Windows do?
+        // section = null; // Disabled for now as it seems to break things if sections have empty lines
       }
-    } else if (regex.section.test(line)) {
-      var match = line.match(regex.section);
-      // @ts-ignore (could refactor to use match result instead of test)
-      value[match[1]] = {};
-      // @ts-ignore (could refactor to use match result instead of test)
-      section = match[1];
-    } else if (line.length == 0 && section) {
-      // REALLY?? An empty line resets the section?? Dubious!
-      // What does Windows do?
-      section = null;
+    } catch (e) {
+      console.error("Error parsing INI line:", line, e);
     }
   });
   return value;
@@ -552,31 +560,37 @@ function inheritTheme(target, source) {
  * @returns {{name: string, value: string}[] | undefined}
  */
 function getColorsFromThemeFile(themeIni) {
-  const theme = parseINIString(themeIni);
-  const colorsSection = theme["Control Panel\\Colors"];
-  if (!colorsSection) {
-    // Using console.error instead of alert to avoid blocking UI in case of errors.
-    console.error("Invalid theme file, no [Control Panel\\Colors] section");
-    return undefined;
-  }
-  if (typeof colorsSection !== "object") {
-    console.error(
-      "Invalid theme file, 'Control Panel\\Colors' is not a section",
-    );
-    return undefined;
-  }
-
-  const colors = [];
-  for (const k in colorsSection) {
-    // for .themepack file support, just ignore bad keys that were parsed
-    if (!k.match(/\W/)) {
-      colors.push({
-        name: k,
-        value: `rgb(${colorsSection[k].split(" ").join(", ")})`,
-      });
+  try {
+    const theme = parseINIString(themeIni);
+    const colorsSection = theme["Control Panel\\Colors"];
+    if (!colorsSection) {
+      console.error("Invalid theme file, no [Control Panel\\Colors] section");
+      return undefined;
     }
+    if (typeof colorsSection !== "object") {
+      console.error(
+        "Invalid theme file, 'Control Panel\\Colors' is not a section",
+      );
+      return undefined;
+    }
+
+    const colors = [];
+    for (const k in colorsSection) {
+      // for .themepack file support, just ignore bad keys that were parsed
+      if (!k.match(/\W/)) {
+        const val = colorsSection[k].trim().split(/\s+/).join(", ");
+        colors.push({
+          name: k,
+          value: `rgb(${val})`,
+        });
+      }
+    }
+    console.log("Parsed colors from theme file:", colors);
+    return colors;
+  } catch (e) {
+    console.error("Error in getColorsFromThemeFile:", e);
+    return undefined;
   }
-  return colors;
 }
 
 /**
@@ -783,13 +797,20 @@ function getDesktopConfigFromThemeFile(themeIni, themeDir = "C:\\WINDOWS") {
  * @returns {Record<string, string>}
  */
 function generateThemePropertiesFromColors(colors) {
-  /** @type {Record<string, string>} */
-  const cssProperties = {};
-  for (const color of colors) {
-    cssProperties[`--${color.name}`] = color.value;
-  }
+  try {
+    /** @type {Record<string, string>} */
+    const cssProperties = {};
+    for (const color of colors) {
+      cssProperties[`--${color.name}`] = color.value;
+    }
 
-  return Object.assign(renderThemeGraphics(cssProperties), cssProperties);
+    const graphics = renderThemeGraphics(cssProperties);
+    const combined = Object.assign({}, graphics, cssProperties);
+    return combined;
+  } catch (e) {
+    console.error("Error in generateThemePropertiesFromColors:", e);
+    return {};
+  }
 }
 
 /**

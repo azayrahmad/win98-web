@@ -438,6 +438,7 @@ export class DesktopThemesApp extends Application {
       this.themeSelector.value = "current-settings";
       await this.handleThemeSelection(); // Use the handler to update state
     } catch (error) {
+      console.error("Error in loadFile:", error);
       this.themeSelector.value = this.previousThemeId;
       ShowDialogWindow({
         title: "Error",
@@ -671,6 +672,9 @@ export class DesktopThemesApp extends Application {
         normalizedProperties.icons = this.customThemeProperties.icons;
         normalizedProperties.cursors = this.customThemeProperties.cursors;
         normalizedProperties.sounds = this.customThemeProperties.sounds;
+        normalizedProperties.iconScheme = this.customThemeProperties.iconScheme;
+        normalizedProperties.soundScheme = this.customThemeProperties.soundScheme;
+        normalizedProperties.cursorScheme = this.customThemeProperties.cursorScheme;
 
         await this.previewCustomTheme(normalizedProperties);
         this.previewLabel.textContent = `Preview of 'Current Windows settings'`;
@@ -678,6 +682,8 @@ export class DesktopThemesApp extends Application {
         await this.previewTheme(selectedValue);
         this.previewLabel.textContent = `Preview of '${selectedTheme.name}'`;
       }
+    } catch (e) {
+      console.error("Error in handleThemeSelection:", e);
     } finally {
       releaseBusyState(selectionId, this.win.$content[0]);
     }
@@ -757,7 +763,11 @@ export class DesktopThemesApp extends Application {
             continue;
           }
         }
-        scheme[key] = { 16: path, 32: path };
+        let finalPath = path;
+        if (path && isZenFSPath(path)) {
+          finalPath = await getZenFSFileUrl(path);
+        }
+        scheme[key] = { 16: finalPath, 32: finalPath };
       }
     } else {
       scheme = iconSchemes.default;
