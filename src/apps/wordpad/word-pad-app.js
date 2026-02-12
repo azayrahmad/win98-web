@@ -416,9 +416,7 @@ export class WordPadApp extends Application {
       let content = await getZenFSFileAsText(path);
       if (path.toLowerCase().endsWith(".rtf")) {
         try {
-          // Pre-process RTF to fix common parsing issues in @jonahschulte/rtf-toolkit
-          // 1. Remove spaces after opening braces that prevent destination recognition
-          content = content.replace(/\{\s+/g, "{");
+          content = this.preProcessRTF(content);
           const doc = parseRTF(content);
           this.editor.innerHTML = toHTML(doc, { includeWrapper: false });
         } catch (parseError) {
@@ -440,6 +438,56 @@ export class WordPadApp extends Application {
         buttons: [{ label: "OK", isDefault: true }],
       });
     }
+  }
+
+  preProcessRTF(rtf) {
+    // 1. Remove spaces after opening braces that prevent destination recognition
+    rtf = rtf.replace(/\{\s+/g, "{");
+
+    // 2. Strip ignorable groups and unsupported destinations using a depth-aware loop
+    // @jonahschulte/rtf-toolkit parser is fragile and gets confused by nested groups
+    // in destinations like \fonttbl, or unknown destinations like \stylesheet.
+    let result = "";
+    let depth = 0;
+    let skipUntilDepth = -1;
+
+    for (let i = 0; i < rtf.length; i++) {
+      const char = rtf[i];
+
+      if (char === "{") {
+        depth++;
+        if (depth > 1 && skipUntilDepth === -1) {
+          const next = rtf.slice(i + 1, i + 30);
+          // Strip ignorable groups (starting with \* or *) and known unsupported destinations
+          if (
+            next.startsWith("\\*") ||
+            next.startsWith("*") ||
+            next.startsWith("\\stylesheet") ||
+            next.startsWith("\\info") ||
+            next.startsWith("\\listtable") ||
+            next.startsWith("\\listoverridetable") ||
+            next.startsWith("\\pgdsctbl") ||
+            next.startsWith("\\generator") ||
+            next.startsWith("\\background") ||
+            next.startsWith("\\shp")
+          ) {
+            skipUntilDepth = depth;
+          }
+        }
+      }
+
+      if (skipUntilDepth === -1) {
+        result += char;
+      }
+
+      if (char === "}") {
+        if (depth === skipUntilDepth) {
+          skipUntilDepth = -1;
+        }
+        depth--;
+      }
+    }
+    return result;
   }
 
   _setupToolbarListeners() {
