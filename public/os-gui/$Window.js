@@ -143,6 +143,7 @@
         ),
       )
         .addClass("window os-window")
+        .addClass(options.className || "")
         .appendTo("#screen")
     );
 

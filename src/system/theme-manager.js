@@ -231,12 +231,12 @@ export async function applyCustomColorScheme(colorObject) {
   }
 }
 
-export async function setTheme(themeKey) {
+export async function setTheme(themeKey, themeData = null) {
   const setThemeId = `set-theme-${Date.now()}`;
   requestBusyState(setThemeId, document.body);
   try {
     const allThemes = getThemes();
-    const newTheme = allThemes[themeKey];
+    const newTheme = themeData || allThemes[themeKey];
 
     if (!newTheme) {
       console.error(`Theme with key "${themeKey}" not found.`);
@@ -248,12 +248,21 @@ export async function setTheme(themeKey) {
 
     // Set individual components, clearing any previous overrides
     setItem(LOCAL_STORAGE_KEYS.COLOR_SCHEME, themeKey);
-    setItem(LOCAL_STORAGE_KEYS.SOUND_SCHEME, newTheme.soundScheme);
-    setItem(LOCAL_STORAGE_KEYS.ICON_SCHEME, newTheme.iconScheme);
-    setItem(LOCAL_STORAGE_KEYS.CURSOR_SCHEME, themeKey);
+    setItem(
+      LOCAL_STORAGE_KEYS.SOUND_SCHEME,
+      newTheme.sounds || newTheme.soundScheme,
+    );
+    setItem(
+      LOCAL_STORAGE_KEYS.ICON_SCHEME,
+      newTheme.icons || newTheme.iconScheme,
+    );
+    setItem(LOCAL_STORAGE_KEYS.CURSOR_SCHEME, newTheme.cursors || themeKey);
 
     if (newTheme.wallpaper) {
       setItem(LOCAL_STORAGE_KEYS.WALLPAPER, newTheme.wallpaper);
+      if (newTheme.wallpaperMode) {
+        setItem(LOCAL_STORAGE_KEYS.WALLPAPER_MODE, newTheme.wallpaperMode);
+      }
     } else {
       removeItem(LOCAL_STORAGE_KEYS.WALLPAPER);
     }

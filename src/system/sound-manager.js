@@ -8,14 +8,19 @@ import { getSoundSchemeName } from './theme-manager.js';
  */
 export function playSound(eventName) {
   return new Promise((resolve) => {
-    const schemeName = getSoundSchemeName();
-    const currentScheme = soundSchemes[schemeName];
+    const scheme = getSoundSchemeName();
     const defaultScheme = soundSchemes["Default"];
 
-    // Determine the sound file url with fallbacks
-    const soundUrl =
-      (currentScheme && currentScheme[eventName]) ||
-      (defaultScheme && defaultScheme[eventName]);
+    let soundUrl;
+    if (scheme && typeof scheme === "object") {
+      soundUrl = scheme[eventName] || defaultScheme[eventName];
+    } else {
+      const currentScheme = soundSchemes[scheme];
+      // Determine the sound file url with fallbacks
+      soundUrl =
+        (currentScheme && currentScheme[eventName]) ||
+        (defaultScheme && defaultScheme[eventName]);
+    }
 
     // If no sound was found after all checks, resolve immediately.
     if (!soundUrl) {

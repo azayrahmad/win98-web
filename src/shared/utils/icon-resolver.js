@@ -10,8 +10,19 @@ import { ICONS } from '../../config/icons.js';
  * @returns {object} The icon object with 16 and 32 pixel versions, or null if not found.
  */
 export function getIcon(iconIdentifier) {
-  const iconSchemeName = getIconSchemeName() || "default";
-  const scheme = iconSchemes[iconSchemeName] || iconSchemes["default"];
+  const iconScheme = getIconSchemeName() || "default";
+  let scheme;
+  if (iconScheme && typeof iconScheme === "object") {
+    scheme = iconScheme;
+  } else {
+    scheme = iconSchemes[iconScheme] || iconSchemes["default"];
+  }
 
-  return scheme[iconIdentifier] || ICONS[iconIdentifier] || ICONS.file;
+  const icon = scheme[iconIdentifier] || ICONS[iconIdentifier] || ICONS.file;
+
+  // If the icon is a string (legacy/simple path), normalize it to { 16: path, 32: path }
+  if (typeof icon === "string") {
+    return { 16: icon, 32: icon };
+  }
+  return icon;
 }
