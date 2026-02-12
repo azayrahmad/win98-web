@@ -5,7 +5,7 @@ import { registerCustomApp } from "./custom-app-manager.js";
 import { taskbar } from "../shell/taskbar/taskbar.js";
 import { ShowDialogWindow } from "../shared/components/dialog-window.js";
 import { playSound } from "./sound-manager.js";
-import { setTheme, getCurrentTheme, setColorScheme } from "./theme-manager.js";
+import { setTheme, getCurrentTheme, setColorScheme, loadCustomTheme } from "./theme-manager.js";
 import { profiles } from "../config/profiles.js";
 import {
   hideBootScreen,
@@ -158,6 +158,8 @@ export async function initializeOS() {
       }
       finalizeBootProcessStep(logElement, "OK");
     });
+
+    await loadCustomTheme();
 
     await executeBootStep(async () => {
       let logElement = startBootProcessStep("Initializing Recycle Bin...");

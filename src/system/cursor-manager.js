@@ -47,6 +47,10 @@ export async function applyAniCursorTheme(themeOrConfig, cursorType) {
     styleMap.set(`.cursor-${cursorType}`, style);
   } catch (error) {
     console.error("Failed to apply animated cursor:", error);
+    // Fallback to default if not already trying default
+    if (themeOrConfig !== "default") {
+      await applyAniCursorTheme("default", cursorType);
+    }
   }
 }
 

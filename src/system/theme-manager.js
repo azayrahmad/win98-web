@@ -13,9 +13,72 @@ import {
 } from './busy-state-manager.js';
 import { preloadThemeAssets } from './asset-preloader.js';
 import screensaverManager from './screensaver-utils.js';
+import { fs } from "@zenfs/core";
+import { isZenFSPath, getZenFSFileUrl, existsAsync } from './zenfs-utils.js';
 
 let parserPromise = null;
 let activeTheme = null; // In-memory cache to avoid repeated localStorage access
+let currentCustomTheme = null;
+let resolvedIconScheme = null;
+let resolvedSoundScheme = null;
+let resolvedCursorScheme = null;
+const blobUrls = new Set();
+
+function revokeBlobUrls() {
+  for (const url of blobUrls) {
+    URL.revokeObjectURL(url);
+  }
+  blobUrls.clear();
+}
+
+async function getThemeAssetUrl(path) {
+  const url = await getZenFSFileUrl(path);
+  blobUrls.add(url);
+  return url;
+}
+
+async function resolvePaths(obj) {
+  if (!obj || typeof obj !== "object") {
+    if (typeof obj === "string" && isZenFSPath(obj)) {
+      try {
+        return await getThemeAssetUrl(obj);
+      } catch (e) {
+        console.warn(`Failed to resolve ZenFS path: ${obj}`, e);
+        return null;
+      }
+    }
+    return obj;
+  }
+
+  const resolved = Array.isArray(obj) ? [] : {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value === "string" && isZenFSPath(value)) {
+      try {
+        resolved[key] = await getThemeAssetUrl(value);
+      } catch (e) {
+        console.warn(`Failed to resolve ZenFS path: ${value}`, e);
+        // Leave it out so fallback triggers
+      }
+    } else if (typeof value === "object" && value !== null) {
+      resolved[key] = await resolvePaths(value);
+    } else {
+      resolved[key] = value;
+    }
+  }
+  return resolved;
+}
+
+export async function loadCustomTheme() {
+  const path = "/C:/WINDOWS/CurrentTheme.json";
+  if (await existsAsync(path)) {
+    try {
+      const content = await fs.promises.readFile(path, "utf8");
+      currentCustomTheme = JSON.parse(content);
+    } catch (e) {
+      console.error("Failed to load custom theme from ZenFS", e);
+    }
+  }
+}
 
 export function loadThemeParser() {
   if (!parserPromise) {
@@ -56,7 +119,11 @@ export function deleteCustomTheme(themeId) {
 
 export function getThemes() {
   const customThemes = getCustomThemes();
-  return { ...themes, ...customThemes };
+  const allThemes = { ...themes, ...customThemes };
+  if (currentCustomTheme) {
+    allThemes["custom"] = currentCustomTheme;
+  }
+  return allThemes;
 }
 
 export function getColorSchemes() {
@@ -84,19 +151,25 @@ export function getColorSchemeId() {
 
 export function getSoundSchemeName() {
   return (
-    getItem(LOCAL_STORAGE_KEYS.SOUND_SCHEME) || getActiveTheme().soundScheme
+    resolvedSoundScheme ||
+    getItem(LOCAL_STORAGE_KEYS.SOUND_SCHEME) ||
+    getActiveTheme().soundScheme
   );
 }
 
 export function getIconSchemeName() {
   return (
-    getItem(LOCAL_STORAGE_KEYS.ICON_SCHEME) || getActiveTheme().iconScheme
+    resolvedIconScheme ||
+    getItem(LOCAL_STORAGE_KEYS.ICON_SCHEME) ||
+    getActiveTheme().iconScheme
   );
 }
 
 export function getCursorSchemeId() {
   return (
-    getItem(LOCAL_STORAGE_KEYS.CURSOR_SCHEME) || getActiveThemeId()
+    resolvedCursorScheme ||
+    getItem(LOCAL_STORAGE_KEYS.CURSOR_SCHEME) ||
+    getActiveThemeId()
   );
 }
 
@@ -128,9 +201,15 @@ export async function applyTheme() {
   const allThemes = getThemes();
   const allColorSchemes = getColorSchemes();
   const colorSchemeId = getColorSchemeId();
-  const cursorSchemeId = getCursorSchemeId();
   const colorScheme = allColorSchemes[colorSchemeId];
   const customThemeForColors = allThemes[colorSchemeId];
+
+  const rawIconScheme =
+    getItem(LOCAL_STORAGE_KEYS.ICON_SCHEME) || getActiveTheme().iconScheme;
+  const rawSoundScheme =
+    getItem(LOCAL_STORAGE_KEYS.SOUND_SCHEME) || getActiveTheme().soundScheme;
+  const rawCursorScheme =
+    getItem(LOCAL_STORAGE_KEYS.CURSOR_SCHEME) || getActiveThemeId();
 
   // --- Cleanup Phase ---
   // Remove all previously injected style tags
@@ -139,8 +218,27 @@ export async function applyTheme() {
   Object.keys(customThemes).forEach(removeStylesheet);
   removeStylesheet("custom"); // For temporary themes
 
+  // Revoke old blob URLs to prevent memory leaks
+  revokeBlobUrls();
+
+  // --- Resolution Phase ---
+  resolvedIconScheme =
+    typeof rawIconScheme === "object" || isZenFSPath(rawIconScheme)
+      ? await resolvePaths(rawIconScheme)
+      : null;
+  resolvedSoundScheme =
+    typeof rawSoundScheme === "object" || isZenFSPath(rawSoundScheme)
+      ? await resolvePaths(rawSoundScheme)
+      : null;
+  resolvedCursorScheme =
+    typeof rawCursorScheme === "object" || isZenFSPath(rawCursorScheme)
+      ? await resolvePaths(rawCursorScheme)
+      : null;
+
+  const finalCursorScheme = resolvedCursorScheme || rawCursorScheme;
+
   // --- Application Phase ---
-  applyCursorTheme(cursorSchemeId);
+  applyCursorTheme(finalCursorScheme);
 
   // Handle built-in color schemes
   if (colorScheme && colorScheme.loader) {
@@ -257,6 +355,26 @@ export async function setTheme(themeKey, themeData = null) {
       newTheme.icons || newTheme.iconScheme,
     );
     setItem(LOCAL_STORAGE_KEYS.CURSOR_SCHEME, newTheme.cursors || themeKey);
+
+    if (themeKey === "custom" && newTheme) {
+      currentCustomTheme = newTheme;
+      try {
+        await fs.promises.writeFile(
+          "/C:/WINDOWS/CurrentTheme.json",
+          JSON.stringify(newTheme),
+        );
+      } catch (e) {
+        console.error("Failed to save current custom theme to ZenFS", e);
+      }
+    } else {
+      // Clear persistent custom theme when switching to a predefined theme
+      try {
+        if (await existsAsync("/C:/WINDOWS/CurrentTheme.json")) {
+          await fs.promises.unlink("/C:/WINDOWS/CurrentTheme.json");
+        }
+        currentCustomTheme = null;
+      } catch (e) {}
+    }
 
     if (newTheme.wallpaper) {
       setItem(LOCAL_STORAGE_KEYS.WALLPAPER, newTheme.wallpaper);
