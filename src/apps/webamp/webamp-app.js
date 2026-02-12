@@ -12,7 +12,49 @@ import { isZenFSPath, getZenFSFileUrl, getZenFSFileAsText } from '../../system/z
 let webampInstance = null;
 let webampContainer = null;
 let webampTaskbarButton = null;
+let webampTaskbarClickHandler = null;
+let webampFocusHandler = null;
+let webampElementMouseDownHandler = null;
+let webampMenuObserver = null;
 let isMinimized = false;
+
+const focusWebampContainer = () => {
+  if (!webampContainer) return;
+
+  const zIndex = $Window.Z_INDEX++;
+  webampContainer.style.zIndex = zIndex;
+
+  const webampElement = document.getElementById("webamp");
+  if (webampElement) {
+    webampElement.style.zIndex = zIndex;
+  }
+};
+
+const isWebampEvent = (event) => {
+  const path = event?.composedPath?.() || [];
+
+  return path.some((node) => (
+    node?.id === "webamp" ||
+    node?.id === "webamp-container"
+  ));
+};
+
+const isWebampTaskbarEvent = (event) => {
+  const path = event?.composedPath?.() || [];
+  return path.includes(webampTaskbarButton);
+};
+
+const bringWebampMenusToFront = () => {
+  const webampElement = document.getElementById("webamp");
+  if (!webampElement) return;
+
+  const webampZIndex = Number.parseInt(webampElement.style.zIndex || "0", 10) || 0;
+  const menuZIndex = webampZIndex + 1;
+
+  document.querySelectorAll(".webamp-context-menu").forEach((menuElement) => {
+    menuElement.style.zIndex = String(menuZIndex);
+  });
+};
 
 export class WebampApp extends Application {
   static config = {
@@ -46,6 +88,16 @@ export class WebampApp extends Application {
     // Webamp doesn't use a standard OS-GUI window, it renders directly to the body.
     // We manage its container and lifecycle here.
     return null; // Return null to prevent default window creation.
+  }
+
+  _centerWebampContainer() {
+    if (!webampContainer) return;
+
+    const webampElement = webampContainer.querySelector("#webamp") || webampContainer;
+    const { width, height } = webampElement.getBoundingClientRect();
+
+    webampContainer.style.left = `${Math.max(0, Math.round((window.innerWidth - width) / 2))}px`;
+    webampContainer.style.top = `${Math.max(0, Math.round((window.innerHeight - height) / 2))}px`;
   }
 
   async _onLaunch(filePath) {
@@ -145,16 +197,12 @@ export class WebampApp extends Application {
       webampContainer = document.createElement("div");
       webampContainer.id = "webamp-container";
       webampContainer.style.position = "absolute";
-      webampContainer.style.zIndex = $Window.Z_INDEX++;
-      webampContainer.style.left = "50px";
-      webampContainer.style.top = "50px";
+      focusWebampContainer();
       document.body.appendChild(webampContainer);
 
       webampContainer.addEventListener(
         "mousedown",
-        () => {
-          webampContainer.style.zIndex = $Window.Z_INDEX++;
-        },
+        focusWebampContainer,
         true,
       );
 
@@ -196,7 +244,11 @@ export class WebampApp extends Application {
           webampInstance
             .renderWhenReady(webampContainer)
             .then(() => {
+              this._centerWebampContainer();
               this.setupTaskbarButton();
+              this._setupFocusTracking();
+              this._setupWebampElementFocus();
+              this._setupWebampMenuLayering();
               this.showWebamp();
               handleFile(filePath);
               resolve(); // Resolve the promise once Webamp is ready
@@ -207,8 +259,76 @@ export class WebampApp extends Application {
     });
   }
 
+  _setupFocusTracking() {
+    if (webampFocusHandler) return;
+
+    webampFocusHandler = (event) => {
+      if (isMinimized) return;
+
+      if (isWebampEvent(event)) {
+        focusWebampContainer();
+        if (webampTaskbarButton) {
+          updateTaskbarButton("webamp", true, false);
+        }
+        return;
+      }
+
+      if (isWebampTaskbarEvent(event)) {
+        return;
+      }
+
+      if (webampTaskbarButton) {
+        updateTaskbarButton("webamp", false, false);
+      }
+    };
+
+    document.addEventListener("mousedown", webampFocusHandler, true);
+  }
+
+  _setupWebampElementFocus() {
+    const webampElement = document.getElementById("webamp");
+    if (!webampElement || webampElementMouseDownHandler) return;
+
+    webampElementMouseDownHandler = () => {
+      if (isMinimized) return;
+
+      focusWebampContainer();
+      if (webampTaskbarButton) {
+        updateTaskbarButton("webamp", true, false);
+      }
+    };
+
+    webampElement.addEventListener("mousedown", webampElementMouseDownHandler, true);
+  }
+
+  _setupWebampMenuLayering() {
+    if (webampMenuObserver) return;
+
+    webampMenuObserver = new MutationObserver((mutations) => {
+      const hasMenuMutation = mutations.some((mutation) => (
+        [...mutation.addedNodes].some((node) => (
+          node instanceof Element && (
+            node.matches?.(".webamp-context-menu") ||
+            node.querySelector?.(".webamp-context-menu")
+          )
+        ))
+      ));
+
+      if (!hasMenuMutation) return;
+
+      requestAnimationFrame(() => {
+        bringWebampMenusToFront();
+      });
+    });
+
+    webampMenuObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
   setupTaskbarButton() {
-    const taskbarButtonId = "webamp-taskbar-button";
+    const taskbarButtonId = "webamp";
     webampTaskbarButton = createTaskbarButton(
       taskbarButtonId,
       ICONS.webamp,
@@ -216,40 +336,56 @@ export class WebampApp extends Application {
     );
 
     if (webampTaskbarButton) {
-      webampTaskbarButton.addEventListener("click", (event) => {
+      webampTaskbarClickHandler = (event) => {
         event.preventDefault();
         event.stopPropagation();
+        event.stopImmediatePropagation();
+
         if (isMinimized) {
           this.showWebamp();
         } else {
           this.minimizeWebamp();
         }
-      });
+      };
+
+      webampTaskbarButton.addEventListener("click", webampTaskbarClickHandler, true);
     }
   }
 
   showWebamp() {
-    const webampElement = document.getElementById("webamp");
-    if (!webampElement) return;
+    if (!webampContainer) return;
 
-    webampElement.style.display = "block";
-    webampElement.style.visibility = "visible";
-    isMinimized = false;
-    webampContainer.style.zIndex = $Window.Z_INDEX++;
-    if (webampTaskbarButton) {
-      updateTaskbarButton("webamp-taskbar-button", true, false);
+    const webampElement = document.getElementById("webamp");
+
+    webampContainer.style.display = "block";
+    webampContainer.style.visibility = "visible";
+    if (webampElement) {
+      webampElement.style.display = "block";
+      webampElement.style.visibility = "visible";
     }
+    isMinimized = false;
+    focusWebampContainer();
+    if (webampTaskbarButton) {
+      updateTaskbarButton("webamp", true, false);
+    }
+
+    bringWebampMenusToFront();
   }
 
   minimizeWebamp() {
-    const webampElement = document.getElementById("webamp");
-    if (!webampElement) return;
+    if (!webampContainer) return;
 
-    webampElement.style.display = "none";
-    webampElement.style.visibility = "hidden";
+    const webampElement = document.getElementById("webamp");
+
+    webampContainer.style.display = "none";
+    webampContainer.style.visibility = "hidden";
+    if (webampElement) {
+      webampElement.style.display = "none";
+      webampElement.style.visibility = "hidden";
+    }
     isMinimized = true;
     if (webampTaskbarButton) {
-      updateTaskbarButton("webamp-taskbar-button", false, true);
+      updateTaskbarButton("webamp", false, true);
     }
   }
 
@@ -265,10 +401,32 @@ export class WebampApp extends Application {
       webampInstance = null;
     }
 
+    if (webampTaskbarButton && webampTaskbarClickHandler) {
+      webampTaskbarButton.removeEventListener("click", webampTaskbarClickHandler, true);
+      webampTaskbarClickHandler = null;
+    }
+
     if (webampTaskbarButton) {
-      removeTaskbarButton("webamp-taskbar-button");
+      removeTaskbarButton("webamp");
       webampTaskbarButton = null;
     }
+
+    if (webampFocusHandler) {
+      document.removeEventListener("mousedown", webampFocusHandler, true);
+      webampFocusHandler = null;
+    }
+
+    const webampElement = document.getElementById("webamp");
+    if (webampElement && webampElementMouseDownHandler) {
+      webampElement.removeEventListener("mousedown", webampElementMouseDownHandler, true);
+    }
+    webampElementMouseDownHandler = null;
+
+    if (webampMenuObserver) {
+      webampMenuObserver.disconnect();
+      webampMenuObserver = null;
+    }
+
     isMinimized = false;
   }
 }
