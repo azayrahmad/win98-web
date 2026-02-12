@@ -278,6 +278,12 @@ export class DesktopThemesApp extends Application {
     return win;
   }
 
+  async _onLaunch(data) {
+    if (typeof data === "string") {
+      await this.loadFile(data);
+    }
+  }
+
   _createMenuBar(win) {
     return new MenuBar({
       "&File": [{ label: "E&xit", action: () => win.close() }],
