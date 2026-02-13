@@ -3,84 +3,84 @@
   "topics": [
     {
       "title": "Welcome to Help",
-      "file": "/win98-web/apps/paint/help/default.html"
+      "file": "default.html"
     },
     {
       "title": "Drawing Lines and Shapes",
       "children": [
-        { "title": "Draw a straight line", "file": "/win98-web/apps/paint/help/paint_lines.html" },
-        { "title": "Draw a free-form line", "file": "/win98-web/apps/paint/help/paint_freeform_lines.html" },
-        { "title": "Draw a curved line", "file": "/win98-web/apps/paint/help/paint_curves.html" },
-        { "title": "Draw an ellipse or circle", "file": "/win98-web/apps/paint/help/paint_ovals.html" },
-        { "title": "Draw a rectangle or square", "file": "/win98-web/apps/paint/help/paint_rectangles.html" },
-        { "title": "Draw a polygon", "file": "/win98-web/apps/paint/help/paint_polygons.html" }
+        { "title": "Draw a straight line", "file": "paint_lines.html" },
+        { "title": "Draw a free-form line", "file": "paint_freeform_lines.html" },
+        { "title": "Draw a curved line", "file": "paint_curves.html" },
+        { "title": "Draw an ellipse or circle", "file": "paint_ovals.html" },
+        { "title": "Draw a rectangle or square", "file": "paint_rectangles.html" },
+        { "title": "Draw a polygon", "file": "paint_polygons.html" }
       ]
     },
     {
       "title": "Putting Text in Pictures",
       "children": [
-        { "title": "Type and format text", "file": "/win98-web/apps/paint/help/paint_text.html" }
+        { "title": "Type and format text", "file": "paint_text.html" }
       ]
     },
     {
       "title": "Working with Color",
       "children": [
-        { "title": "Set the default foreground and background colors", "file": "/win98-web/apps/paint/help/paint_set_default_colors.html" },
-        { "title": "Fill an area with color", "file": "/win98-web/apps/paint/help/paint_fill.html" },
-        { "title": "Paint with a brush", "file": "/win98-web/apps/paint/help/paint_brush.html" },
-        { "title": "Create an airbrush effect", "file": "/win98-web/apps/paint/help/paint_airbrush.html" },
-        { "title": "Create custom colors", "file": "/win98-web/apps/paint/help/paint_custom_colors.html" },
-        { "title": "Use black and white instead of color", "file": "/win98-web/apps/paint/help/paint_blackwhite.html" },
-        { "title": "Invert all the colors in a picture", "file": "/win98-web/apps/paint/help/paint_invert.html" },
-        { "title": "Change the color of an existing line", "file": "/win98-web/apps/paint/help/paint_change_color.html" },
-        { "title": "Copy color from one area or object to another", "file": "/win98-web/apps/paint/help/paint_not_in_color_box.html" }
+        { "title": "Set the default foreground and background colors", "file": "paint_set_default_colors.html" },
+        { "title": "Fill an area with color", "file": "paint_fill.html" },
+        { "title": "Paint with a brush", "file": "paint_brush.html" },
+        { "title": "Create an airbrush effect", "file": "paint_airbrush.html" },
+        { "title": "Create custom colors", "file": "paint_custom_colors.html" },
+        { "title": "Use black and white instead of color", "file": "paint_blackwhite.html" },
+        { "title": "Invert all the colors in a picture", "file": "paint_invert.html" },
+        { "title": "Change the color of an existing line", "file": "paint_change_color.html" },
+        { "title": "Copy color from one area or object to another", "file": "paint_not_in_color_box.html" }
       ]
     },
     {
       "title": "Erasing",
       "children": [
-        { "title": "Erase a small area", "file": "/win98-web/apps/paint/help/paint_erase_small.html" },
-        { "title": "Erase a large area", "file": "/win98-web/apps/paint/help/paint_erase_large.html" },
-        { "title": "Erase an entire image", "file": "/win98-web/apps/paint/help/paint_clear_image.html" },
-        { "title": "Undo changes", "file": "/win98-web/apps/paint/help/paint_undo.html" }
+        { "title": "Erase a small area", "file": "paint_erase_small.html" },
+        { "title": "Erase a large area", "file": "paint_erase_large.html" },
+        { "title": "Erase an entire image", "file": "paint_clear_image.html" },
+        { "title": "Undo changes", "file": "paint_undo.html" }
       ]
     },
     {
       "title": "Working with Part of the Picture",
       "children": [
-        { "title": "Select part of a picture", "file": "/win98-web/apps/paint/help/paint_cutout_select.html" },
-        { "title": "Copy and paste part of a picture", "file": "/win98-web/apps/paint/help/paint_cutout_copy_move.html" },
-        { "title": "Save part of a picture into a bitmap file", "file": "/win98-web/apps/paint/help/paint_cutout_save.html" }
+        { "title": "Select part of a picture", "file": "paint_cutout_select.html" },
+        { "title": "Copy and paste part of a picture", "file": "paint_cutout_copy_move.html" },
+        { "title": "Save part of a picture into a bitmap file", "file": "paint_cutout_save.html" }
       ]
     },
     {
       "title": "Changing How Your Picture Looks on the Screen",
       "children": [
-        { "title": "Change the size of your picture", "file": "/win98-web/apps/paint/help/paint_change_size.html" },
-        { "title": "Zoom in or out", "file": "/win98-web/apps/paint/help/paint_zoom.html" },
-        { "title": "Enlarge the size of the viewing area", "file": "/win98-web/apps/paint/help/paint_enlarge_area.html" },
-        { "title": "Display gridlines", "file": "/win98-web/apps/paint/help/paint_grid.html" },
-        { "title": "Flip or rotate a picture", "file": "/win98-web/apps/paint/help/paint_flip_picture.html" },
-        { "title": "Stretch or skew an item", "file": "/win98-web/apps/paint/help/paint_skew_picture.html" }
+        { "title": "Change the size of your picture", "file": "paint_change_size.html" },
+        { "title": "Zoom in or out", "file": "paint_zoom.html" },
+        { "title": "Enlarge the size of the viewing area", "file": "paint_enlarge_area.html" },
+        { "title": "Display gridlines", "file": "paint_grid.html" },
+        { "title": "Flip or rotate a picture", "file": "paint_flip_picture.html" },
+        { "title": "Stretch or skew an item", "file": "paint_skew_picture.html" }
       ]
     },
     {
       "title": "Printing",
       "children": [
-        { "title": "Print a picture", "file": "/win98-web/apps/paint/help/paint_print.html" }
+        { "title": "Print a picture", "file": "paint_print.html" }
       ]
     },
     {
       "title": "Using Paint with Other Programs",
       "children": [
-        { "title": "Insert a bitmap file into the current picture", "file": "/win98-web/apps/paint/help/paint_insert_file.html" }
+        { "title": "Insert a bitmap file into the current picture", "file": "paint_insert_file.html" }
       ]
     },
     {
       "title": "Tips and Tricks",
       "children": [
-        { "title": "Use a picture as your desktop background", "file": "/win98-web/apps/paint/help/paint_wallpaper.html" },
-        { "title": "Display the tool box", "file": "/win98-web/apps/paint/help/paint_toolbox.html" }
+        { "title": "Use a picture as your desktop background", "file": "paint_wallpaper.html" },
+        { "title": "Display the tool box", "file": "paint_toolbox.html" }
       ]
     }
   ]

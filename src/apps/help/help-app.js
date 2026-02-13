@@ -104,8 +104,16 @@ class HelpApp extends Application {
     this._setupSearch();
 
     // Show default topic
-    const defaultTopic = this.currentHelpData.topics?.[0] || { title: "Welcome", file: "default.html" };
-    this._showTopic(defaultTopic);
+    let defaultTopic = this.currentHelpData.topics?.[0];
+    if (defaultTopic && !defaultTopic.file) {
+      // If the first topic is a folder, try to show default.html if it exists
+      // otherwise _showTopic will handle the lack of file gracefully
+      this._showTopic({ file: "default.html" });
+    } else if (!defaultTopic) {
+      this._showTopic({ title: "Welcome", file: "default.html" });
+    } else {
+      this._showTopic(defaultTopic);
+    }
   }
 
   parseHHC(hhcText) {
@@ -312,7 +320,11 @@ class HelpApp extends Application {
     const contentPanel = this.win.$content.find(".content-panel");
     let url = topic.file;
     if (url && !url.startsWith("http") && !url.startsWith("/")) {
-        url = this.rootPath ? `${this.rootPath}/${url}` : `${import.meta.env.BASE_URL}${url}`;
+      const base = (this.rootPath || import.meta.env.BASE_URL).replace(
+        /\/+$/,
+        "",
+      );
+      url = `${base}/${url.replace(/^\/+/, "")}`;
     }
 
     if (url) {

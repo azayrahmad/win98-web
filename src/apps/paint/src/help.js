@@ -9,7 +9,9 @@ let $help_window;
 function show_help() {
 	if (window.System && window.System.launchApp) {
 		import('../help.json').then((module) => {
-			window.System.launchApp("help", module.default);
+			const helpData = { ...module.default };
+			helpData.baseUrl = `${import.meta.env.BASE_URL}apps/paint/help`;
+			window.System.launchApp("help", helpData);
 		});
 		return;
 	}
@@ -19,8 +21,8 @@ function show_help() {
 	}
 	$help_window = open_help_viewer({
 		title: localize("Paint Help"),
-		root: "/win98-web/apps/paint/help",
-		contentsFile: "/win98-web/apps/paint/help/mspaint.hhc",
+		root: `${import.meta.env.BASE_URL}apps/paint/help`,
+		contentsFile: `${import.meta.env.BASE_URL}apps/paint/help/mspaint.hhc`,
 	}).$help_window;
 	$help_window.on("close", () => {
 		$help_window = null;
@@ -34,7 +36,7 @@ function open_help_viewer(options) {
 	const $help_window = $Window({
 		title: options.title || "Help Topics",
 		icons: {
-			16: "/win98-web/apps/paint/images/chm-16x16.png",
+			16: `${import.meta.env.BASE_URL}apps/paint/images/chm-16x16.png`,
 		},
 		resizable: true,
 	});
@@ -113,10 +115,12 @@ function open_help_viewer(options) {
 	}, () => forward_length > 0);
 	add_toolbar_button("Options", 3, () => { }, () => false); // @TODO: hotkey and underline on O
 	add_toolbar_button("Web Help", 4, () => {
-		iframe.src = "/win98-web/apps/paint/help/online_support.htm";
+		iframe.src = `${import.meta.env.BASE_URL}apps/paint/help/online_support.htm`;
 	});
 
-	const $iframe = $Iframe({ src: "/win98-web/apps/paint/help/default.html" }).addClass("inset-deep");
+	const $iframe = $Iframe({
+		src: `${import.meta.env.BASE_URL}apps/paint/help/default.html`,
+	}).addClass("inset-deep");
 	const iframe = $iframe[0];
 	iframe.$window = $help_window; // for focus handling integration
 	const $resizer = $(E("div")).addClass("resizer");
@@ -226,7 +230,9 @@ function open_help_viewer(options) {
 
 	const $default_item_li = $(E("li")).addClass("page");
 	$default_item_li.append($Item("Welcome to Help").on("click", () => {
-		$iframe.attr({ src: "/win98-web/apps/paint/help/default.html" });
+		$iframe.attr({
+			src: `${import.meta.env.BASE_URL}apps/paint/help/default.html`,
+		});
 	}));
 	$contents.append($default_item_li);
 

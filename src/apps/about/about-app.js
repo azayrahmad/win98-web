@@ -52,6 +52,24 @@ export class AboutApp extends Application {
   }
 
   async openFile(markdown, title) {
+    marked.use({
+      renderer: {
+        image(href, title, text) {
+          if (typeof href === "object" && href !== null) {
+            const token = href;
+            href = token.href;
+            title = token.title;
+            text = token.text;
+          }
+          let src = href;
+          if (src && !src.startsWith("http") && !src.startsWith("/")) {
+            src = `${import.meta.env.BASE_URL}${src.replace(/^\.\//, "")}`;
+          }
+          return `<img src="${src}" title="${title || ""}" alt="${text || ""}">`;
+        },
+      },
+    });
+
     const html = marked.parse(markdown);
     const win = new $Window({
       title: title,
