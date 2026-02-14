@@ -10,11 +10,12 @@ function show_help() {
 	if (window.System && window.System.launchApp) {
 		import('../help.json').then((module) => {
 			const helpData = JSON.parse(JSON.stringify(module.default));
-			const baseUrl = import.meta.env.BASE_URL || "/";
 			const processTopics = (topics) => {
 				topics.forEach((topic) => {
-					if (topic.file) {
-						topic.file = topic.file.replace("/win98-web/", baseUrl);
+					if (topic.file && topic.file.startsWith("/win98-web/")) {
+						// Strip the hardcoded base path to make it relative,
+						// letting HelpApp handle the current environment's BASE_URL.
+						topic.file = topic.file.substring("/win98-web/".length);
 					}
 					if (topic.children) {
 						processTopics(topic.children);

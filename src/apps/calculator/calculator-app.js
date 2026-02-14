@@ -89,7 +89,7 @@ export class CalculatorApp extends Application {
             title: "Calculator Help",
             hhc,
             hhk,
-            baseUrl: `${import.meta.env.BASE_URL}apps/calculator/help`
+            baseUrl: `${import.meta.env.BASE_URL}apps/calculator/help/`
           }),
         },
         {

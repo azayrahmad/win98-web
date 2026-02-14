@@ -15,23 +15,29 @@ function extractConfig(content) {
 
 function generateRegistry() {
     const rawMetadata = {};
-    const dirs = fs.readdirSync(appsDir);
+    const searchDirs = ['src/apps', 'src/shell'];
 
-    for (const dir of dirs) {
-        const dirPath = path.join(appsDir, dir);
-        if (!fs.statSync(dirPath).isDirectory()) continue;
+    for (const searchDir of searchDirs) {
+        if (!fs.existsSync(searchDir)) continue;
+        const dirs = fs.readdirSync(searchDir);
 
-        const files = fs.readdirSync(dirPath);
-        const appFile = files.find(f => f.endsWith('-app.js'));
+        for (const dir of dirs) {
+            const dirPath = path.join(searchDir, dir);
+            if (!fs.statSync(dirPath).isDirectory()) continue;
 
-        if (appFile) {
-            const content = fs.readFileSync(path.join(dirPath, appFile), 'utf-8');
-            const config = extractConfig(content);
-            if (config) {
-                rawMetadata[dir] = {
-                    config,
-                    file: `../apps/${dir}/${appFile}`
-                };
+            const files = fs.readdirSync(dirPath);
+            const appFile = files.find(f => f.endsWith('-app.js'));
+
+            if (appFile) {
+                const content = fs.readFileSync(path.join(dirPath, appFile), 'utf-8');
+                const config = extractConfig(content);
+                if (config) {
+                    const relativeSearchDir = searchDir.replace('src/', '');
+                    rawMetadata[dir] = {
+                        config,
+                        file: `../${relativeSearchDir}/${dir}/${appFile}`
+                    };
+                }
             }
         }
     }

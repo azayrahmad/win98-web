@@ -323,14 +323,11 @@ class HelpApp extends Application {
     const contentPanel = this.win.$content.find(".content-panel");
     let url = topic.file;
     if (url && !url.startsWith("http") && !url.startsWith("/")) {
-        if (this.rootPath) {
-            const root = this.rootPath.endsWith("/") ? this.rootPath.slice(0, -1) : this.rootPath;
-            url = `${root}/${url}`;
-        } else {
-            const base = import.meta.env.BASE_URL || "/";
-            const normalizedBase = base.endsWith("/") ? base : `${base}/`;
-            url = `${normalizedBase}${url}`;
-        }
+        let base = this.rootPath || import.meta.env.BASE_URL || "/";
+        // Ensure base ends with a slash and url doesn't start with one
+        if (!base.endsWith("/")) base += "/";
+        if (url.startsWith("/")) url = url.substring(1);
+        url = base + url;
     }
 
     if (url) {
