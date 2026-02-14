@@ -9,7 +9,20 @@ let $help_window;
 function show_help() {
 	if (window.System && window.System.launchApp) {
 		import('../help.json').then((module) => {
-			window.System.launchApp("help", module.default);
+			const helpData = JSON.parse(JSON.stringify(module.default));
+			const baseUrl = import.meta.env.BASE_URL || "/";
+			const processTopics = (topics) => {
+				topics.forEach((topic) => {
+					if (topic.file) {
+						topic.file = topic.file.replace("/win98-web/", baseUrl);
+					}
+					if (topic.children) {
+						processTopics(topic.children);
+					}
+				});
+			};
+			processTopics(helpData.topics);
+			window.System.launchApp("help", helpData);
 		});
 		return;
 	}

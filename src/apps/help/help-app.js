@@ -104,7 +104,18 @@ class HelpApp extends Application {
     this._setupSearch();
 
     // Show default topic
-    const defaultTopic = this.currentHelpData.topics?.[0] || { title: "Welcome", file: "default.html" };
+    const findFirstFile = (topics) => {
+        for (const topic of topics) {
+            if (topic.file) return topic;
+            if (topic.children) {
+                const found = findFirstFile(topic.children);
+                if (found) return found;
+            }
+        }
+        return null;
+    };
+
+    const defaultTopic = findFirstFile(this.currentHelpData.topics || []) || { title: "Welcome", file: "default.html" };
     this._showTopic(defaultTopic);
   }
 
@@ -312,7 +323,14 @@ class HelpApp extends Application {
     const contentPanel = this.win.$content.find(".content-panel");
     let url = topic.file;
     if (url && !url.startsWith("http") && !url.startsWith("/")) {
-        url = this.rootPath ? `${this.rootPath}/${url}` : `${import.meta.env.BASE_URL}${url}`;
+        if (this.rootPath) {
+            const root = this.rootPath.endsWith("/") ? this.rootPath.slice(0, -1) : this.rootPath;
+            url = `${root}/${url}`;
+        } else {
+            const base = import.meta.env.BASE_URL || "/";
+            const normalizedBase = base.endsWith("/") ? base : `${base}/`;
+            url = `${normalizedBase}${url}`;
+        }
     }
 
     if (url) {
