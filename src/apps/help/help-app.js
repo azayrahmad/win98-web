@@ -137,15 +137,16 @@ class HelpApp extends Application {
             for (const param of obj.querySelectorAll("param")) {
                 const name = param.getAttribute("name");
                 const value = param.getAttribute("value");
-                if (name) params[name] = value;
+                if (name) params[name.toLowerCase()] = value;
             }
         }
 
-        if (!params.Name) continue;
+        const name = params.name || params.label;
+        if (!name) continue;
 
         const item = {
-          title: params.Name.trim(),
-          file: params.Local,
+          title: name.trim(),
+          file: params.local || params.file,
           children: []
         };
 
@@ -174,16 +175,18 @@ class HelpApp extends Application {
     // HHK files can be just a list of OBJECTs without LIs
     const objects = doc.querySelectorAll("object[type='text/sitemap'], object[type='Text/sitemap']");
     for (const obj of objects) {
-        const params = [];
+        const params = {};
         for (const param of obj.querySelectorAll("param")) {
-            params.push({ name: param.getAttribute("name"), value: param.getAttribute("value") });
+            const name = param.getAttribute("name");
+            const value = param.getAttribute("value");
+            if (name) params[name.toLowerCase()] = value;
         }
-        const nameParams = params.filter(p => p.name === "Name");
-        const localParams = params.filter(p => p.name === "Local");
-        if (nameParams.length > 0) {
+
+        const name = params.name || params.label;
+        if (name) {
             items.push({
-                title: nameParams[0].value,
-                file: localParams.length > 0 ? localParams[0].value : null
+                title: name,
+                file: params.local || params.file
             });
         }
     }
@@ -329,6 +332,8 @@ class HelpApp extends Application {
         if (url.startsWith("/")) url = url.substring(1);
         url = base + url;
     }
+
+    console.log(`HelpApp: Showing topic "${topic.title}" with URL: ${url}`);
 
     if (url) {
         let iframe = contentPanel.find("iframe")[0];
