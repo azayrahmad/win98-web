@@ -177,7 +177,7 @@ export const appRegistry = {
       title: "Wolfenstein 3D",
       description: "Play Wolfenstein 3D",
       icon: ICONS.msdos,
-      category: "Accessories/Games",
+      category: "",
       width: 640,
       height: 480,
     },
@@ -186,7 +186,7 @@ export const appRegistry = {
       title: "Beneath a Steel Sky",
       description: "Play Beneath a Steel Sky",
       icon: ICONS.msdos,
-      category: "Accessories/Games",
+      category: "",
       width: 640,
       height: 480,
     },
@@ -195,12 +195,25 @@ export const appRegistry = {
       title: "SimCity 2000 Demo",
       description: "Play SimCity 2000 Demo",
       icon: ICONS.msdos,
-      category: "Accessories/Games",
+      category: "",
       width: 640,
       height: 480,
     }
   ],
     importApp: () => import("../apps/dos-box/dos-box-app.js")
+  },
+  "dos-games-downloader": {
+    config: {
+      id: "dos-games-downloader",
+      title: "DOS Games Downloader",
+      description: "Download and install DOS games.",
+      icon: ICONS.msdos,
+      width: 400,
+      height: 350,
+      resizable: true,
+      isSingleton: true,
+    },
+    importApp: () => import("../apps/dos-games-downloader/dos-games-downloader-app.js")
   },
   "dx-ball": {
     config: {
