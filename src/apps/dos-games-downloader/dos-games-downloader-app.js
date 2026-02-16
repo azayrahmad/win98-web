@@ -127,9 +127,13 @@ export class DosGamesDownloaderApp extends Application {
 
       const btn = document.createElement("button");
       btn.style.width = "80px";
-      btn.textContent = isInstalled ? "Installed" : "Install";
-      btn.disabled = isInstalled;
-      btn.onclick = () => this.installGame(game, btn);
+      if (isInstalled) {
+        btn.textContent = "Play";
+        btn.onclick = () => window.System.launchApp(game.id);
+      } else {
+        btn.textContent = "Install";
+        btn.onclick = () => this.installGame(game, btn);
+      }
       item.appendChild(btn);
 
       this.listContainer.appendChild(item);
@@ -184,7 +188,9 @@ export class DosGamesDownloaderApp extends Application {
         new CustomEvent("zen-fs-change", { detail: { path: DOS_GAMES_DESKTOP_PATH } }),
       );
 
-      btn.textContent = "Installed";
+      btn.textContent = "Play";
+      btn.disabled = false;
+      btn.onclick = () => window.System.launchApp(game.id);
     } catch (e) {
       console.error(`Failed to install ${game.title}:`, e);
       btn.textContent = "Error";

@@ -204,15 +204,15 @@ export const appRegistry = {
   },
   "dos-games-downloader": {
     config: {
-      id: "dos-games-downloader",
-      title: "DOS Games Downloader",
-      description: "Download and install DOS games.",
-      icon: ICONS.msdos,
-      width: 400,
-      height: 350,
-      resizable: true,
-      isSingleton: true,
-    },
+    id: "dos-games-downloader",
+    title: "DOS Games Downloader",
+    description: "Download and install DOS games.",
+    icon: ICONS.msdos,
+    width: 400,
+    height: 350,
+    resizable: true,
+    isSingleton: true,
+  },
     importApp: () => import("../apps/dos-games-downloader/dos-games-downloader-app.js")
   },
   "dx-ball": {
