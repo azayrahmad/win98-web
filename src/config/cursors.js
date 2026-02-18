@@ -251,12 +251,149 @@ import underwaterSizeWE from "../assets/cursor/Underwater Horizontal Resize.cur"
 import underwaterPen from "../assets/cursor/Underwater Handwriting.cur";
 import underwaterUp from "../assets/cursor/Underwater Alternate Select.cur";
 
+export class CursorItem {
+  constructor(path = "") {
+    this.path = path;
+  }
+}
+
+export class CursorScheme {
+  static ALL_CURSORS = [
+    "arrow",
+    "beam",
+    "busy",
+    "wait",
+    "help",
+    "move",
+    "no",
+    "cross",
+    "sizeNESW",
+    "sizeNS",
+    "sizeNWSE",
+    "sizeWE",
+    "pen",
+    "up",
+    "hand",
+    "uparrow",
+  ];
+
+  constructor(id, cursorsData = {}) {
+    this.id = id;
+    this.cursors = {};
+
+    for (const cursorKey of CursorScheme.ALL_CURSORS) {
+      const data = cursorsData[cursorKey];
+      const path = typeof data === "string" ? data : data?.path || "";
+      this.cursors[cursorKey] = new CursorItem(path);
+    }
+  }
+
+  /**
+   * Gets the cursor URL for a given type, falling back to the default scheme if not found.
+   * @param {string} type
+   * @returns {string|null}
+   */
+  getCursor(type) {
+    const cursor = this.cursors[type]?.path;
+    if (cursor) return cursor;
+
+    if (this.id !== "default") {
+      return cursors.default?.getCursor(type);
+    }
+    return null;
+  }
+
+  /**
+   * Creates a cursor theme configuration object for CSS custom properties.
+   * If a cursor type is not provided in this scheme, it defaults to the corresponding
+   * system cursor keyword (e.g., 'auto', 'text').
+   * @returns {object} A theme configuration object.
+   */
+  getCSSVariables() {
+    const cursorSet = this.cursors;
+    const defaultAnimatedCursors = {
+      "--cursor-wait": { value: "wait", animated: true, type: "busy" },
+      "--cursor-progress": { value: "progress", animated: true, type: "wait" },
+    };
+
+    const getUrl = (cursorItem) => {
+      return cursorItem?.path ? `url(${cursorItem.path})` : null;
+    };
+
+    const baseCursors = {
+      "--cursor-default": {
+        value: getUrl(cursorSet.arrow)
+          ? `${getUrl(cursorSet.arrow)}, auto`
+          : "auto",
+      },
+      "--cursor-pointer": {
+        value: getUrl(cursorSet.arrow)
+          ? `${getUrl(cursorSet.arrow)}, pointer`
+          : "pointer",
+      },
+      "--cursor-text": {
+        value: getUrl(cursorSet.beam)
+          ? `${getUrl(cursorSet.beam)}, text`
+          : "text",
+      },
+      "--cursor-help": {
+        value: getUrl(cursorSet.help)
+          ? `${getUrl(cursorSet.help)}, help`
+          : "help",
+      },
+      "--cursor-move": {
+        value: getUrl(cursorSet.move)
+          ? `${getUrl(cursorSet.move)}, move`
+          : "move",
+      },
+      "--cursor-grab": {
+        value: "grab",
+      },
+      "--cursor-grabbing": {
+        value: "grabbing",
+      },
+      "--cursor-not-allowed": {
+        value: getUrl(cursorSet.no)
+          ? `${getUrl(cursorSet.no)}, not-allowed`
+          : "not-allowed",
+      },
+      "--cursor-crosshair": {
+        value: getUrl(cursorSet.cross)
+          ? `${getUrl(cursorSet.cross)}, crosshair`
+          : "crosshair",
+      },
+      "--cursor-nesw-resize": {
+        value: getUrl(cursorSet.sizeNESW)
+          ? `${getUrl(cursorSet.sizeNESW)}, nesw-resize`
+          : "nesw-resize",
+      },
+      "--cursor-ns-resize": {
+        value: getUrl(cursorSet.sizeNS)
+          ? `${getUrl(cursorSet.sizeNS)}, ns-resize`
+          : "ns-resize",
+      },
+      "--cursor-nwse-resize": {
+        value: getUrl(cursorSet.sizeNWSE)
+          ? `${getUrl(cursorSet.sizeNWSE)}, nwse-resize`
+          : "nwse-resize",
+      },
+      "--cursor-we-resize": {
+        value: getUrl(cursorSet.sizeWE)
+          ? `${getUrl(cursorSet.sizeWE)}, ew-resize`
+          : "ew-resize",
+      },
+    };
+
+    return { ...baseCursors, ...defaultAnimatedCursors };
+  }
+}
+
 export const cursors = {
-  default: {
+  default: new CursorScheme("default", {
     busy: defaultBusy,
     wait: defaultWait,
-  },
-  "dangerous-creatures": {
+  }),
+  "dangerous-creatures": new CursorScheme("dangerous-creatures", {
     arrow: dcArrow,
     beam: dcBeam,
     busy: dcBusy,
@@ -269,8 +406,8 @@ export const cursors = {
     sizeNS: dcNS,
     sizeNWSE: dcNWSE,
     sizeWE: dcWE,
-  },
-  "60s-usa": {
+  }),
+  "60s-usa": new CursorScheme("60s-usa", {
     arrow: usaArrow,
     beam: usaBeam,
     busy: usaBusy,
@@ -283,8 +420,8 @@ export const cursors = {
     sizeNS: usaNS,
     sizeNWSE: usaNWSE,
     sizeWE: usaWE,
-  },
-  "inside-your-computer": {
+  }),
+  "inside-your-computer": new CursorScheme("inside-your-computer", {
     arrow: computerArrow,
     beam: computerBeam,
     busy: computerBusy,
@@ -297,8 +434,8 @@ export const cursors = {
     sizeNS: computerNS,
     sizeNWSE: computerNWSE,
     sizeWE: computerWE,
-  },
-  sports: {
+  }),
+  sports: new CursorScheme("sports", {
     arrow: sportsArrow,
     beam: sportsBeam,
     busy: sportsBusy,
@@ -311,8 +448,8 @@ export const cursors = {
     sizeNS: sportsNS,
     sizeNWSE: sportsNWSE,
     sizeWE: sportsWE,
-  },
-  "leonardo-da-vinci": {
+  }),
+  "leonardo-da-vinci": new CursorScheme("leonardo-da-vinci", {
     arrow: ldvArrow,
     beam: ldvBeam,
     busy: ldvBusy,
@@ -327,8 +464,8 @@ export const cursors = {
     sizeWE: ldvWE,
     pen: ldvPen,
     up: ldvUp,
-  },
-  "more-windows": {
+  }),
+  "more-windows": new CursorScheme("more-windows", {
     arrow: mwArrow,
     beam: mwBeam,
     busy: mwBusy,
@@ -343,8 +480,8 @@ export const cursors = {
     sizeWE: mwWE,
     pen: mwPen,
     up: mwUp,
-  },
-  mystery: {
+  }),
+  mystery: new CursorScheme("mystery", {
     arrow: mysteryArrow,
     beam: mysteryBeam,
     busy: mysteryBusy,
@@ -359,8 +496,8 @@ export const cursors = {
     sizeWE: mysteryWE,
     pen: mysteryPen,
     up: mysteryUp,
-  },
-  nature: {
+  }),
+  nature: new CursorScheme("nature", {
     arrow: natureArrow,
     beam: natureBeam,
     busy: natureBusy,
@@ -375,8 +512,8 @@ export const cursors = {
     sizeWE: natureWE,
     pen: naturePen,
     up: natureUp,
-  },
-  baseball: {
+  }),
+  baseball: new CursorScheme("baseball", {
     arrow: baseballArrow,
     beam: baseballBeam,
     busy: baseballBusy,
@@ -391,8 +528,8 @@ export const cursors = {
     sizeWE: baseballSizeWE,
     pen: baseballPen,
     up: baseballUp,
-  },
-  jungle: {
+  }),
+  jungle: new CursorScheme("jungle", {
     arrow: jungleArrow,
     beam: jungleBeam,
     busy: jungleBusy,
@@ -407,8 +544,8 @@ export const cursors = {
     sizeWE: jungleSizeWE,
     pen: junglePen,
     up: jungleUp,
-  },
-  space: {
+  }),
+  space: new CursorScheme("space", {
     arrow: spaceArrow,
     beam: spaceBeam,
     busy: spaceBusy,
@@ -423,8 +560,8 @@ export const cursors = {
     sizeWE: spaceSizeWE,
     pen: spacePen,
     up: spaceUp,
-  },
-  underwater: {
+  }),
+  underwater: new CursorScheme("underwater", {
     arrow: underwaterArrow,
     beam: underwaterBeam,
     busy: underwaterBusy,
@@ -439,8 +576,8 @@ export const cursors = {
     sizeWE: underwaterSizeWE,
     pen: underwaterPen,
     up: underwaterUp,
-  },
-  science: {
+  }),
+  science: new CursorScheme("science", {
     arrow: scienceArrow,
     beam: scienceBeam,
     busy: scienceBusy,
@@ -455,8 +592,8 @@ export const cursors = {
     sizeWE: scienceWE,
     pen: sciencePen,
     up: scienceUp,
-  },
-  "the-golden-era": {
+  }),
+  "the-golden-era": new CursorScheme("the-golden-era", {
     arrow: tgeArrow,
     beam: tgeBeam,
     busy: tgeBusy,
@@ -471,8 +608,8 @@ export const cursors = {
     sizeWE: tgeWE,
     pen: tgePen,
     up: tgeUp,
-  },
-  travel: {
+  }),
+  travel: new CursorScheme("travel", {
     arrow: travelArrow,
     beam: travelBeam,
     busy: travelBusy,
@@ -487,8 +624,8 @@ export const cursors = {
     sizeWE: travelWE,
     pen: travelPen,
     up: travelUp,
-  },
-  "windows-98": {
+  }),
+  "windows-98": new CursorScheme("windows-98", {
     arrow: w98Arrow,
     beam: w98Beam,
     busy: w98Busy,
@@ -503,76 +640,8 @@ export const cursors = {
     sizeWE: w98WE,
     pen: w98Pen,
     up: w98Up,
-  },
+  }),
 };
 
-/**
- * Creates a cursor theme configuration object for CSS custom properties.
- * If a cursor type is not provided in `cursorSet`, it defaults to the corresponding
- * system cursor keyword (e.g., 'auto', 'text').
- * @param {object} cursorSet - An object containing paths to cursor files for a theme.
- * @returns {object} A theme configuration object.
- */
-function createCursorTheme(cursorSet) {
-  const defaultAnimatedCursors = {
-    "--cursor-wait": { value: "wait", animated: true, type: "busy" },
-    "--cursor-progress": { value: "progress", animated: true, type: "wait" },
-  };
-
-  const baseCursors = {
-    "--cursor-default": {
-      value: cursorSet.arrow ? `url(${cursorSet.arrow}), auto` : "auto",
-    },
-    "--cursor-pointer": {
-      value: cursorSet.arrow ? `url(${cursorSet.arrow}), pointer` : "pointer",
-    },
-    "--cursor-text": {
-      value: cursorSet.beam ? `url(${cursorSet.beam}), text` : "text",
-    },
-    "--cursor-help": {
-      value: cursorSet.help ? `url(${cursorSet.help}), help` : "help",
-    },
-    "--cursor-move": {
-      value: cursorSet.move ? `url(${cursorSet.move}), move` : "move",
-    },
-    "--cursor-grab": {
-      value: "grab",
-    },
-    "--cursor-grabbing": {
-      value: "grabbing",
-    },
-    "--cursor-not-allowed": {
-      value: cursorSet.no ? `url(${cursorSet.no}), not-allowed` : "not-allowed",
-    },
-    "--cursor-crosshair": {
-      value: cursorSet.cross
-        ? `url(${cursorSet.cross}), crosshair`
-        : "crosshair",
-    },
-    "--cursor-nesw-resize": {
-      value: cursorSet.sizeNESW
-        ? `url(${cursorSet.sizeNESW}), nesw-resize`
-        : "nesw-resize",
-    },
-    "--cursor-ns-resize": {
-      value: cursorSet.sizeNS
-        ? `url(${cursorSet.sizeNS}), ns-resize`
-        : "ns-resize",
-    },
-    "--cursor-nwse-resize": {
-      value: cursorSet.sizeNWSE
-        ? `url(${cursorSet.sizeNWSE}), nwse-resize`
-        : "nwse-resize",
-    },
-    "--cursor-we-resize": {
-      value: cursorSet.sizeWE
-        ? `url(${cursorSet.sizeWE}), ew-resize`
-        : "ew-resize",
-    },
-  };
-
-  return { ...baseCursors, ...defaultAnimatedCursors };
-}
-
 export const getCursorThemes = (themeId) =>
-  createCursorTheme(cursors[themeId] || cursors.default);
+  (cursors[themeId] || cursors.default).getCSSVariables();

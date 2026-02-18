@@ -1,0 +1,33 @@
+{
+  "title": "Windows Help",
+  "topics": [
+    {
+      "title": "Troubleshooting",
+      "icon": "book",
+      "file": "help/default/troubleshooting.htm",
+      "children": [
+        {
+          "title": "Printing Problems",
+          "icon": "page",
+          "file": "help/default/printing_problems.html"
+        },
+        {
+          "title": "Network Problems",
+          "icon": "page",
+          "file": "help/default/network_problems.html"
+        }
+      ]
+    },
+    {
+      "title": "Using Accessibility Features",
+      "icon": "book",
+      "children": [
+        {
+          "title": "Magnifier",
+          "icon": "page",
+          "file": "help/default/magnifier.html"
+        }
+      ]
+    }
+  ]
+}

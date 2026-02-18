@@ -25,3 +25,7 @@ The Webamp app integrates a faithful recreation of the classic Winamp music play
 - **UI Integration**:
   - **Taskbar API**: Custom functions (`createTaskbarButton`, `updateTaskbarButton`, `removeTaskbarButton`) are used to manage the app's presence and state on the system taskbar.
   - **DOM Manipulation**: A container `div` is created and appended to the `document.body` to serve as the mounting point for the Webamp instance.
+
+## Screenshot
+
+![Screenshot of the webamp app](./screenshot.png)

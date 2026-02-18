@@ -25,3 +25,7 @@ The Paint application provides a classic drawing and image editing experience wi
 3.  Choose a color from the color palette at the bottom.
 4.  Click and drag on the canvas to draw.
 5.  Use the menu bar at the top (`File`, `Edit`, `View`, `Image`, `Colors`, `Help`) to access more advanced features like opening files, saving your work, and applying image effects.
+
+## Screenshot
+
+![Screenshot of the paint app](./screenshot.png)

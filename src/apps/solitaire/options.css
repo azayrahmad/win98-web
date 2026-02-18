@@ -1,0 +1,17 @@
+.solitaire-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+}
+
+.solitaire-options-container .options-row {
+    display: flex;
+    gap: 10px;
+}
+
+.solitaire-options-container .options-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}

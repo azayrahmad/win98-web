@@ -1,0 +1,185 @@
+.minesweeper-app {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--ButtonFace);
+    border: 2px solid;
+    border-color: var(--ButtonHilight) var(--ButtonShadow) var(--ButtonShadow)
+        var(--ButtonHilight);
+    padding: 5px;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--ButtonFace);
+    border: 2px solid;
+    border-color: var(--ButtonShadow) var(--ButtonHilight) var(--ButtonHilight)
+        var(--ButtonShadow);
+    padding: 3px;
+    margin-bottom: 5px;
+}
+
+.mine-count,
+.timer {
+    background-color: var(--ButtonDkShadow);
+    padding: 1px;
+}
+
+.sprite-display {
+    display: flex;
+}
+
+.digit {
+    width: 13px;
+    height: 23px;
+    background-repeat: no-repeat;
+}
+
+.smiley {
+    width: 23px;
+    height: 23px;
+    background-image: url("assets/minesweeper-smiley-neutral.png");
+    background-size: auto;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 2px solid;
+    border-color: var(--ButtonHilight) var(--ButtonDkShadow)
+        var(--ButtonDkShadow) var(--ButtonHilight);
+    box-shadow: 1px 1px 0 var(--ButtonShadow);
+}
+
+.smiley:active {
+    border-color: var(--ButtonDkShadow) var(--ButtonHilight)
+        var(--ButtonHilight) var(--ButtonDkShadow);
+    box-shadow: inset 1px 1px 0 var(--ButtonShadow);
+    background-position: calc(50% + 1px) calc(50% + 1px);
+}
+
+.game-board {
+    display: grid;
+    border: 2px solid;
+    border-color: var(--ButtonShadow) var(--ButtonHilight) var(--ButtonHilight)
+        var(--ButtonShadow);
+}
+
+.cell {
+    width: 16px;
+    height: 16px;
+    background-color: var(--ButtonFace);
+    border: 2px solid;
+    border-color: var(--ButtonHilight) var(--ButtonShadow) var(--ButtonShadow)
+        var(--ButtonHilight);
+    box-sizing: border-box;
+    text-align: center;
+    font-weight: bold;
+    font-size: 12px;
+    line-height: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cell img {
+    width: 10px;
+    height: 10px;
+    display: block;
+}
+
+.cell.revealed {
+    border: 1px solid var(--ButtonShadow);
+}
+
+.cell.mine {
+    background-image: url("assets/mine.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+/* New 98 style */
+.minesweeper-app.style-98 .cell {
+    border: none;
+    padding: 0;
+}
+
+.minesweeper-app.style-98 .tile {
+    width: 16px;
+    height: 16px;
+    background-image: url("assets/minesweeper-game.png");
+    background-repeat: no-repeat;
+}
+
+.minesweeper-app.style-98 .tile.unopened {
+    background-position: 0 0;
+}
+
+.minesweeper-app.style-98 .tile.flag {
+    background-position: 0 -16px;
+}
+
+.minesweeper-app.style-98 .tile.question {
+    background-position: 0 -32px;
+}
+
+.minesweeper-app.style-98 .tile.mine-exploded {
+    background-position: 0 -48px;
+}
+
+.minesweeper-app.style-98 .tile.not-mine {
+    background-position: 0 -64px;
+}
+
+.minesweeper-app.style-98 .tile.mine {
+    background-position: 0 -80px;
+}
+
+.minesweeper-app.style-98 .tile.cell-8 {
+    background-position: 0 -112px;
+}
+
+.minesweeper-app.style-98 .tile.cell-7 {
+    background-position: 0 -128px;
+}
+
+.minesweeper-app.style-98 .tile.cell-6 {
+    background-position: 0 -144px;
+}
+
+.minesweeper-app.style-98 .tile.cell-5 {
+    background-position: 0 -160px;
+}
+
+.minesweeper-app.style-98 .tile.cell-4 {
+    background-position: 0 -176px;
+}
+
+.minesweeper-app.style-98 .tile.cell-3 {
+    background-position: 0 -192px;
+}
+
+.minesweeper-app.style-98 .tile.cell-2 {
+    background-position: 0 -208px;
+}
+
+.minesweeper-app.style-98 .tile.cell-1 {
+    background-position: 0 -224px;
+}
+
+.minesweeper-app.style-98 .tile.cell-0 {
+    background-position: 0 -240px;
+}
+
+.minesweeper-app.style-98 .cell.pressed .tile.unopened,
+.minesweeper-app.style-98 .cell.pressed .tile.question {
+    background-position: 0 -240px;
+}
+
+.cell.pressed {
+    border: 0;
+}
+
+.cell.flagged {
+    background-image: url("assets/flag.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+}

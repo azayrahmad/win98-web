@@ -1,0 +1,35 @@
+.animated-logo-container {
+    width: 38px;
+    height: 20px;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.animated-logo {
+    width: 20px;
+    height: 20px;
+    background-image: url("https://github.com/user-attachments/files/23015223/Bitmap304.bmp");
+    background-repeat: no-repeat;
+    background-size: 20px 820px; /* Scale the sprite sheet down */
+    animation: play 1.5s steps(41) infinite;
+}
+
+.animated-logo-container.animate-only-busy .animated-logo {
+    animation: none;
+}
+
+.cursor-busy .animated-logo-container.animate-only-busy .animated-logo,
+.cursor-wait .animated-logo-container.animate-only-busy .animated-logo {
+    animation: play 1.5s steps(41) infinite;
+}
+
+@keyframes play {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 0 -820px; /* Animate through the scaled sprite sheet */
+    }
+}

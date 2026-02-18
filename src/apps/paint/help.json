@@ -1,0 +1,87 @@
+{
+  "title": "Paint Help",
+  "topics": [
+    {
+      "title": "Welcome to Help",
+      "file": "apps/paint/help/default.html"
+    },
+    {
+      "title": "Drawing Lines and Shapes",
+      "children": [
+        { "title": "Draw a straight line", "file": "apps/paint/help/paint_lines.html" },
+        { "title": "Draw a free-form line", "file": "apps/paint/help/paint_freeform_lines.html" },
+        { "title": "Draw a curved line", "file": "apps/paint/help/paint_curves.html" },
+        { "title": "Draw an ellipse or circle", "file": "apps/paint/help/paint_ovals.html" },
+        { "title": "Draw a rectangle or square", "file": "apps/paint/help/paint_rectangles.html" },
+        { "title": "Draw a polygon", "file": "apps/paint/help/paint_polygons.html" }
+      ]
+    },
+    {
+      "title": "Putting Text in Pictures",
+      "children": [
+        { "title": "Type and format text", "file": "apps/paint/help/paint_text.html" }
+      ]
+    },
+    {
+      "title": "Working with Color",
+      "children": [
+        { "title": "Set the default foreground and background colors", "file": "apps/paint/help/paint_set_default_colors.html" },
+        { "title": "Fill an area with color", "file": "apps/paint/help/paint_fill.html" },
+        { "title": "Paint with a brush", "file": "apps/paint/help/paint_brush.html" },
+        { "title": "Create an airbrush effect", "file": "apps/paint/help/paint_airbrush.html" },
+        { "title": "Create custom colors", "file": "apps/paint/help/paint_custom_colors.html" },
+        { "title": "Use black and white instead of color", "file": "apps/paint/help/paint_blackwhite.html" },
+        { "title": "Invert all the colors in a picture", "file": "apps/paint/help/paint_invert.html" },
+        { "title": "Change the color of an existing line", "file": "apps/paint/help/paint_change_color.html" },
+        { "title": "Copy color from one area or object to another", "file": "apps/paint/help/paint_not_in_color_box.html" }
+      ]
+    },
+    {
+      "title": "Erasing",
+      "children": [
+        { "title": "Erase a small area", "file": "apps/paint/help/paint_erase_small.html" },
+        { "title": "Erase a large area", "file": "apps/paint/help/paint_erase_large.html" },
+        { "title": "Erase an entire image", "file": "apps/paint/help/paint_clear_image.html" },
+        { "title": "Undo changes", "file": "apps/paint/help/paint_undo.html" }
+      ]
+    },
+    {
+      "title": "Working with Part of the Picture",
+      "children": [
+        { "title": "Select part of a picture", "file": "apps/paint/help/paint_cutout_select.html" },
+        { "title": "Copy and paste part of a picture", "file": "apps/paint/help/paint_cutout_copy_move.html" },
+        { "title": "Save part of a picture into a bitmap file", "file": "apps/paint/help/paint_cutout_save.html" }
+      ]
+    },
+    {
+      "title": "Changing How Your Picture Looks on the Screen",
+      "children": [
+        { "title": "Change the size of your picture", "file": "apps/paint/help/paint_change_size.html" },
+        { "title": "Zoom in or out", "file": "apps/paint/help/paint_zoom.html" },
+        { "title": "Enlarge the size of the viewing area", "file": "apps/paint/help/paint_enlarge_area.html" },
+        { "title": "Display gridlines", "file": "apps/paint/help/paint_grid.html" },
+        { "title": "Flip or rotate a picture", "file": "apps/paint/help/paint_flip_picture.html" },
+        { "title": "Stretch or skew an item", "file": "apps/paint/help/paint_skew_picture.html" }
+      ]
+    },
+    {
+      "title": "Printing",
+      "children": [
+        { "title": "Print a picture", "file": "apps/paint/help/paint_print.html" }
+      ]
+    },
+    {
+      "title": "Using Paint with Other Programs",
+      "children": [
+        { "title": "Insert a bitmap file into the current picture", "file": "apps/paint/help/paint_insert_file.html" }
+      ]
+    },
+    {
+      "title": "Tips and Tricks",
+      "children": [
+        { "title": "Use a picture as your desktop background", "file": "apps/paint/help/paint_wallpaper.html" },
+        { "title": "Display the tool box", "file": "apps/paint/help/paint_toolbox.html" }
+      ]
+    }
+  ]
+}

@@ -118,24 +118,46 @@
   function $Window(options = {}) {
     // @TODO: handle all option defaults here
     // and validate options.
+    if (options.closable === undefined) {
+      options.closable = true;
+    }
+    if (options.minimizable === undefined) {
+      options.minimizable = true;
+    }
+    if (options.maximizable === undefined) {
+      options.maximizable = true;
+    }
+    if (options.allowFullscreen === undefined) {
+      options.allowFullscreen = false;
+    }
+    if (options.startFullscreen === undefined) {
+      options.startFullscreen = false;
+    }
 
     // WOW, this is ugly. It's kind of impressive, almost.
+    const tagName = options.tagName || (options.modal ? "dialog" : "article");
     var $w = /** @type {OSGUI$Window} */ (
       $(
         /** @type {HTMLElement & { $window: OSGUI$Window; }}*/ (
-          /** @type {unknown} */ (E("div"))
+          /** @type {unknown} */ (E(tagName))
         ),
       )
         .addClass("window os-window")
         .appendTo("#screen")
     );
+
+    if (tagName === "article") {
+      $w.attr("role", "window");
+    }
+
     // TODO: A $Window.fromElement (or similar) static method using a Map would be better for type checking.
     $w[0].$window = $w;
+    $w.options = options;
     $w.element = $w[0];
     /** @type {OSGUI$Window[]} */
     $w.child_$windows = []; // Initialize as an instance property
     $w[0].id = `os-window-${Math.random().toString(36).substr(2, 9)}`;
-    $w.$titlebar = $(E("div")).addClass("window-titlebar").appendTo($w);
+    $w.$titlebar = $(E("header")).addClass("window-titlebar").appendTo($w);
     $w.$title_area = $(E("div"))
       .addClass("window-title-area")
       .appendTo($w.$titlebar);
@@ -150,13 +172,16 @@
         .appendTo($w.$titlebar);
       $w.$minimize.attr("aria-label", "Minimize window"); // @TODO: for taskbarless minimized windows, "restore"
       $w.$minimize.append("<span class='window-button-icon'></span>");
+      if (!options.minimizable) {
+        $w.$minimize.prop("disabled", true);
+      }
     }
     if (options.maximizeButton !== false) {
       $w.$maximize = $(E("button"))
         .addClass("window-maximize-button window-action-maximize window-button")
         .appendTo($w.$titlebar);
       $w.$maximize.attr("aria-label", "Maximize or restore window"); // @TODO: specific text for the state
-      if (!options.resizable) {
+      if (!options.resizable || !options.maximizable) {
         $w.$maximize.prop("disabled", true);
       }
       $w.$maximize.append("<span class='window-button-icon'></span>");
@@ -167,8 +192,11 @@
         .appendTo($w.$titlebar);
       $w.$x.attr("aria-label", "Close window");
       $w.$x.append("<span class='window-button-icon'></span>");
+      if (!options.closable) {
+        $w.$x.prop("disabled", true);
+      }
     }
-    $w.$content = $(E("div")).addClass("window-content").appendTo($w);
+    $w.$content = $(E("section")).addClass("window-content").appendTo($w);
     $w.$content.attr("tabIndex", "-1");
     $w.$content.css("outline", "none");
     if (options.toolWindow) {
@@ -536,11 +564,19 @@
                   // This prevents the parent window from unfocusing when focus moves from the iframe to the window's titlebar, for example.
                   if (
                     !document.activeElement ||
-                    !$w.$window[0].contains(document.activeElement)
+                    !$w[0].contains(document.activeElement)
                   ) {
                     stopShowingAsFocused();
                   }
                 });
+                updateIframeFullscreenStyle(iframe, document.fullscreenElement === $w.element);
+                iframe.contentWindow.addEventListener("keydown", (e) => {
+                  if (e.altKey && e.key === "Enter" && options.allowFullscreen) {
+                    $w.toggleFullscreen();
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }
+                }, true);
                 observeIframes(iframe.contentDocument);
               });
             } catch (error) {
@@ -783,12 +819,16 @@
     /** @type {{ position: string; left: string; top: string; width: string; height: string; }} */
     let before_minimize;
     $w.minimize = () => {
+      if (!options.minimizable) {
+        return;
+      }
       minimize_target_el = minimize_target_el || task?.$task[0];
       if (animating_titlebar) {
         when_done_animating_titlebar.push($w.minimize);
         return;
       }
       if ($w.is(":visible")) {
+        $w.trigger("minimize");
         if (minimize_target_el && !$w.hasClass("minimized-without-taskbar")) {
           window.playSound?.("Minimize");
           const before_rect = $w.$titlebar[0].getBoundingClientRect();
@@ -924,6 +964,7 @@
         return;
       }
       if ($w.is(":hidden")) {
+        $w.trigger("restore");
         window.playSound?.("RestoreUp");
         const before_rect = minimize_target_el.getBoundingClientRect();
         $w.show();
@@ -940,7 +981,7 @@
     /** @type {{ position: string; left: string; top: string; width: string; height: string; }} */
     let before_maximize;
     $w.maximize = () => {
-      if (!options.resizable) {
+      if (!options.resizable || !options.maximizable) {
         return;
       }
       if (animating_titlebar) {
@@ -1018,6 +1059,50 @@
         }
       });
     };
+    $w.toggleFullscreen = () => {
+      if (!document.fullscreenElement) {
+        $w.element.requestFullscreen().catch((err) => {
+          console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+        });
+      } else {
+        document.exitFullscreen().catch((err) => {
+          console.error(`Error attempting to exit full-screen mode: ${err.message} (${err.name})`);
+        });
+      }
+    };
+
+    const updateIframeFullscreenStyle = (iframe, isFullscreen) => {
+      try {
+        if (isFullscreen) {
+          if (!iframe.contentDocument.getElementById("os-gui-fullscreen-cursor-hide")) {
+            const style = iframe.contentDocument.createElement("style");
+            style.id = "os-gui-fullscreen-cursor-hide";
+            style.textContent = "html, body, canvas { cursor: none !important; }";
+            iframe.contentDocument.head.appendChild(style);
+          }
+        } else {
+          iframe.contentDocument.getElementById("os-gui-fullscreen-cursor-hide")?.remove();
+        }
+      } catch (e) {
+        // May fail for cross-origin iframes
+      }
+    };
+
+    const handleFullscreenChange = () => {
+      const isFullscreen = document.fullscreenElement === $w.element;
+      if (isFullscreen) {
+        $w.addClass("is-fullscreen");
+        $w.find("iframe").each((i, iframe) => updateIframeFullscreenStyle(iframe, true));
+        $w.trigger("fullscreenchange", { isFullscreen: true });
+      } else {
+        $w.removeClass("is-fullscreen");
+        $w.find("iframe").each((i, iframe) => updateIframeFullscreenStyle(iframe, false));
+        $w.trigger("fullscreenchange", { isFullscreen: false });
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
     $w.restore = () => {
       if ($w.is(".minimized-without-taskbar, .minimized")) {
         $w.unminimize();
@@ -1505,6 +1590,12 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
           // @TODO: make this optional, and probably default false
           $w.close();
           break;
+        case 13: // Enter
+          if (e.altKey && options.allowFullscreen) {
+            $w.toggleFullscreen();
+            e.preventDefault();
+          }
+          break;
       }
     });
 
@@ -1556,7 +1647,26 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
       $w.applyBounds();
     };
 
-    $G.on("resize", $w.bringTitleBarInBounds);
+    $w.onResize = () => {
+      $w.bringTitleBarInBounds();
+      if ($w.hasClass("maximized")) {
+        const screen = document.getElementById("desktop-area");
+        if (screen) {
+          const screenRect = screen.getBoundingClientRect();
+          $w.css({
+            width: screenRect.width,
+            height: screenRect.height,
+          });
+        }
+      }
+    };
+    $G.on("resize", $w.onResize);
+
+    const desktopArea = document.getElementById("desktop-area");
+    if (desktopArea && window.ResizeObserver) {
+      $w.desktopResizeObserver = new ResizeObserver($w.onResize);
+      $w.desktopResizeObserver.observe(desktopArea);
+    }
 
     /** @type {number} */
     var drag_offset_x;
@@ -1726,7 +1836,6 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
           cursor_name === "we" ? "ew-resize" : `${cursor_name}-resize`;
         const cursor = `var(--cursor-${theme_cursor_name}-resize, ${fallback})`;
 
-        console.log(cursor);
         // Note: MISNOMER: innerWidth() is less "inner" than width(), because it includes padding!
         // Here's a little diagram of sorts:
         // outerWidth(true): margin, [ outerWidth(): border, [ innerWidth(): padding, [ width(): content ] ] ]
@@ -2015,6 +2124,9 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
         );
       }
       if (!force) {
+        if (!options.closable) {
+          return;
+        }
         var e = $.Event("close");
         $w.trigger(e);
         if (e.isDefaultPrevented()) {
@@ -2027,6 +2139,10 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
       $w.closed = true;
       minimize_slots[$w._minimize_slot_index] = null;
 
+      for (const $childWindow of $w.child_$windows) {
+        $childWindow.close(true);
+      }
+
       $event_target.triggerHandler("closed");
       $w.trigger("closed");
       // TODO: change usages of "close" to "closed" where appropriate
@@ -2034,6 +2150,9 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
 
       // MUST be after any events are triggered!
       $w.remove();
+      $G.off("resize", $w.onResize);
+      $w.desktopResizeObserver?.disconnect();
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
 
       // TODO: support modals, which should focus what was focused before the modal was opened.
       // (Note: must consider the element being removed from the DOM, or hidden, or made un-focusable)
@@ -2075,6 +2194,12 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
 
     if (!$component) {
       $w.center();
+    }
+
+    if (options.startFullscreen && options.allowFullscreen) {
+      requestAnimationFrame(() => {
+        $w.toggleFullscreen();
+      });
     }
 
     // mustHaveMethods($w, windowInterfaceMethods);

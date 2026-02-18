@@ -8,13 +8,89 @@
             href="/src/assets/icons/windows-4.png"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>azOS Second Edition</title>
-        <link rel="stylesheet" href="/src/styles/scanlines-css.css" />
-        <link rel="stylesheet" href="/src/styles/98.css" />
+        <title>Windows 98 Web Edition - Nostalgic Browser Experience</title>
+        <meta
+            name="description"
+            content="Relive the nostalgia with Windows 98 Web Edition. A fully functional web-based OS simulation featuring classic games like Doom and Pinball, iconic apps like Paint and Webamp, and everyone's favorite assistant, Clippy."
+        />
+        <meta
+            name="keywords"
+            content="Windows 98, Web OS, Simulation, Retro Gaming, Doom, Pinball, SimCity 2000, Clippy, Retro Tech, Nostalgia, Windows 98 Simulator, Classic Windows Online, Retro Browser Games"
+        />
+        <meta name="author" content="azayrahmad" />
+        <link rel="canonical" href="https://azayrahmad.github.io/win98-web/" />
+        <meta
+            name="google-site-verification"
+            content="5Lv76sxt6l0zQB0e4glOTLLt3BjWArL8r4HVuc0J8xI"
+        />
+
+        <!-- Google tag (gtag.js) -->
+        <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=G-5CJC8GVEQE"
+        ></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
+
+            gtag("config", "G-5CJC8GVEQE");
+        </script>
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta
+            property="og:url"
+            content="https://azayrahmad.github.io/win98-web/"
+        />
+        <meta property="og:title" content="Windows 98 Web Edition" />
+        <meta property="og:site_name" content="Windows 98 Web Edition" />
+        <meta
+            property="og:description"
+            content="Experience Windows 98 right in your browser. Classic games, apps, and nostalgia included!"
+        />
+        <meta
+            property="og:image"
+            content="https://azayrahmad.github.io/win98-web/img/og-image.png"
+        />
+        <meta
+            property="og:image:alt"
+            content="Windows 98 Desktop Simulation with various applications open"
+        />
+
+        <!-- Twitter -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+            name="twitter:url"
+            content="https://azayrahmad.github.io/win98-web/"
+        />
+        <meta name="twitter:title" content="Windows 98 Web Edition" />
+        <meta
+            name="twitter:description"
+            content="Experience Windows 98 right in your browser. Classic games, apps, and nostalgia included!"
+        />
+        <meta
+            name="twitter:image"
+            content="https://azayrahmad.github.io/win98-web/img/og-image.png"
+        />
+
+        <link rel="stylesheet" href="/src/shared/styles/scanlines-css.css" />
+        <link rel="stylesheet" href="/src/shared/styles/98.css" />
         <link href="./os-gui/layout.css" rel="stylesheet" type="text/css" />
         <link href="./os-gui/windows-98.css" rel="stylesheet" type="text/css" />
         <link
             href="./os-gui/dialog-window.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css"
+        />
+        <link
+            href="/src/shared/styles/tooltip.css"
             rel="stylesheet"
             type="text/css"
         />
@@ -27,15 +103,16 @@
             rel="stylesheet"
             type="text/css"
         />
-        <link rel="stylesheet" href="/src/styles/desktop.css" />
-        <link rel="stylesheet" href="/src/styles/taskbar.css" />
-        <link rel="stylesheet" href="/src/styles/shutdown-dialog.css" />
+        <link rel="stylesheet" href="/src/shell/desktop/desktop.css" />
+        <link rel="stylesheet" href="/src/shell/taskbar/taskbar.css" />
+        <link rel="stylesheet" href="/src/shell/shutdown-dialog.css" />
         <link rel="stylesheet" href="./clippy/clippy.css" />
         <link
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css"
         />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+        <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         <script src="https://unpkg.com/prettier@2.8.8/standalone.js"></script>
@@ -43,6 +120,7 @@
         <script src="https://unpkg.com/prettier@2.8.8/parser-html.js"></script>
         <script src="https://unpkg.com/prettier@2.8.8/parser-css.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/icojs@0.20.1/dist/ico.js"></script>
+        <script src="https://adrianotiger.github.io/web-esheep/dist/esheep.min.js"></script>
         <script>
             // The parser scripts populate a global `prettierPlugins` object.
             // We need to convert it to an array to pass to prettier.format().
@@ -60,6 +138,7 @@
         <script src="./os-gui/MenuPopup.js"></script>
         <script src="./os-gui/ContextMenu.js"></script>
         <script src="./jquery-3.3.1.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
         <script src="./os-gui/$Window.js"></script>
         <script src="./os-gui/Toolbar.js"></script>
         <script src="./os-gui/AddressBar.js"></script>
@@ -79,9 +158,6 @@
                 overflow: hidden;
                 position: relative;
             }
-            #boot-log div {
-                white-space: pre-wrap;
-            }
             #boot-screen {
                 display: flex;
                 justify-content: space-between;
@@ -96,44 +172,10 @@
                 font-family: "IBM BIOS", Courier, monospace;
                 font-size: 13px;
                 line-height: 1.5;
-                padding: 2em;
+                padding: 0;
                 box-sizing: border-box;
-                overflow-y: auto;
+                overflow: hidden;
                 z-index: 9999;
-                cursor: none;
-            }
-            #boot-screen-left {
-                flex-grow: 1;
-                margin-right: 20px; /* Some spacing between columns */
-            }
-            #boot-screen-right {
-                width: 130px; /* Approximate width of the Energy Star logo */
-                flex-shrink: 0;
-                display: flex;
-                align-items: flex-end;
-                justify-content: flex-end;
-            }
-            #boot-screen-right img {
-                width: 130px; /* Specific width for the Energy Star logo */
-                height: 130px; /* Specific height for the Energy Star logo */
-            }
-            #bios-info-row {
-                display: flex;
-                align-items: flex-start;
-                margin-bottom: 20px;
-                flex-direction: row;
-            }
-            .bios-text-content {
-                display: flex;
-                flex-direction: column;
-                white-space: pre-wrap;
-                line-height: 1.2;
-            }
-            #bios-text-column {
-                /* Adjusting this from .bios-text-content for more specificity if needed */
-                flex-grow: 1;
-                white-space: pre-wrap;
-                line-height: 1.2;
             }
             #initial-boot-message {
                 position: absolute;
@@ -145,21 +187,15 @@
                 display: none;
                 height: 100%;
                 width: 100%;
+                align-items: center;
+                justify-content: center;
             }
-            #boot-screen-main-flex-container {
-                display: flex;
+            #boot-terminal {
+                width: 100%;
                 height: 100%;
-                gap: 20px;
             }
-            #boot-screen-left-column {
-                flex-grow: 1;
-                display: flex;
-                flex-direction: column;
-            }
-            #bios-logo-column {
-                width: 20px;
-                flex-shrink: 0;
-                margin-right: 10px;
+            #boot-terminal .xterm-viewport {
+                overflow-y: hidden !important;
             }
             .blinking-cursor {
                 animation: blink 1s step-end infinite;
@@ -174,45 +210,22 @@
 
     <body class="scanlines">
         <div id="screen">
-            <div id="boot-screen">
+            <section
+                id="boot-screen"
+                aria-live="polite"
+                aria-label="Boot Screen"
+            >
                 <!-- Initial boot message, visible by default -->
-                <div id="initial-boot-message">Initializing azOS...</div>
+                <div id="initial-boot-message">Initializing Windows 98...</div>
 
                 <!-- Main boot screen content (two columns), initially hidden, shown by main.js -->
-                <div id="splash-screen">
+                <section id="splash-screen" aria-label="Splash Screen">
                     <div class="loading-banner"></div>
-                </div>
+                </section>
                 <div id="boot-screen-content">
-                    <div id="boot-screen-main-flex-container">
-                        <!-- Left Column for boot text -->
-                        <div id="boot-screen-left-column">
-                            <!-- Award BIOS info row -->
-                            <div id="bios-info-row">
-                                <div id="bios-logo-column">
-                                    <img
-                                        src="/img/award.png"
-                                        alt="Award BIOS Logo"
-                                    />
-                                </div>
-                                <div id="bios-text-column">
-                                    Award Modular BIOS v4.51PG, An Energy Star
-                                    Ally<br />
-                                    Copyright (C) 1984-85, Award Software, Inc.
-                                </div>
-                            </div>
-                            <!-- Browser Info (will be updated by main.js) -->
-                            <!--<div id="browser-info" style="margin-top: 10px"></div>-->
-                            <!-- Boot Log (will be updated by main.js) -->
-                            <div id="boot-log" style="flex-grow: 1"></div>
-                        </div>
-
-                        <!-- Right Column for Energy Star logo -->
-                        <div id="boot-screen-right-column">
-                            <img src="/img/energystar.png" alt="Energy Star" />
-                        </div>
-                    </div>
+                    <div id="boot-terminal"></div>
                 </div>
-            </div>
+            </section>
             <svg style="position: absolute; pointer-events: none; bottom: 100%">
                 <defs>
                     <filter

@@ -40,3 +40,7 @@ I made this mainly to help with my job. I often need to put code snippets for my
 ## What's next 
 
 - Improve performance: Currently it's quite slow when loading a large document. Not sure how other online editors do it, but I wish I can improve this too.
+
+## Screenshot
+
+![Screenshot of the notepad app](./screenshot.png)

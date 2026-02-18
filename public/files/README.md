@@ -1,10 +1,10 @@
-# azOS, Second Edition
+# Windows 98 Web Edition
 
 A web-based JavaScript remake of Windows 98 desktop experience, focusing on desktop themes customization.
 
 ## Live Demo
 
-Experience azOS Second Edition live: **[azOS Second Edition](https://azayrahmad.github.io/azos-second-edition/)**
+Experience Windows 98 Web Edition live: **[Windows 98 Web Edition](https://azayrahmad.github.io/win98-web/)**
 
 ## Screenshots
 
@@ -36,7 +36,7 @@ Experience azOS Second Edition live: **[azOS Second Edition](https://azayrahmad.
 
 ## Featured Applications
 
-- **Assistant**: Clippy the Office Assistant has been resurrected, now powered with AI. Ask any question about azOS. Can even give you a short tour of the OS. For more details, see the [Clippy App README](./src/apps/clippy/README.md).
+- **Assistant**: Clippy the Office Assistant has been resurrected, now powered with AI. Ask any question about Windows 98. Can even give you a short tour of the OS. For more details, see the [Clippy App README](./src/apps/clippy/README.md).
 - **Notepad**: Your basic text editor, now with added syntax highlighting, code formatting, and Markdown preview. For more details, see the [Notepad App README](./src/apps/notepad/README.md).
 - **Winamp**: Play your favorite songs and playlists here. Customize with your own skins. A faithful recreation of the classic Winamp music player that runs directly on the desktop. For more details, see the [Webamp App README](./src/apps/webamp/README.md).
 - **Internet Explorer**: Surf the Internet like it was 1998. With Retro Mode enabled, you will be brought to 1998 archived version of your favorite websites.
@@ -78,7 +78,7 @@ To run this project locally, follow these steps:
 
 ## Asset Sources
 
-azOS Second Edition uses a mixture of:
+Windows 98 Web Edition uses a mixture of:
 
 - original assets created specifically for this project,
 - third-party open-source recreations

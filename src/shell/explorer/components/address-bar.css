@@ -1,0 +1,138 @@
+.address-bar {
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  background-color: var(--ButtonFace);
+  position: relative;
+}
+
+.inset-deep {
+  border: 2px groove transparent;
+  border-image: var(--inset-deep-border-image);
+  box-sizing: border-box;
+}
+
+.address-bar-label {
+  margin-right: 4px;
+  color: var(--ButtonText);
+  white-space: nowrap;
+}
+
+.address-bar-combo {
+  display: flex;
+  flex-grow: 1;
+  background-color: var(--Window);
+  align-items: center;
+  height: 22px;
+  box-sizing: border-box;
+}
+
+.address-bar-input-wrapper {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  padding-left: 2px;
+  background-color: inherit;
+  height: 100%;
+  overflow: hidden;
+}
+
+.address-bar-icon-img {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.address-bar-input {
+  flex-grow: 1;
+  font-family: 'MSW98UI';
+  border: none !important;
+  background: transparent !important;
+  outline: none !important;
+  height: 100% !important;
+  padding: 0 2px !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  width: 100%;
+}
+
+.address-bar-dropdown-button {
+  width: 16px;
+  height: 18px; /* Slightly smaller than combo height to fit inside the border if desired, but let's go with full height */
+  height: 100%;
+  background-color: var(--ButtonFace);
+  border: 1px solid var(--ButtonFace);
+  box-shadow: inset 1px 1px var(--ButtonHighlight),
+              inset -1px -1px var(--ButtonShadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  padding: 0;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.address-bar-dropdown-button:active {
+  box-shadow: inset 1px 1px var(--ButtonShadow),
+              inset -1px -1px var(--ButtonHighlight);
+}
+
+.address-bar-dropdown-button::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 3px solid var(--ButtonText);
+}
+
+.address-bar-dropdown {
+  position: fixed; /* Use fixed to avoid being cut off by sunken-panel of explorer */
+  z-index: 10000;
+  background-color: var(--Window);
+  border: 1px solid var(--ButtonText);
+  box-shadow: 2px 2px 0 var(--ButtonShadow);
+  height: 200px;
+  overflow-y: auto;
+  display: none;
+  box-sizing: border-box;
+}
+
+.address-bar-dropdown.show {
+  display: block;
+}
+
+.address-bar-tree-item {
+  display: flex;
+  align-items: center;
+  padding: 1px 4px;
+  cursor: default;
+  white-space: nowrap;
+  font-family: 'MSW98UI';
+  font-size: 12px;
+}
+
+.address-bar-tree-item:hover img {
+  filter: var(--icon-filter);
+}
+
+.address-bar-tree-item:hover .address-bar-tree-item-name {
+  background-color: var(--Hilight);
+  color: var(--HilightText);
+  outline: 1px dotted white;
+  outline-offset: -1px;
+}
+
+.address-bar-tree-item img {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  pointer-events: none;
+}
+
+.address-bar-tree-item-name {
+  pointer-events: none;
+  padding: 0 2px;
+}

@@ -1,0 +1,71 @@
+<div class="help-app">
+    <div class="toolbar">
+        <button class="hide-button lightweight">
+            <div class="icon"></div>
+            <span>Hide</span>
+        </button>
+        <button class="show-button lightweight" style="display: none">
+            <div class="icon"></div>
+            <span>Show</span>
+        </button>
+        <button class="back-button lightweight" disabled>
+            <div class="icon"></div>
+            <span>Back</span>
+        </button>
+        <button class="forward-button lightweight" disabled>
+            <div class="icon"></div>
+            <span>Forward</span>
+        </button>
+        <button class="options-button lightweight">
+            <div class="icon"></div>
+            <span>Options</span>
+        </button>
+        <button class="web-help-button lightweight">
+            <div class="icon"></div>
+            <span>Web Help</span>
+        </button>
+    </div>
+    <div class="main-area">
+        <div class="sidebar">
+            <div style="height: 100%; display: flex; flex-direction: column">
+                <menu role="tablist">
+                    <li role="tab" aria-selected="true">
+                        <a href="#" data-target="#contents">Contents</a>
+                    </li>
+                    <li role="tab" aria-selected="false">
+                        <a href="#" data-target="#index">Index</a>
+                    </li>
+                    <li role="tab" aria-selected="false">
+                        <a href="#" data-target="#search">Search</a>
+                    </li>
+                </menu>
+                <div
+                    class="tab-content outset-deep"
+                    id="contents"
+                    style="flex-grow: 1"
+                >
+                    <!-- Tree view will be rendered here -->
+                </div>
+                <div class="tab-content outset-deep" id="index" style="display: none; flex-grow: 1">
+                    <div class="index-container">
+                        <label for="index-input">Type in the keyword to find:</label>
+                        <input type="text" id="index-input" class="inset-deep">
+                        <ul id="index-list" class="inset-deep"></ul>
+                    </div>
+                </div>
+                <div class="tab-content outset-deep" id="search" style="display: none; flex-grow: 1">
+                    <div class="search-container">
+                        <label for="search-input">Type in the word(s) to search for:</label>
+                        <input type="text" id="search-input" class="inset-deep">
+                        <button id="list-topics-button">List Topics</button>
+                        <ul id="search-results" class="inset-deep"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="resizer"></div>
+        <div class="content-panel sunken-panel">
+            <!-- Selected topic content will be rendered here (iframe) -->
+        </div>
+    </div>
+</div>

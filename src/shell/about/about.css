@@ -1,0 +1,70 @@
+.about-content h1 {
+  font-size: var(--font-size-base);
+}
+
+.about-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+}
+
+.about-buttons button {
+  min-width: 80px;
+}
+
+.about-file-content {
+  box-sizing: border-box;
+}
+
+.about-file-content .sunken-panel {
+  user-select: text;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.about-file-content h1,
+.about-file-content h2,
+.about-file-content h3,
+.about-file-content h4,
+.about-file-content h5,
+.about-file-content h6 {
+  display: block;
+  font-weight: bold;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.about-file-content h1 { font-size: 1.5em; }
+.about-file-content h2 { font-size: 1.3em; }
+.about-file-content h3 { font-size: 1.1em; }
+
+.about-file-content p,
+.about-file-content li {
+  font-size: var(--font-size-base);
+  line-height: 1.4;
+}
+
+.about-file-content ul {
+  padding-left: 20px;
+  margin-bottom: 1em;
+}
+
+.about-file-content code {
+  font-family: monospace;
+  background-color: #eee;
+  padding: 0 2px;
+}
+
+.about-file-content pre {
+  background-color: #eee;
+  padding: 10px;
+  overflow: auto;
+  border: 1px inset;
+}
+
+.about-file-content img {
+  max-width: 100%;
+  height: auto;
+}

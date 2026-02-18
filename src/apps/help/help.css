@@ -1,0 +1,198 @@
+.help-app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: var(--ButtonFace);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+}
+
+.help-app .toolbar {
+    padding: 2px;
+    display: flex;
+    gap: 2px;
+}
+
+.help-app .toolbar button {
+    width: 55px;
+    height: 40px;
+    padding: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.help-app .toolbar button span {
+    font-size: 11px;
+    margin-bottom: 2px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.help-app .toolbar button .icon {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-image: url("./assets/help-viewer-toolbar-icons-grayscale.png");
+    background-repeat: no-repeat;
+}
+
+.help-app .toolbar button:not([disabled]):hover .icon {
+    background-image: url("./assets/help-viewer-toolbar-icons.png");
+}
+
+.help-app .toolbar button[disabled] .icon {
+    /* filter: url("#disabled-inset-filter"); */
+    filter: saturate(0%) opacity(50%);
+}
+
+/* Specific icon positions */
+.help-app .hide-button .icon { background-position: 0 0; }
+.help-app .show-button .icon { background-position: -275px 0; }
+.help-app .back-button .icon { background-position: -55px 0; }
+.help-app .forward-button .icon { background-position: -110px 0; }
+.help-app .options-button .icon { background-position: -165px 0; }
+.help-app .web-help-button .icon { background-position: -220px 0; }
+
+.help-app .main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    height: 0;
+    padding: 4px;
+    gap: 0;
+}
+
+.help-app .sidebar {
+    flex-basis: 200px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 50px;
+}
+
+.help-app .resizer {
+    cursor: ew-resize;
+    width: 4px;
+    box-sizing: border-box;
+    background: var(--ButtonFace);
+    border-left: 1px solid var(--ButtonShadow);
+    box-shadow: inset 1px 0 0 var(--ButtonHilight);
+    z-index: 1;
+}
+
+.help-app .content-panel {
+    flex: 1;
+    width: 0;
+    background: white;
+}
+
+.help-app .content-panel iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Tabs */
+.help-app menu[role="tablist"] {
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.help-app .tab-content {
+    background: var(--Window);
+    color: var(--WindowText);
+    overflow: auto;
+    padding: 2px;
+}
+
+/* Tree view styles */
+.help-app .tree-view, .help-app .tree-view ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.help-app .tree-view ul {
+    padding-left: 16px;
+}
+
+.help-app .tree-view li {
+    white-space: nowrap;
+    user-select: none;
+    display: block;
+}
+
+.help-app .tree-view .item {
+    display: inline-block;
+    cursor: pointer;
+    padding: 1px 2px;
+    vertical-align: middle;
+}
+
+.help-app .tree-view .item.selected {
+    background-color: var(--Hilight);
+    color: var(--HilightText);
+}
+
+.help-app .tree-node:before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 16px;
+    height: 16px;
+    background-image: url("./assets/help-icons.png");
+    background-repeat: no-repeat;
+    margin-right: 2px;
+}
+
+.help-app .tree-node.folder:before {
+    background-position: 0 0;
+}
+
+.help-app .tree-node.folder.expanded:before {
+    background-position: -16px 0;
+}
+
+.help-app .tree-node.page:before {
+    background-position: -32px 0;
+}
+
+.help-app .folder:not(.expanded) > ul {
+    display: none;
+}
+
+/* Index and Search */
+.index-container, .search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px;
+    height: 100%;
+}
+
+#index-list, #search-results {
+    flex: 1;
+    background: white;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+}
+
+#index-list li, #search-results li {
+    padding: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+#index-list li:hover, #search-results li:hover {
+    background-color: var(--Hilight);
+    color: var(--HilightText);
+}

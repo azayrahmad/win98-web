@@ -46,12 +46,14 @@ body > .window-titlebar {
 }
 
 .os-window.maximized .handle,
-.os-window.minimized-without-taskbar .handle {
-    display: none; /* prevent resizing when window is minimized */
+.os-window.minimized-without-taskbar .handle,
+.os-window.is-fullscreen .handle {
+    display: none; /* prevent resizing when window is minimized or fullscreen */
 }
 
-.os-window.minimized-without-taskbar .menus {
-    display: none; /* hide menubar when window is minimized */
+.os-window.minimized-without-taskbar .menus,
+.os-window.is-fullscreen .menus {
+    display: none; /* hide menubar when window is minimized or fullscreen */
 }
 
 /* Fix dragging things (like windows) over iframes */
@@ -63,10 +65,14 @@ body > .window-titlebar {
     display: flex;
     flex: 0 0 auto;
     flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 .menu-popup {
     position: absolute;
     box-sizing: border-box;
+    margin: 0;
 }
 .menu-popup-table {
     border-collapse: collapse;
@@ -121,6 +127,45 @@ body > .window-titlebar {
 .window.os-window {
     display: flex;
     flex-direction: column;
+}
+
+.os-window.is-fullscreen {
+    width: 100vw !important;
+    height: 100vh !important;
+    left: 0 !important;
+    top: 0 !important;
+    border: none !important;
+    margin: 0 !important;
+    z-index: 10000000 !important;
+    cursor: none !important;
+}
+
+.os-window.is-fullscreen * {
+    cursor: none !important;
+}
+
+.os-window.is-fullscreen .window-titlebar {
+    display: none !important;
+}
+
+.os-window.is-fullscreen .window-content {
+    padding: 0 !important;
+    border: none !important;
+}
+
+/* Reset <dialog> defaults that interfere with positioning and styling */
+dialog.os-window {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    max-width: none;
+    max-height: none;
 }
 
 .window-content {

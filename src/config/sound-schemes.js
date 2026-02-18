@@ -271,8 +271,77 @@ import underwaterRestoreDown from "../assets/audio/Underwater restore down.wav";
 import underwaterRestoreUp from "../assets/audio/Underwater restore up.wav";
 import underwaterStartup from "../assets/audio/Underwater startup.wav";
 
+export class SoundItem {
+  constructor(path = "") {
+    this.path = path;
+  }
+}
+
+export class SoundScheme {
+  static ALL_EVENTS = [
+    "Default",
+    "AppGPFault",
+    "Maximize",
+    "MenuCommand",
+    "MenuPopup",
+    "Minimize",
+    "Open",
+    "Close",
+    "RestoreDown",
+    "RestoreUp",
+    "SystemAsterisk",
+    "SystemExclamation",
+    "SystemExit",
+    "SystemHand",
+    "SystemQuestion",
+    "WindowsLogon",
+    "EmptyRecycleBin",
+    "ChangeTheme",
+    "DeviceConnect",
+    "DeviceDisconnect",
+    "DeviceFail",
+    "LowBatteryAlarm",
+    "MailBeep",
+    "SystemNotification",
+    "WindowsLogoff",
+    "StartNavigation",
+    "RingIn",
+    "Ringout",
+    "SystemDefault",
+  ];
+
+  constructor(name, sounds = {}) {
+    this.name = name;
+    this.sounds = {};
+
+    for (const event of SoundScheme.ALL_EVENTS) {
+      const soundData = sounds[event];
+      const path =
+        typeof soundData === "string" ? soundData : soundData?.path || "";
+      this.sounds[event] = new SoundItem(path);
+    }
+  }
+
+  /**
+   * Gets the sound URL for a given event, falling back to the Default scheme if not found.
+   * @param {string} eventName
+   * @returns {string|undefined}
+   */
+  getSound(eventName) {
+    const sound = this.sounds[eventName]?.path;
+    if (sound) return sound;
+
+    // Fallback to Default scheme if this isn't already the Default scheme
+    if (this.name !== "Default") {
+      return soundSchemes.Default?.getSound(eventName);
+    }
+
+    return undefined;
+  }
+}
+
 export const soundSchemes = {
-  Default: {
+  Default: new SoundScheme("Default", {
     Default: ding,
     AppGPFault: "",
     Maximize: "",
@@ -299,8 +368,8 @@ export const soundSchemes = {
     SystemNotification: "",
     WindowsLogoff: logoff,
     StartNavigation: start,
-  },
-  "60s USA": {
+  }),
+  "60s USA": new SoundScheme("60s USA", {
     Default: the60sUsaBeep,
     AppGPFault: the60sUsaProgramError,
     Maximize: the60sUsaMaximize,
@@ -324,8 +393,8 @@ export const soundSchemes = {
     MailBeep: "",
     SystemNotification: "",
     WindowsLogoff: "",
-  },
-  "Dangerous Creatures": {
+  }),
+  "Dangerous Creatures": new SoundScheme("Dangerous Creatures", {
     Default: dangerousCreaturesDefaultSound,
     AppGPFault: dangerousCreaturesProgramError,
     Maximize: dangerousCreaturesMaximize,
@@ -355,8 +424,8 @@ export const soundSchemes = {
     SystemNotification: "",
     WindowsLogoff: "",
     StartNavigation: "",
-  },
-  "Inside Your Computer": {
+  }),
+  "Inside Your Computer": new SoundScheme("Inside Your Computer", {
     Default: insideYourComputerDefaultSound,
     AppGPFault: insideYourComputerProgramError,
     Maximize: insideYourComputerMaximize,
@@ -373,8 +442,8 @@ export const soundSchemes = {
     SystemQuestion: insideYourComputerQuestion,
     WindowsLogon: insideYourComputerStartup,
     EmptyRecycleBin: insideYourComputerEmptyRecycleBin,
-  },
-  Sports: {
+  }),
+  Sports: new SoundScheme("Sports", {
     Default: sportsDefaultSound,
     AppGPFault: sportsProgramError,
     Maximize: sportsMaximize,
@@ -391,8 +460,8 @@ export const soundSchemes = {
     SystemQuestion: sportsQuestion,
     WindowsLogon: sportsStartup,
     EmptyRecycleBin: sportsEmptyRecycleBin,
-  },
-  "Leonardo da Vinci": {
+  }),
+  "Leonardo da Vinci": new SoundScheme("Leonardo da Vinci", {
     Default: leonardoDaVinciDefaultSound,
     AppGPFault: leonardoDaVinciProgramError,
     Maximize: leonardoDaVinciMaximize,
@@ -409,8 +478,8 @@ export const soundSchemes = {
     SystemQuestion: leonardoDaVinciQuestion,
     WindowsLogon: leonardoDaVinciStartup,
     EmptyRecycleBin: leonardoDaVinciEmptyRecycleBin,
-  },
-  Mystery: {
+  }),
+  Mystery: new SoundScheme("Mystery", {
     Default: mysteryDefaultSound,
     AppGPFault: mysteryProgramError,
     Maximize: mysteryMaximize,
@@ -427,8 +496,8 @@ export const soundSchemes = {
     SystemQuestion: mysteryQuestion,
     WindowsLogon: mysteryStartup,
     EmptyRecycleBin: mysteryEmptyRecycleBin,
-  },
-  Nature: {
+  }),
+  Nature: new SoundScheme("Nature", {
     Default: natureDefaultSound,
     AppGPFault: natureProgramError,
     Maximize: natureMaximize,
@@ -445,8 +514,8 @@ export const soundSchemes = {
     SystemQuestion: natureQuestion,
     WindowsLogon: natureStartup,
     EmptyRecycleBin: natureEmptyRecycleBin,
-  },
-  Science: {
+  }),
+  Science: new SoundScheme("Science", {
     Default: scienceDefaultSound,
     AppGPFault: scienceProgramError,
     Maximize: scienceMaximize,
@@ -463,8 +532,8 @@ export const soundSchemes = {
     SystemQuestion: scienceQuestion,
     WindowsLogon: scienceStartup,
     EmptyRecycleBin: scienceEmptyRecycleBin,
-  },
-  "The Golden Era": {
+  }),
+  "The Golden Era": new SoundScheme("The Golden Era", {
     Default: theGoldenEraDefaultSound,
     AppGPFault: theGoldenEraProgramError,
     Maximize: theGoldenEraMaximize,
@@ -481,8 +550,8 @@ export const soundSchemes = {
     SystemQuestion: theGoldenEraQuestion,
     WindowsLogon: theGoldenEraStartup,
     EmptyRecycleBin: theGoldenEraEmptyRecycleBin,
-  },
-  Travel: {
+  }),
+  Travel: new SoundScheme("Travel", {
     Default: travelDefaultSound,
     AppGPFault: travelProgramError,
     Maximize: travelMaximize,
@@ -499,8 +568,8 @@ export const soundSchemes = {
     SystemQuestion: travelQuestion,
     WindowsLogon: travelStartup,
     EmptyRecycleBin: travelEmptyRecycleBin,
-  },
-  "Windows 98": {
+  }),
+  "Windows 98": new SoundScheme("Windows 98", {
     Default: windows98DefaultSound,
     AppGPFault: windows98ProgramError,
     Maximize: windows98Maximize,
@@ -517,8 +586,8 @@ export const soundSchemes = {
     SystemQuestion: windows98Question,
     WindowsLogon: start,
     EmptyRecycleBin: windows98EmptyRecycleBin,
-  },
-  Baseball: {
+  }),
+  Baseball: new SoundScheme("Baseball", {
     Default: baseballDefaultSound,
     AppGPFault: baseballProgramError,
     Maximize: baseballMaximize,
@@ -536,8 +605,8 @@ export const soundSchemes = {
     SystemQuestion: baseballQuestion,
     WindowsLogon: baseballStartup,
     EmptyRecycleBin: baseballEmptyRecycleBin,
-  },
-  Jungle: {
+  }),
+  Jungle: new SoundScheme("Jungle", {
     Default: jungleDefaultSound,
     AppGPFault: jungleProgramError,
     Maximize: jungleMaximize,
@@ -555,8 +624,8 @@ export const soundSchemes = {
     SystemQuestion: jungleQuestion,
     WindowsLogon: jungleStartup,
     EmptyRecycleBin: jungleEmptyRecycleBin,
-  },
-  Space: {
+  }),
+  Space: new SoundScheme("Space", {
     Default: spaceDefaultSound,
     AppGPFault: spaceProgramError,
     Maximize: spaceMaximize,
@@ -574,8 +643,8 @@ export const soundSchemes = {
     SystemQuestion: spaceQuestion,
     WindowsLogon: spaceStartup,
     EmptyRecycleBin: spaceEmptyRecycleBin,
-  },
-  Underwater: {
+  }),
+  Underwater: new SoundScheme("Underwater", {
     Default: underwaterDefaultSound,
     AppGPFault: underwaterProgramError,
     Maximize: underwaterMaximize,
@@ -593,5 +662,5 @@ export const soundSchemes = {
     SystemQuestion: underwaterQuestion,
     WindowsLogon: underwaterStartup,
     EmptyRecycleBin: underwaterEmptyRecycleBin,
-  },
+  }),
 };

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Windows 98 Web Edition</title>
+    <meta name="description" content="A nostalgic, pixel-perfect recreation of Windows 98 in your browser. Experience the golden age of computing with this interactive simulation.">
+    <meta name="keywords" content="Windows 98, Retro, Web Simulator, Nostalgia, GeoCities, JavaScript, Pixel Perfect">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://azayrahmad.github.io/win98-web/about">
+    <meta property="og:title" content="About - Windows 98 Web Edition">
+    <meta property="og:description" content="A nostalgic, pixel-perfect recreation of Windows 98 in your browser.">
+    <meta property="og:image" content="https://azayrahmad.github.io/win98-web/pwa-512x512.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://azayrahmad.github.io/win98-web/about">
+    <meta property="twitter:title" content="About - Windows 98 Web Edition">
+    <meta property="twitter:description" content="A nostalgic, pixel-perfect recreation of Windows 98 in your browser.">
+    <meta property="twitter:image" content="https://azayrahmad.github.io/win98-web/pwa-512x512.png">
+
+    <link rel="canonical" href="https://azayrahmad.github.io/win98-web/about">
+    <link rel="icon" type="image/png" href="pwa-192x192.png">
+
+    <style>
+        body {
+            background-color: #000080; /* Classic Navy */
+            background-image: url('img/about/carbon-fibre.png'); /* Subtle texture */
+            color: #ffffff;
+            font-family: "Comic Sans MS", "Comic Sans", cursive;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .geocities-container {
+            background-color: #c0c0c0; /* Silver */
+            color: #000000;
+            border: 4px outset #ffffff;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #ff0000;
+            text-shadow: 2px 2px #ffff00;
+            font-family: Impact, Charcoal, sans-serif;
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        .marquee-container {
+            background: #000;
+            color: #0f0;
+            padding: 5px;
+            border: 2px inset #808080;
+            margin-bottom: 20px;
+            font-family: "Courier New", Courier, monospace;
+        }
+        .tagline {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #0000ff;
+            text-decoration: underline;
+        }
+        .iframe-wrapper {
+            margin: 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .iframe-container {
+            border: 5px ridge #ffd700;
+            padding: 10px;
+            background: #008080;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.8);
+            width: 320px;
+            height: 240px;
+            overflow: hidden;
+        }
+        iframe {
+            display: block;
+            border: 2px solid #000;
+            background: #000;
+            transform: scale(0.5);
+            transform-origin: 0 0;
+        }
+        .iframe-caption {
+            font-size: 0.9em;
+            color: #ff00ff;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        h2 {
+            background: linear-gradient(to right, #000080, #0080ff);
+            color: white;
+            padding: 5px 10px;
+            text-align: left;
+            border-left: 10px solid #ff0000;
+        }
+        ul {
+            text-align: left;
+            list-style-type: square;
+        }
+        li {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .links {
+            margin-top: 40px;
+            border-top: 3px double #000;
+            padding-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+        .links a {
+            color: #0000ee;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .links a:hover {
+            color: #ff0000;
+            background: #ffff00;
+        }
+        .visitor-counter {
+            margin-top: 30px;
+            font-family: "Courier New", Courier, monospace;
+            background: #000;
+            color: #f00;
+            display: inline-block;
+            padding: 5px 10px;
+            border: 2px solid #808080;
+        }
+        .construction {
+            margin: 20px 0;
+        }
+        blink {
+            animation: 1s blinker linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="geocities-container">
+        <div class="construction">
+            <img src="img/about/consbar2.gif" alt="Under Construction">
+        </div>
+
+        <h1>Welcome to Windows 98 Web!</h1>
+
+        <div class="marquee-container">
+            <marquee scrollamount="5">*** THE BEST WINDOWS 98 SIMULATOR ON THE WORLD WIDE WEB! *** CHECK IT OUT NOW! ***</marquee>
+        </div>
+
+        <p class="tagline">The Ultimate Pixel-Perfect Browser Recreation!</p>
+
+        <p>This is my cool website where I show off my Windows 98 project. It's built with <b>VANILLA JAVASCRIPT</b> and <b>HTML/CSS</b>. No fancy frameworks here, just like the good old days!</p>
+
+        <div class="iframe-wrapper">
+            <div class="iframe-container">
+                <iframe src="./" width="640" height="480" title="Windows 98 Web Edition Live Preview"></iframe>
+            </div>
+            <p class="iframe-caption"><blink>LIVE PREVIEW! CLICK TO PLAY!</blink></p>
+        </div>
+
+        <h2>Awesome Features:</h2>
+        <ul>
+            <li>Real <b>Start Menu</b> and <b>Taskbar</b> action!</li>
+            <li>Play <b>Solitaire</b> and <b>Minesweeper</b> until your boss catches you!</li>
+            <li>Use <b>Paint</b> and <b>WordPad</b> for all your creative needs!</li>
+            <li>AI powered <b>Clippy</b> is here to "help" you!</li>
+            <li>Change <b>Desktop Themes</b> just like a pro!</li>
+        </ul>
+
+        <h2>Cool Tech I Used:</h2>
+        <ul>
+            <li><b>ZenFS</b> for that sweet virtual hard drive!</li>
+            <li><b>98.css</b> for the authentic look and feel!</li>
+            <li><b>Vite</b> because even retro sites need a fast build!</li>
+        </ul>
+
+        <div class="links">
+            <a href="./">[ ENTER FULL SITE ]</a>
+            <a href="https://github.com/azayrahmad/win98-web" target="_blank" rel="noopener noreferrer">[ GITHUB REPO ]</a>
+        </div>
+
+        <div class="visitor-counter">
+            YOU ARE VISITOR NUMBER:
+            <script
+                type="text/javascript"
+                src="https://counter.websiteout.com/js/7/7/1000/0"
+            ></script>
+        </div>
+
+        <p style="margin-top: 20px;">
+            Best viewed in <br>
+            <img src="img/about/netscani.gif" alt="Netscape">
+            <img src="img/about/ie_anima.gif" alt="IE">
+        </p>
+
+        <p style="font-size: 0.8em;">Copyright &copy; 1998-2025 azOS Productions</p>
+    </div>
+
+    <p><a href="mailto:azayrahmad@gmail.com" style="color: #fff;">Email Me!</a></p>
+</body>
+</html>

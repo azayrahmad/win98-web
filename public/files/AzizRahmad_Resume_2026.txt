@@ -1,0 +1,172 @@
+================================================================================
+
+       ▄████▄ ▄▄▄▄▄ ▄▄ ▄▄▄▄▄   █████▄   ▄▄▄  ▄▄ ▄▄ ▄▄   ▄▄  ▄▄▄  ▄▄▄▄
+       ██▄▄██   ▄█▀ ██   ▄█▀   ██▄▄██▄ ██▀██ ██▄██ ██▀▄▀██ ██▀██ ██▀██
+       ██  ██ ▄██▄▄ ██ ▄██▄▄   ██   ██ ██▀██ ██ ██ ██   ██ ██▀██ ████▀
+
+                       Senior Software Developer
+                       Denpasar, Bali, Indonesia
+
+================================================================================
+
+Email: azayrahmad@gmail.com  |  Phone: +62 852 1752 0879
+LinkedIn: linkedin.com/in/aziz-rahmad
+
+________________________________________________________________________________
+
+>>> PROFESSIONAL SUMMARY
+________________________________________________________________________________
+
+Experienced software developer with a proven track record in developing and
+supporting enterprise software solutions across diverse markets --> Indonesia,
+Australia, and New Zealand. Demonstrated proficiency in English and
+collaboration within multinational teams. Strong academic foundation with a
+master's degree in computer science and experience delivering lectures at
+universities. Passionate about learning and keeping up with the latest
+technologies.
+
+________________________________________________________________________________
+
+>>> PROFESSIONAL EXPERIENCE
+________________________________________________________________________________
+
+
+[*] SENIOR WEB DEVELOPER                              August 2024 - Present
+    NTainers.co Pty Ltd | Sydney, Australia
+    ........................................................................
+
+    Maintain and enhance a platform that leverages artificial intelligence to
+    optimize logistics operations, Supply Chain Management (SCM), and Transport
+    Management Systems (TMS).
+
+    KEY PROJECTS:
+
+    >> NTainers.co
+       - Automated document submissions to integrated TMS using LLM technology
+       - Developed features facilitating automated integration between clients
+         and freight forwarders/cartage companies
+
+    >> Mappr.ai
+       - Developed AI-powered integration platform automating data mapping,
+         transformation, and workflow orchestration
+       - Fixed bugs and improved AI-powered Workflow Studio for API route
+         generation
+
+    >> Cargo Chat for Outlook
+       - Built AI chat interface add-in with Node.JS TypeScript connecting to
+         NTainers.co Cargo Chat service
+       - Utilized Office JavaScript API and ChatGPT for context-aware email
+         replies in one click
+       - Performed extensive refactor on Cargo Chat logic and redesigned LLM
+         pipeline --> INCREASED RESPONSE SPEED BY 75%
+
+
+[*] PART-TIME LECTURER                                February 2022 - Present
+    Primakara University | Bali, Indonesia
+    ........................................................................
+
+    Delivering lectures on Computer Science topics
+
+    COURSES TAUGHT:
+       - Basics of Programming
+       - Data Structures & Algorithms
+       - Database Systems
+       - Expert Systems
+
+
+[*] ANALYST PROGRAMMER                                October 2017 - April 2024
+    Mitrais | Bali, Indonesia
+    ........................................................................
+
+    Developed high-quality software solutions while collaborating within cross-
+    functional, international agile teams. Tested, debugged, and coordinated
+    with QA to validate software readiness. Reviewed code and provided
+    expertise to junior team members.
+
+    KEY PROJECTS:
+
+    >> Human Resource Management System (HRMS) | Dec 2023 - Apr 2024
+       - Developed and maintained HRMS product with CI/CD focus
+       - Acted as Scrum Master on rotation
+
+    >> Enterprise Suite - HR & Payroll | Oct 2017 - Dec 2023
+       - Supported client enterprise solutions' HR and Payroll modules for
+         multinational clients
+       - Implemented Australian STP & STP Phase 2
+       - Converted project libraries from VB.NET to C#
+
+
+[*] SOFTWARE CONSULTANT                               November 2015 - October 2017
+    CODE.ID | Jakarta, Indonesia
+    ........................................................................
+
+    Designed, coded, tested, and managed various applications while
+    collaborating with engineering and product teams. Developed automated tests
+    and conducted performance tuning.
+
+    KEY PROJECTS:
+
+    >> Tax Automation | Sep 2016 - Sep 2017
+       - Developed new modules for Tax Automation web application for major
+         Indonesian bank
+       - Notable: Corporate Tax module, Accrual & Prepayment module
+
+    >> Employee Connection | Jan 2016 - Dec 2016
+       - Developed new modules for Employee Connection web application
+       - Notable: Industrial Relations module (manages rule violations and
+         performance records)
+
+________________________________________________________________________________
+
+>>> EDUCATION
+________________________________________________________________________________
+
+    MASTER OF COMPUTER SCIENCE                                  2012 - 2015
+    Bogor Agricultural University
+
+    ** Graduated CUM LAUDE with GPA 3.69/4.00 **
+
+    Relevant coursework: Algorithm Analysis & Design, Advanced Software
+    Development
+
+________________________________________________________________________________
+
+>>> TECHNICAL SKILLS
+________________________________________________________________________________
+
+    Programming       : .NET Frameworks, C#, VB.NET, NodeJS, TypeScript
+
+    Databases         : MS SQL Server, PostgreSQL, Oracle
+
+    Tools             : Git, Crystal Report, SSRS
+
+    Methodologies     : Agile Methodologies, Scrum
+
+    Testing           : Unit Test, Regression Test
+
+    Cloud & AI        : Azure, ChatGPT, Azure Document Intelligence
+
+    UI Frameworks     : MudBlazor, WinForms, Fluent UI
+
+    Languages         : Professional English
+
+________________________________________________________________________________
+
+>>> CERTIFICATIONS
+________________________________________________________________________________
+
+    [X] Node.js Essential Training                       LinkedIn (Jul 2024)
+    [X] Career Essentials in GitHub Professional         GitHub (Jun 2024)
+    [X] Docker Foundations Professional                  Docker (Jun 2024)
+    [X] Foundational C#                                  Microsoft (May 2024)
+    [X] C# (Basic)                                       HackerRank (May 2024)
+    [X] SQL (Basic)                                      HackerRank (May 2024)
+    [X] EF SET C2/Proficient                             English First (May 2024)
+                                                         Score: 82/100
+    [X] Analyst Programmer Certification Program (APCP)  Mitrais (Jan 2022)
+
+================================================================================
+
+    "Passionate about learning and keeping up with the latest technologies"
+
+================================================================================

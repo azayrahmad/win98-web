@@ -53,7 +53,7 @@
 
   class Toolbar {
     constructor(items, options = {}) {
-      this.element = E("div", { class: "toolbar" });
+      this.element = E("nav", { class: "toolbar", role: "toolbar" });
       this.items = items;
       this.options = options;
       this.itemElements = [];
@@ -172,6 +172,24 @@
         const arrowButtonEl = groupEl.querySelector(".toolbar-arrow-button");
         if (arrowButtonEl) {
           arrowButtonEl.disabled = this.isDisabled(item);
+        }
+
+        // Support dynamic icons
+        const iconName =
+          typeof item.iconName === "function" ? item.iconName() : item.iconName;
+        const iconId =
+          typeof item.iconId === "function" ? item.iconId() : item.iconId;
+        let iconToUseId;
+
+        if (iconName && typeof ICON_MAP[iconName] !== "undefined") {
+          iconToUseId = ICON_MAP[iconName];
+        } else if (typeof iconId !== "undefined") {
+          iconToUseId = iconId;
+        }
+
+        if (typeof iconToUseId !== "undefined") {
+          iconEl.setAttribute("data-icon-id", iconToUseId);
+          iconEl.style.backgroundPosition = `-${iconToUseId * 20}px 0`;
         }
       });
 

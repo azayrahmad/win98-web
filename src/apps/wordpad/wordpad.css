@@ -1,0 +1,188 @@
+.wordpad-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: var(--ButtonFace);
+}
+
+.wordpad-toolbar {
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wordpad-toolbar button {
+    padding: 2px;
+}
+
+.toolbar-group {
+    display: flex;
+    align-items: center;
+}
+
+.wordpad-color-picker {
+    position: relative;
+    display: inline-block;
+}
+
+.wordpad-color-palette {
+    position: absolute;
+    background-color: var(--ButtonFace);
+    padding: 4px;
+    z-index: 99999;
+    width: 120px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px;
+}
+
+.color-swatch {
+    width: 45px;
+    height: 11px;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+.color-label {
+    white-space: nowrap;
+    cursor: pointer;
+    padding-top: 2px;
+}
+
+.wordpad-editor {
+    flex-grow: 1;
+    padding: 10px;
+    padding-top: 2px;
+    background-color: white;
+    overflow: auto;
+    font-family: "Times New Roman", serif;
+    font-size: 10pt;
+    margin: 0px 2px 2px 2px;
+    line-height: 1.4;
+}
+
+.wordpad-editor:focus {
+    outline: none;
+}
+
+.wordpad-ruler {
+    height: 15px;
+    background-color: white;
+    margin: 2px 2px 10px 12px;
+    box-sizing: border-box;
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
+.ruler-tick {
+    position: absolute;
+    width: 1px;
+    background-color: var(--ButtonText);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.ruler-tick.quarter {
+    height: 2px;
+}
+
+.ruler-tick.half {
+    height: 5px;
+}
+
+.ruler-number {
+    position: absolute;
+    font-size: 10px;
+    color: var(--ButtonText);
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.wordpad-toolbar button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toolbar-icon-1 {
+    width: 16px;
+    height: 16px;
+    background-image: url("assets/wordpad-toolbar1.png");
+    background-repeat: no-repeat;
+}
+.toolbar-icon-2 {
+    width: 16px;
+    height: 16px;
+    background-image: url("assets/wordpad-toolbar2.png");
+    background-repeat: no-repeat;
+}
+
+.icon-new {
+    background-position: 0 0;
+}
+.icon-open {
+    background-position: -16px 0;
+}
+.icon-save {
+    background-position: -32px 0;
+}
+.icon-print {
+    background-position: -48px 0;
+}
+.icon-print-preview {
+    background-position: -64px 0;
+}
+.icon-find {
+    background-position: -80px 0;
+}
+.icon-cut {
+    background-position: -96px 0;
+}
+.icon-copy {
+    background-position: -112px 0;
+}
+.icon-paste {
+    background-position: -128px 0;
+}
+.icon-undo {
+    background-position: -144px 0;
+}
+.icon-insert-date {
+    background-position: -160px 0;
+}
+
+.icon-bold {
+    background-position: 0 0;
+}
+.icon-italic {
+    background-position: -16px 0;
+}
+.icon-underline {
+    background-position: -32px 0;
+}
+.icon-color {
+    background-position: -48px 0;
+}
+.icon-align-left {
+    background-position: -64px 0;
+}
+.icon-align-center {
+    background-position: -80px 0;
+}
+.icon-align-right {
+    background-position: -96px 0;
+}
+.icon-bullets {
+    background-position: -112px 0;
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 22px;
+    background-color: var(--ButtonShadow);
+    margin: 0 4px;
+}

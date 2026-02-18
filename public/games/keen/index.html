@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Commander Keen</title>
+        <style>
+            body,
+            html {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                background-color: black;
+            }
+            .emscripten_border {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                height: 100%;
+            }
+            canvas.emscripten {
+                border: 0px none;
+                background-color: black;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="emscripten_border">
+            <canvas
+                class="emscripten"
+                id="canvas"
+                oncontextmenu="event.preventDefault()"
+                tabindex="-1"
+            ></canvas>
+        </div>
+        <script type="text/javascript">
+            var gameStartTime = 0;
+            var Module = {
+                preRun: [],
+                postRun: [],
+                noInitialRun: true,
+                noExitRuntime: true,
+                onExit: (code) => {
+                    // This is only called if noExitRuntime is false or emscripten_force_exit is used.
+                    window.parent.postMessage({ type: 'KEEN_EXIT' }, '*');
+                },
+                onRuntimeInitialized: () => {
+                    window.parent.postMessage({ type: 'KEEN_READY' }, '*');
+                },
+                printErr: (text) => {
+                    if (text.includes("program exited")) {
+                        const statusMatch = text.match(/status: (\d+)/);
+                        const isError = statusMatch && statusMatch[1] !== "0";
+                        const timeSinceStart = performance.now() - gameStartTime;
+
+                        // Ignore successful exit that often happens right after main() returns but game keeps running.
+                        // Real user quit happens much later.
+                        // If it's an error exit (status != 0), we always close.
+                        if (!isError && timeSinceStart < 3000) {
+                            console.log("Keen: Ignoring early exit(0) during startup.");
+                            return;
+                        }
+                        window.parent.postMessage({ type: 'KEEN_EXIT' }, '*');
+                    }
+                    // Suppress timing error that happens on startup but doesn't prevent game from running
+                    if (text.includes("emscripten_set_main_loop_timing")) {
+                        return;
+                    }
+                    console.error(text);
+                },
+                canvas: (function () {
+                    var canvas = document.getElementById("canvas");
+                    canvas.addEventListener(
+                        "webglcontextlost",
+                        function (e) {
+                            alert(
+                                "WebGL context lost. You will need to reload the page.",
+                            );
+                            e.preventDefault();
+                        },
+                        false,
+                    );
+                    return canvas;
+                })(),
+            };
+
+            window.addEventListener("message", (event) => {
+                if (event.data && event.data.type === "START_GAME") {
+                    gameStartTime = performance.now();
+                    const start = () => {
+                        if (typeof callMain === "function") {
+                            callMain(event.data.args || []);
+                        } else if (Module.callMain) {
+                            Module.callMain(event.data.args || []);
+                        }
+                    };
+                    setTimeout(start, 100);
+                }
+            });
+        </script>
+        <script>
+            var emterpretURL = "data.binary";
+            var emterpretXHR = new XMLHttpRequest();
+            emterpretXHR.open("GET", emterpretURL, true);
+            emterpretXHR.responseType = "arraybuffer";
+            emterpretXHR.onload = function () {
+                if (emterpretXHR.status === 200 || emterpretXHR.status === 0) {
+                    Module.emterpreterFile = emterpretXHR.response;
+                }
+                var script = document.createElement("script");
+                script.src = "chocolate-keen.js";
+                document.body.appendChild(script);
+            };
+            emterpretXHR.send(null);
+        </script>
+    </body>
+</html>

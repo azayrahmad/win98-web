@@ -1,0 +1,358 @@
+.taskbar {
+    position: absolute; /* Changed from fixed to absolute */
+    bottom: 0; /* Ensure it's pinned to the bottom */
+    left: 0;
+    width: 100%;
+    height: 24px;
+    background: var(--ButtonFace, #c0c0c0);
+    border-top: 1px solid var(--ButtonLight, #dfdfdf);
+    box-shadow: inset 0 1px var(--ButtonHilight, white);
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    z-index: 1000;
+    /*padding-bottom: env(
+        safe-area-inset-bottom
+    ); */
+    /* Ensures the taskbar isn’t obscured on mobile */
+}
+
+.taskbar-divider {
+    width: 1px;
+    height: 22px;
+    background-color: var(--ButtonShadow, grey);
+    border-right: var(--ButtonHilight, white) 1px solid;
+    margin: 0 0 0 2px;
+}
+
+.taskbar-divider-handler {
+    width: 1px;
+    height: 16px;
+    background-color: var(--ButtonFace, #c0c0c0);
+    border-top: var(--ButtonHilight, white) 1px solid;
+    border-left: var(--ButtonHilight, white) 1px solid;
+    border-right: var(--ButtonShadow, #808080) 1px solid;
+    border-bottom: var(--ButtonShadow, #808080) 1px solid;
+    padding-left: 0;
+    margin: 2px;
+}
+
+.start-button,
+.title-bar-text {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    font-weight: bold;
+    font-family: var(--font-family-title);
+    font-size: var(--font-size-title);
+}
+
+.start-button {
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+.taskbar-icon-area {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    width: auto;
+    justify-content: flex-start;
+}
+
+.taskbar-app-area {
+    padding-left: 3px;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    width: auto;
+    flex-grow: 1;
+    justify-content: flex-start;
+    gap: 3px;
+    min-width: 0;
+}
+
+.taskbar-button {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding-left: 3px;
+    min-width: 50px;
+    max-width: 200px;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-family-title);
+    font-size: var(--font-size-title);
+}
+
+.taskbar-button.selected {
+    font-weight: bold;
+}
+
+/*.taskbar-button.active {
+    box-shadow:
+        inset -1px -1px var(--ButtonHilight, #fff),
+        inset 1px 1px var(--ButtonDkShadow, #000),
+        inset -2px -2px var(--ButtonLight, #dfdfdf),
+        inset 2px 2px var(--ButtonShadow, #808080);
+    text-shadow: 1px 1px #222;
+    background-image: url("/win98/checker.png");
+    background-repeat: repeat;
+    font-weight: bold;
+}*/
+
+.taskbar-button.active img {
+    transform: translate(1px, 1px);
+    /* Move the icon when the button is active */
+}
+
+button:not(:disabled):active img {
+    transform: translate(1px, 1px);
+}
+
+.taskbar-icon {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 2px;
+    min-width: 20px;
+    min-height: 20px;
+    border: none;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.taskbar-icon img {
+    height: 16px;
+    user-select: none;
+}
+
+.start-button img,
+.taskbar-button img {
+    height: 16px;
+    margin-right: 3px;
+    user-select: none;
+}
+
+.title-bar-text img {
+    height: 16px;
+    margin-right: 4px;
+}
+
+.taskbar-button-content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* ensures children can't overflow */
+    box-sizing: border-box;
+}
+
+.taskbar-button-content img {
+    flex-shrink: 0; /* prevent icon from shrinking weirdly */
+    max-width: 100%;
+    max-height: 100%;
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
+
+.taskbar-button-text {
+    flex: 1 1 auto;
+    min-width: 0; /* required for ellipsis to work inside flex */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    max-width: 100%;
+    text-align: left;
+}
+
+.start-menu {
+    position: relative;
+    background-color: var(--ButtonFace, #c0c0c0);
+    border: 1px solid var(--ButtonDkShadow, black);
+    border-top-color: var(--ButtonLight, #dfdfdf);
+    border-left-color: var(--ButtonLight, #dfdfdf);
+    box-shadow:
+        inset -1px -1px 0 0 var(--ButtonShadow, #808080),
+        inset 1px 1px 0 0 var(--ButtonHilight, white);
+    z-index: 1000;
+    display: flex;
+    align-items: stretch;
+    overflow: visible;
+    pointer-events: auto;
+    width: -moz-fit-content;
+    width: fit-content;
+    transition: transform 130ms linear;
+}
+
+.start-menu menu {
+    list-style: none;
+    padding: 0;
+    margin: 1px;
+    margin-left: 0;
+}
+
+.start-menu li {
+    height: 32px;
+    padding: 0px 5px;
+    padding-left: 0;
+    display: flex;
+    align-items: center;
+    font-family: var(--font-family-menu);
+    font-size: var(--font-size-menu);
+    margin: 1px;
+    margin-left: 0;
+    text-decoration: none;
+}
+.start-menu-icon-wrapper {
+    width: 32px;
+    height: 32px;
+    margin-right: 7px;
+    flex-shrink: 0;
+}
+.start-menu li img {
+    width: 100%;
+    height: 100%;
+}
+.start-menu li:hover {
+    background-color: var(--Hilight, #0000a8);
+    color: var(--HilightText, #fff);
+}
+.start-menu li:hover .start-menu-icon-wrapper {
+    background-image:
+        linear-gradient(
+            oklch(from var(--Hilight) l c h),
+            oklch(from var(--Hilight) l c h)
+        ),
+        linear-gradient(
+            oklch(from var(--Hilight) l c h),
+            oklch(from var(--Hilight) l c h)
+        ),
+        var(--icon-url);
+    background-blend-mode: color, saturation, normal;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    mask-image: var(--icon-url);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-image: var(--icon-url);
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+.start-menu li:hover .start-menu-icon-wrapper img {
+    visibility: hidden;
+}
+
+.blue-rectangle {
+    width: 21px;
+    background: linear-gradient(
+        to bottom,
+        rgb(0, 0, 128) 0%,
+        rgb(0, 0, 128) 60%,
+        rgb(16, 132, 208) 85%,
+        rgb(0, 0, 128) 100%
+    );
+    background: linear-gradient(
+        to bottom,
+        var(--ActiveTitle, rgb(0, 0, 128)) 0%,
+        var(--ActiveTitle, rgb(0, 0, 128)) 60%,
+        var(--GradientActiveTitle, rgb(16, 132, 208)) 85%,
+        var(--ActiveTitle, rgb(0, 0, 128)) 100%
+    );
+    margin: 2px;
+    margin-right: 0;
+    display: grid;
+    align-items: end;
+}
+
+.start-menu-wrapper {
+    position: absolute;
+    bottom: 25px;
+    left: 2px;
+    width: fit-content;
+    height: fit-content;
+    overflow: hidden;
+    z-index: 9999;
+    display: none;
+}
+
+.start-menu-wrapper.open {
+    display: block;
+}
+
+.start-menu-wrapper.open .start-menu {
+    transition:
+        transform 130ms linear,
+        opacity 130ms linear;
+}
+
+@starting-style {
+    .start-menu-wrapper.open .start-menu {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+}
+
+.start-menu-divider {
+    width: 146px;
+    height: 1px;
+    background-color: var(--ButtonShadow, grey);
+    border-bottom: var(--ButtonHilight, white) 1px solid;
+    margin: 0 3px;
+}
+
+.system-tray {
+    height: 22px;
+    background: var(--ButtonFace, #c0c0c0);
+    border: 1px solid var(--ButtonHilight, #dfdfdf);
+    border-left: 1px solid var(--ButtonShadow, #808080);
+    border-top: 1px solid var(--ButtonShadow, #808080);
+    margin: 2px;
+    display: flex;
+    align-items: center;
+}
+
+.taskbar-clock {
+    width: 60px;
+    text-align: center;
+    font-size: var(--font-size-menu);
+    user-select: none;
+    font-family: var(--font-family-menu);
+}
+
+.tooltip-custom {
+    position: absolute;
+    padding: 5px 10px;
+    background: #333;
+    color: yellow;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 1000;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+.toolbar-menu {
+    background: silver;
+    min-height: 23px;
+}
+
+.submenu-arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 4px 0 4px 4px;
+    border-color: transparent transparent transparent var(--ButtonText, black);
+    margin-left: auto;
+}

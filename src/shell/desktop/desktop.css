@@ -1,0 +1,155 @@
+@import url("../../shared/styles/shared.css");
+
+@font-face {
+    font-family: "MSW98UI";
+    src: url("../../assets/fonts/MSW98UI-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "MSW98UI";
+    src: url("../../assets/fonts/MSW98UI-Bold.ttf") format("truetype");
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "IBM BIOS";
+    src: url("../../assets/fonts/Web437_IBM_VGA_8x14.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+}
+
+:root {
+    --background-gray: var(--ButtonFace);
+    --border-light: var(--ButtonLight);
+    --border-dark: var(--ButtonShadow);
+    --border-white: var(--ButtonHilight);
+    --border-black: var(--ButtonDkShadow);
+    --highlight-blue: var(--Hilight);
+    --highlight-text: var(--HilightText);
+    --shadow-light: var(--ButtonHilight);
+    --shadow-dark: var(--ButtonDkShadow);
+    --shadow-medium-light: var(--ButtonLight);
+    --shadow-medium-dark: var(--ButtonShadow);
+    --base-color: var(--Hilight);
+    --icon-filter: none; /* Replaced by background-blend-mode selection highlight */
+    --text-shadow: 1px 1px var(--ButtonDkShadow);
+    --icon-label-font-size: var(--font-size-base);
+}
+
+.hidden {
+    display: none !important;
+}
+
+body,
+html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    font-family: var(--font-family-base);
+    background-color: var(--AppWorkspace);
+    image-rendering: pixelated;
+    font-smooth: never;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.desktop-area {
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    height: calc(
+        100% - 28px - env(safe-area-inset-bottom) - 1px
+    ); /* Adjust height dynamically */
+}
+
+.desktop {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(auto-fill, 80px);
+    grid-auto-columns: 75px;
+    gap: 0;
+    align-content: start;
+    padding: 5px;
+    list-style: none;
+    margin: 0;
+}
+
+/* When dragging, disable grid so icons stay put */
+.desktop.has-absolute-icons {
+    display: block;
+}
+
+.desktop .explorer-icon {
+    color: white;
+    text-shadow: 1px 1px 1px black;
+}
+
+.desktop .explorer-icon .icon-label {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* Advanced Icon Selection Highlight using background-blend-mode */
+.explorer-icon.selected .icon-wrapper {
+    background-image:
+        linear-gradient(oklch(from var(--Hilight) l c h), oklch(from var(--Hilight) l c h)),
+        linear-gradient(oklch(from var(--Hilight) l c h), oklch(from var(--Hilight) l c h)),
+        var(--overlay-url-32, none),
+        var(--icon-url-32);
+    background-blend-mode: color, saturation, normal, normal;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    mask-image: var(--overlay-url-32, none), var(--icon-url-32);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-image: var(--overlay-url-32, none), var(--icon-url-32);
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+
+.explorer-icon.selected .icon-wrapper img {
+    visibility: hidden;
+}
+
+.highlighted-icon {
+    /* filter: var(--icon-filter); */ /* Deprecated in favor of background-blend-mode on .icon-wrapper */
+}
+
+.highlighted-label {
+    background-color: var(--highlight-blue);
+    color: var(--highlight-text);
+}
+
+.desktop .explorer-icon.selected .icon-label {
+    text-shadow: none;
+}
+
+.lasso {
+    border: 1px dotted var(--HilightText);
+    position: absolute;
+    z-index: 1000;
+    pointer-events: none; /* Make sure it doesn't interfere with mouse events */
+}
+
+.desktop.drop-target {
+    outline: 2px dashed white;
+    outline-offset: -10px;
+    background-color: rgba(0, 0, 0, 0.2);
+}

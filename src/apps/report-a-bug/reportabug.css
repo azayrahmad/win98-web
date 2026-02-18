@@ -1,0 +1,23 @@
+.reportabug-container {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.reportabug-preface {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.reportabug-textarea {
+  flex-grow: 1;
+  resize: none;
+  margin-bottom: 10px;
+}
+
+.reportabug-buttons {
+  display: flex;
+  justify-content: flex-end;
+}

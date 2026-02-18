@@ -2,9 +2,12 @@ import {
   getItem,
   setItem,
   LOCAL_STORAGE_KEYS,
-} from "../../utils/localStorage.js";
-import { applyBusyCursor, clearBusyCursor } from "../../utils/cursorManager.js";
-import { appManager } from "../../utils/appManager.js";
+} from '../../system/local-storage.js';
+import {
+  requestBusyState,
+  releaseBusyState,
+} from '../../system/busy-state-manager.js';
+import { appManager } from '../../system/app-manager.js';
 
 window.clippyAppInstance = null;
 let currentAgentName =
@@ -118,7 +121,7 @@ async function askClippy(agent, question) {
   }
 }
 
-import { AGENT_NAMES } from "../../config/agents.js";
+import { AGENT_NAMES } from '../../config/agents.js';
 
 export function getClippyMenuItems(app) {
   const appInstance = app || window.clippyAppInstance;
@@ -223,6 +226,7 @@ export function launchClippyApp(app, agentName = currentAgentName) {
 
   clippy.load(agentName, function (agent) {
     window.clippyAgent = agent;
+    agent._el[0].setAttribute('data-testid', 'clippy-agent');
 
     const ttsUserPref = getItem(LOCAL_STORAGE_KEYS.CLIPPY_TTS_ENABLED) ?? true;
     agent.setTTSEnabled(ttsUserPref);
@@ -310,8 +314,9 @@ export function launchClippyApp(app, agentName = currentAgentName) {
 
       const clippyEl = agent._el[0];
       const balloonEl = agent._balloon._balloon[0];
-      applyBusyCursor(clippyEl);
-      applyBusyCursor(balloonEl);
+      const speakId = `speak-${Date.now()}`;
+      requestBusyState(speakId, clippyEl);
+      requestBusyState(speakId, balloonEl);
 
       const originalCallback = options?.callback;
       const newOptions = {
@@ -321,8 +326,8 @@ export function launchClippyApp(app, agentName = currentAgentName) {
             originalCallback();
           }
           agent.isSpeaking = false;
-          clearBusyCursor(clippyEl);
-          clearBusyCursor(balloonEl);
+          releaseBusyState(speakId, clippyEl);
+          releaseBusyState(speakId, balloonEl);
         },
       };
       return originalSpeakAndAnimate.call(this, text, animation, newOptions);
@@ -402,7 +407,7 @@ function startTutorial(agent) {
   // 1. Welcome
   sequence.push((done) =>
     agent.speakAndAnimate(
-      "Hi! I'm Clippy, your azOS assistant. Let me give you a quick tour of azOS.",
+      "Hi! I'm Clippy, your Windows 98 assistant. Let me give you a quick tour of Windows 98.",
       "Explain",
       { useTTS: ttsEnabled, callback: done },
     ),
@@ -595,7 +600,7 @@ function startTutorial(agent) {
     });
     sequence.push((done) =>
       agent.speakAndAnimate(
-        "Drag files from your device to an open My Briefcase window to use it in azOS.",
+        "Drag files from your device to an open My Briefcase window to use it in Windows 98.",
         "Explain",
         { useTTS: ttsEnabled, callback: done },
       ),
@@ -626,7 +631,7 @@ function startTutorial(agent) {
     });
     sequence.push((done) =>
       agent.speakAndAnimate(
-        "If you have some to spare, consider supporting azOS to keep it alive and well.",
+        "If you have some to spare, consider supporting this project to keep it alive and well.",
         "Explain",
         { useTTS: ttsEnabled, callback: done },
       ),
@@ -678,7 +683,7 @@ function startTutorial(agent) {
   );
   sequence.push((done) =>
     agent.speakAndAnimate(
-      "That's the tour! Feel free to play around with azOS. If you have any questions or need assistance, feel free to ask. Just click me!",
+      "That's the tour! Feel free to play around with Windows 98. If you have any questions or need assistance, feel free to ask. Just click me!",
       "Wave",
       { useTTS: ttsEnabled, callback: done },
     ),

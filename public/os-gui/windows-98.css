@@ -2,6 +2,7 @@
     /* These resources are generated. */
     /* JS: makeThemeCSSFile(renderThemeGraphics(getComputedStyle(document.documentElement))) */
     /* spell-checker: disable */
+    --checker-black: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEUlEQVR4nGNgYGD4z4AE/gMADwMB/5OV1yAAAAAASUVORK5CYII=");
     --checker: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAG0lEQVQYV2P8/////4MHDzIwHjhw4L+9vT0DAHAFCj6esq3FAAAAAElFTkSuQmCC");
     --fieldset-border-image: url("data:image/svg+xml;charset=utf-8,%3Csvg%20width%3D%225%22%20height%3D%225%22%20fill%3D%22rgb(128%2C%20128%2C%20128)%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%09%09%09%3Cpath%20fill-rule%3D%22evenodd%22%20clip-rule%3D%22evenodd%22%20d%3D%22M0%200h5v5H0V2h2v1h1V2H0%22%20fill%3D%22rgb(255%2C%20255%2C%20255)%22%20%2F%3E%0A%09%09%09%3Cpath%20fill-rule%3D%22evenodd%22%20clip-rule%3D%22evenodd%22%20d%3D%22M0%200h4v4H0V1h1v2h2V1H0%22%20%2F%3E%0A%09%09%3C%2Fsvg%3E")
         2;
@@ -155,7 +156,8 @@ button {
     background-color: var(--ButtonFace);
     color: rgb(0, 0, 0);
     color: var(--ButtonText);
-    font-family: "MSW98UI", sans-serif;
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
 }
 button:not(.lightweight) {
     outline: none; /* replaced with inner dotted focus ring (which is admittedly not so prominent...) */
@@ -705,6 +707,41 @@ so I think I'll imitate that. (I might change it later) */
     /* makes it visible */
     background: currentColor;
 }
+.menu-item-icon-area {
+    padding: 2px 4px !important;
+}
+.menu-item-icon-wrapper {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+.menu-item.highlight .menu-item-icon-wrapper {
+    background-image:
+        linear-gradient(
+            oklch(from var(--Hilight) l c h),
+            oklch(from var(--Hilight) l c h)
+        ),
+        linear-gradient(
+            oklch(from var(--Hilight) l c h),
+            oklch(from var(--Hilight) l c h)
+        ),
+        var(--icon-url);
+    background-blend-mode: color, saturation, normal;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    mask-image: var(--icon-url);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-image: var(--icon-url);
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+.menu-item.highlight .menu-item-icon-wrapper img {
+    visibility: hidden;
+}
 
 .menu-hr {
     border: 0;
@@ -1136,6 +1173,10 @@ so I think I'll imitate that. (I might change it later) */
 ::-webkit-scrollbar-button:start:increment,
 ::-webkit-scrollbar-button:end:decrement {
     display: none;
+}
+
+.explorer-icon.selected .icon-label {
+    border: 1px dotted white;
 }
 
 /*# sourceMappingURL=windows-98.css.map */

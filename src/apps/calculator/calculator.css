@@ -1,0 +1,229 @@
+/* calculator.css - Styles for the Calculator application */
+.calculator-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: var(--button-face);
+    padding: 5px;
+    padding-top: 0;
+    box-sizing: border-box;
+}
+
+.calculator-display-container {
+    background-color: var(--button-face);
+    border: 1px solid var(--button-shadow);
+    border-right-color: var(--button-highlight);
+    border-bottom-color: var(--button-highlight);
+    padding: 2px;
+    margin-bottom: 5px;
+}
+
+.calculator-display {
+    background-color: white;
+    height: 23px;
+    line-height: 23px;
+    text-align: right;
+    padding: 0 5px;
+    font-family: var(--font-family-base);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.scientific-controls {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 5px;
+}
+
+.control-row {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+
+.control-row .group-box {
+    display: flex;
+    padding: 2px 5px;
+    flex-grow: 1;
+    justify-content: space-between;
+}
+
+.control-row .field-row {
+    display: flex;
+    align-items: center;
+    margin: 2px;
+}
+
+.control-row .checkbox-container {
+    display: flex;
+    align-items: center;
+    margin-right: 13px;
+    position: relative;
+}
+
+.calculator-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+}
+
+.calculator-buttons button:disabled {
+    text-shadow: none !important;
+    color: grey !important;
+}
+
+.button-row .calc-button {
+    flex-grow: 1;
+}
+
+.standard-layout-container {
+    display: flex;
+    gap: 8px;
+}
+
+.memory-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 35px; /* Fixed width for the memory button column */
+}
+
+.calc-indicator {
+    width: 25px;
+    height: 25px;
+    margin: 2px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 2px;
+    box-sizing: border-box;
+}
+
+.memory-buttons {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 5px;
+    flex: 1;
+}
+
+.main-area {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 8px;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 5px;
+    width: 190px;
+}
+
+.main-buttons {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 3px;
+    flex: 1;
+}
+
+.blank-button {
+    visibility: hidden;
+}
+
+.control-buttons .calc-button {
+    flex-grow: 1;
+    padding: 0;
+}
+
+.calc-button {
+    width: 35px;
+    height: 28px;
+    box-sizing: border-box;
+    font-size: var(--font-size-base);
+}
+
+.red-text {
+    color: red;
+}
+
+.blue-text {
+    color: blue;
+}
+
+.magenta-text {
+    color: magenta;
+}
+
+/* Scientific Layout */
+.scientific-layout-container {
+    display: flex;
+    gap: 10px;
+    height: 100%;
+}
+
+.calc-sci-button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.sta-group {
+    justify-content: space-between;
+}
+
+.functions-group {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.button-column {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    justify-content: space-between;
+}
+
+.memory-group {
+    justify-content: space-between;
+}
+
+.main-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-group .button-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+    flex: 1;
+}
+
+.main-group .button-row:last-child {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+}
+
+.calc-func-switch {
+    max-width: 110px;
+}
+
+.statistics-list {
+  height: 100%;
+  overflow-y: auto;
+  padding: 5px;
+  box-sizing: border-box;
+  background-color: white;
+  color: black;
+  list-style: none;
+  margin: 0;
+}
+
+.statistics-list li.highlighted {
+  background-color: var(--highlight, navy);
+  color: var(--highlight-text, white);
+}

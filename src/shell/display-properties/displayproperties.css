@@ -1,0 +1,396 @@
+.display-properties-tabs {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin: 5px;
+    padding-top: 3px;
+}
+
+.display-properties-tabs .tab-window {
+    flex-grow: 1;
+}
+
+.display-properties-tabs .tab-window .tab-window-body {
+    flex-grow: 1;
+    padding: 10px;
+}
+
+.monitor-preview-container {
+    position: relative;
+    width: 184px;
+    height: 170px;
+    margin: 0 auto;
+    background-image: url("../../assets/img/Display.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.display-wallpaper-preview,
+.display-screensaver-preview {
+    position: absolute;
+    top: 17px;
+    left: 16px;
+    width: 152px; /* Scaled width for 800x600 aspect ratio */
+    height: 112px; /* Scaled height for 800x600 aspect ratio */
+    background-color: var(--Background);
+    overflow: hidden; /* Ensure wallpaper does not spill out */
+}
+
+#screensaver .tab-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.screensaver-settings-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.screensaver-selection-fieldset {
+    padding-block-start: 0;
+}
+
+.screensaver-selection-fieldset .field-row {
+    display: flex;
+    align-items: center;
+}
+
+.screensaver-dropdown {
+    flex-grow: 1;
+}
+
+.password-protected-row {
+    margin-top: 10px;
+}
+
+.wait-time-input {
+    width: 50px;
+}
+
+.energy-saving-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wallpaper-list {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.wallpaper-list tr {
+    cursor: default;
+}
+
+.wallpaper-list td {
+    padding: 1px 4px;
+}
+
+.wallpaper-list tr.highlighted {
+    background-color: var(--highlight, #000080);
+    color: var(--highlight-text, white);
+}
+
+.display-properties-buttons {
+    text-align: right;
+    padding: 5px;
+}
+
+.display-properties-buttons button,
+.display-properties-tabs button {
+    min-width: 75px;
+    min-height: 23px;
+    font-size: var(--font-size-base);
+    padding: 2px 12px;
+}
+
+.wallpaper-controls button {
+    min-width: 65px;
+    padding: 2px 5px;
+}
+
+.wallpaper-settings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 3px; /* Adds space between the paragraph and the options below */
+}
+
+.wallpaper-options {
+    display: flex;
+    gap: 10px; /* Adds space between the wallpaper list and controls */
+}
+
+.wallpaper-list-container {
+    flex-grow: 1; /* Allows the list to take up available space */
+    height: 100px;
+    overflow-y: scroll;
+}
+
+.wallpaper-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 5px; /* Stacks the control buttons vertically */
+}
+
+.wallpaper-controls .field-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-controls {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+}
+
+.screen-area-fieldset {
+    flex-basis: 50%;
+}
+
+.colors-fieldset {
+    flex-basis: 50%;
+}
+
+.colors-fieldset select {
+    width: 100%;
+}
+
+.resolution-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.current-resolution {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.advanced-container {
+    display: flex;
+    gap: 5px;
+    justify-content: space-between;
+    padding: 10px 0;
+}
+
+/**** PREVIEW STYLES ****/
+#display-properties .preview-container {
+    flex-grow: 1;
+    border: 2px inset var(--border-color, #fff);
+    overflow: hidden;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+#display-properties .right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 220px;
+}
+
+#display-properties .right-panel fieldset {
+    padding: 10px;
+}
+
+#display-properties .right-panel .previews-fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#display-properties .right-panel .previews-fieldset button {
+    width: 100%;
+    font-size: var(--font-size-base);
+    min-height: 22px;
+}
+
+#display-properties .right-panel .settings-fieldset {
+    flex-grow: 1;
+}
+
+#display-properties .right-panel .settings-fieldset p {
+    margin: 0 0 10px 0;
+}
+
+#display-properties .actions {
+    padding: 10px;
+    display: flex !important;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+#display-properties .actions button {
+    padding: 2px;
+    min-width: 80px;
+}
+
+#display-properties .preview-label {
+    background-color: var(--preview-button-face);
+    padding: 3px;
+    border: 1px solid var(--preview-button-shadow);
+    border-top: 1px solid var(--preview-button-highlight);
+    text-align: center;
+    font-size: var(--font-size-base);
+}
+
+#display-properties .preview-window {
+    box-sizing: border-box;
+    border: 1px solid;
+    border-color: var(--preview-button-highlight)
+        var(--preview-button-dk-shadow) var(--preview-button-dk-shadow)
+        var(--preview-button-highlight);
+    background: var(--preview-button-face);
+    padding: 1px;
+}
+
+#display-properties .inactive-window-preview {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    width: 200px;
+    height: 150px;
+    z-index: 1;
+}
+
+#display-properties .active-window-preview {
+    position: absolute;
+    right: 2px;
+    bottom: 20px;
+    width: 220px;
+    height: 130px;
+    z-index: 2;
+}
+
+#display-properties .message-box-preview {
+    position: absolute;
+    right: 60px;
+    bottom: 6px;
+    width: 158px;
+    height: 76px;
+    z-index: 3;
+}
+
+#display-properties .message-box-preview .window-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center content vertically */
+    align-items: center; /* Center content horizontally */
+    gap: 5px; /* Space between text and button */
+}
+
+#display-properties .message-box-preview .window-body span {
+    text-align: left; /* Center the message text within the flex item */
+    width: 100%; /* Make span take full width to center text within itself */
+}
+
+#display-properties .preview-window .title-bar {
+    padding: 2px 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+#display-properties .preview-window .title-bar .title-bar-text {
+    font-family: var(--preview-font-family-title);
+    font-size: var(--preview-font-size-title);
+}
+
+#display-properties .active-window-preview .menu-bar {
+    font-family: var(--preview-font-family-menu);
+    font-size: var(--preview-font-size-menu);
+}
+
+#display-properties .active-window-preview .title-bar,
+#display-properties .message-box-preview .title-bar {
+    background: linear-gradient(
+        to right,
+        var(--preview-active-title-bar-bg) 0%,
+        var(--preview-gradient-active-title-bar-bg) 100%
+    );
+    color: var(--preview-active-title-bar-text, #fff);
+}
+
+#display-properties .inactive-window-preview .title-bar {
+    background: linear-gradient(
+        to right,
+        var(--preview-inactive-title-bar-bg, #7f7f7f) 0%,
+        var(--preview-gradient-inactive-title-bar-bg, #b5b5b5) 100%
+    );
+    color: var(--preview-inactive-title-bar-text, #c0c0c0);
+}
+
+#display-properties .active-window-preview .window-body {
+    padding: 0;
+    margin: 1px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#display-properties .active-window-preview .menu-bar {
+    background-color: var(--preview-button-face);
+    color: var(--preview-window-text);
+    padding: 2px 4px;
+    display: flex;
+    gap: 8px;
+}
+
+#display-properties .active-window-preview .menu-bar .selected {
+    background-color: var(--preview-active-title-bar-bg);
+    color: var(--preview-active-title-bar-text);
+    padding: 0 2px;
+}
+
+#display-properties .active-window-preview .main-content {
+    background-color: var(--preview-window-bg);
+    color: var(--preview-window-text);
+    flex-grow: 1;
+    margin: 1px;
+}
+
+#display-properties .preview-window .title-bar-controls {
+    display: flex;
+}
+
+#display-properties .preview-window .title-bar-controls button {
+    width: 16px;
+    height: 14px;
+    min-width: 0;
+    padding: 0;
+    box-sizing: border-box;
+    border: 1px solid;
+    border-color: var(--preview-button-highlight) var(--preview-button-shadow)
+        var(--preview-button-shadow) var(--preview-button-highlight);
+    background: var(--preview-button-face);
+}
+
+#display-properties .preview-window .window-body {
+    background: var(--preview-button-face, #c0c0c0);
+    color: var(--preview-window-text, #000);
+    margin: 1px;
+}
+
+#display-properties .preview-window .window-body p {
+    margin: 0 0 12px;
+}
+
+#display-properties .preview-window .window-body button {
+    min-width: 70px;
+    height: 22px;
+    border: 1px solid;
+    border-color: var(--preview-button-highlight)
+        var(--preview-button-dk-shadow) var(--preview-button-dk-shadow)
+        var(--preview-button-highlight);
+    background: var(--preview-button-face);
+    color: var(--preview-button-text);
+    border-image: var(--preview-button-normal-border-image);
+}

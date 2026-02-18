@@ -1,105 +1,63 @@
 .menu-popup-wrapper {
     position: absolute;
     overflow: hidden;
-    --width: 0px; /* Default value */
-    --height: 0px; /* Default value */
-    --extra-width: 0px;
-    --extra-height: 0px;
-    width: calc(var(--width) + var(--extra-width));
-    height: calc(var(--height) + var(--extra-height));
+    display: none;
+    /* No transition on display for the wrapper to avoid interference */
+    pointer-events: none;
+    width: fit-content;
+    height: fit-content;
 }
 
-.menu-popup-wrapper.to-right .menu-popup {
-    animation: slide-in-right 0.15s ease-out;
-}
-.menu-popup-wrapper.to-left .menu-popup {
-    animation: slide-in-left 0.15s ease-out;
-}
-.menu-popup-wrapper.to-down .menu-popup {
-    animation: slide-in-down 0.15s ease-out;
-}
-.menu-popup-wrapper.to-up .menu-popup {
-    animation: slide-in-up 0.15s ease-out;
+.menu-popup-wrapper.open {
+    display: block;
+    pointer-events: auto;
 }
 
-@keyframes slide-in-right {
-    from {
+.menu-popup-wrapper.measuring {
+    display: block !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+.menu-popup-wrapper .menu-popup {
+    /* We must use relative to ensure the wrapper gets size from the menu */
+    position: relative !important;
+    display: block;
+    margin: 0 !important;
+    transform: translate(0, 0);
+    opacity: 1;
+}
+
+.menu-popup-wrapper.open .menu-popup {
+    transition: transform 130ms linear, opacity 130ms linear;
+}
+
+@starting-style {
+    .menu-popup-wrapper.open .menu-popup {
+        opacity: 0;
+    }
+    .menu-popup-wrapper.open.to-right .menu-popup {
         transform: translateX(-100%);
     }
-    to {
-        transform: translateX(0);
-    }
-}
-
-@keyframes slide-in-left {
-    from {
+    .menu-popup-wrapper.open.to-left .menu-popup {
         transform: translateX(100%);
     }
-    to {
-        transform: translateX(0);
-    }
-}
-
-@keyframes slide-in-down {
-    from {
+    .menu-popup-wrapper.open.to-down .menu-popup {
         transform: translateY(-100%);
     }
-    to {
-        transform: translateY(0);
-    }
-}
-
-.menu-popup-wrapper.to-diag-100-100 .menu-popup {
-    animation: diag-100-100 0.15s ease-out;
-}
-.menu-popup-wrapper.to-diag100-100 .menu-popup {
-    animation: diag100-100 0.15s ease-out;
-}
-.menu-popup-wrapper.to-diag-100100 .menu-popup {
-    animation: diag-100100 0.15s ease-out;
-}
-.menu-popup-wrapper.to-diag100100 .menu-popup {
-    animation: diag100100 0.15s ease-out;
-}
-
-@keyframes diag-100-100 {
-    from {
-        transform: translate(-100%, -100%);
-    }
-    to {
-        transform: translate(0, 0);
-    }
-}
-@keyframes diag100-100 {
-    from {
-        transform: translate(100%, -100%);
-    }
-    to {
-        transform: translate(0, 0);
-    }
-}
-@keyframes diag-100100 {
-    from {
-        transform: translate(-100%, 100%);
-    }
-    to {
-        transform: translate(0, 0);
-    }
-}
-@keyframes diag100100 {
-    from {
-        transform: translate(100%, 100%);
-    }
-    to {
-        transform: translate(0, 0);
-    }
-}
-
-@keyframes slide-in-up {
-    from {
+    .menu-popup-wrapper.open.to-up .menu-popup {
         transform: translateY(100%);
     }
-    to {
-        transform: translateY(0);
+    .menu-popup-wrapper.open.to-diag-left-top .menu-popup {
+        transform: translate(-100%, -100%);
+    }
+    .menu-popup-wrapper.open.to-diag-right-top .menu-popup {
+        transform: translate(100%, -100%);
+    }
+    .menu-popup-wrapper.open.to-diag-left-bottom .menu-popup {
+        transform: translate(-100%, 100%);
+    }
+    .menu-popup-wrapper.open.to-diag-right-bottom .menu-popup {
+        transform: translate(100%, 100%);
     }
 }

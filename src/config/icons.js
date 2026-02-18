@@ -53,9 +53,23 @@ export const ICONS = {
     16: new URL("../assets/icons/SHELL32_7-16.png", import.meta.url).href,
     32: new URL("../assets/icons/SHELL32_7-32.png", import.meta.url).href,
   },
+  cdDrive: {
+    16: new URL("../assets/icons/cd_drive-1.png", import.meta.url).href,
+    32: new URL("../assets/icons/cd_drive-2.png", import.meta.url).href,
+  },
+  defrag: {
+    16: new URL("../assets/icons/defragment-1.png", import.meta.url).href,
+    32: new URL("../assets/icons/defragment-0.png", import.meta.url).href,
+  },
   drive: {
     16: new URL("../assets/icons/SHELL32_9-16.png", import.meta.url).href,
     32: new URL("../assets/icons/SHELL32_9-32.png", import.meta.url).href,
+  },
+  removableDrive: {
+    16: new URL("../assets/icons/removable_disk_drive-1.png", import.meta.url)
+      .href,
+    32: new URL("../assets/icons/removable_disk_drive-0.png", import.meta.url)
+      .href,
   },
   folder: {
     16: new URL(
@@ -116,8 +130,8 @@ export const ICONS = {
     32: new URL("../assets/icons/COMCTL32_20481-32.png", import.meta.url).href,
   },
   desktop_old: {
-    16: new URL("../assets/icons/desktop_old-4.png", import.meta.url).href,
-    32: new URL("../assets/icons/desktop_old-4.png", import.meta.url).href,
+    16: new URL("../assets/icons/desktop-4.png", import.meta.url).href,
+    32: new URL("../assets/icons/desktop-1.png", import.meta.url).href,
   },
   themetocss: {
     16: new URL("../assets/icons/word_001-16.png", import.meta.url).href,
@@ -159,7 +173,7 @@ export const ICONS = {
     16: new URL("../assets/icons/SHELL32_47-16.png", import.meta.url).href,
     32: new URL("../assets/icons/SHELL32_47-32.png", import.meta.url).href,
   },
-  taskmanager: {
+  startMenuFolder: {
     16: new URL("../assets/icons/SHELL32_37-16.png", import.meta.url).href,
     32: new URL("../assets/icons/SHELL32_37-32.png", import.meta.url).href,
   },
@@ -194,6 +208,14 @@ export const ICONS = {
   pinball: {
     16: new URL("../assets/icons/PINBALL-16.png", import.meta.url).href,
     32: new URL("../assets/icons/PINBALL-32.png", import.meta.url).href,
+  },
+  solitaire: {
+    16: new URL("../assets/icons/SolitaireWin31Icon.png", import.meta.url).href,
+    32: new URL("../assets/icons/SolitaireWin31Icon.png", import.meta.url).href,
+  },
+  princeofpersia: {
+    16: new URL("../assets/icons/pop-16.png", import.meta.url).href,
+    32: new URL("../assets/icons/pop-32.png", import.meta.url).href,
   },
   paint: {
     16: new URL("../assets/icons/Paint-16.png", import.meta.url).href,
@@ -239,6 +261,10 @@ export const ICONS = {
     16: new URL("../assets/icons/file_lines-1.png", import.meta.url).href,
     32: new URL("../assets/icons/file_lines-0.png", import.meta.url).href,
   },
+  fileSet: {
+    16: new URL("../assets/icons/file_set-1.png", import.meta.url).href,
+    32: new URL("../assets/icons/file_set-0.png", import.meta.url).href,
+  },
   "cursor-explorer": {
     16: new URL("../assets/icons/COMCTL32_20481-16.png", import.meta.url).href,
     32: new URL("../assets/icons/COMCTL32_20481-32.png", import.meta.url).href,
@@ -254,6 +280,26 @@ export const ICONS = {
   mediaPlayer: {
     16: new URL("../assets/icons/MPLAYER2_110-16.png", import.meta.url).href,
     32: new URL("../assets/icons/MPLAYER2_110-32.png", import.meta.url).href,
+  },
+  mediaPlayerFile: {
+    16: new URL("../assets/icons/media_player_file-1.png", import.meta.url)
+      .href,
+    32: new URL("../assets/icons/media_player_file-0.png", import.meta.url)
+      .href,
+  },
+  flashPlayer: {
+    16: new URL("../assets/icons/Fl-player6.webp", import.meta.url).href,
+    32: new URL("../assets/icons/Fl-player6.webp", import.meta.url).href,
+  },
+  swfFile: {
+    16: new URL(
+      "../assets/icons/Flash_Player_6_file_icon.webp",
+      import.meta.url,
+    ).href,
+    32: new URL(
+      "../assets/icons/Flash_Player_6_file_icon.webp",
+      import.meta.url,
+    ).href,
   },
   briefcase: {
     16: new URL("../assets/icons/briefcase-5.png", import.meta.url).href,
@@ -281,4 +327,109 @@ export const ICONS = {
       import.meta.url,
     ).href,
   },
+  controlPanel: {
+    16: new URL(
+      "../assets/icons/directory_control_panel-1.png",
+      import.meta.url,
+    ).href,
+    32: new URL(
+      "../assets/icons/directory_control_panel-2.png",
+      import.meta.url,
+    ).href,
+  },
+  favoritesFolder: {
+    16: new URL("../assets/icons/directory_favorites-5.png", import.meta.url)
+      .href,
+    32: new URL("../assets/icons/directory_favorites-4.png", import.meta.url)
+      .href,
+  },
+  mouse: {
+    16: new URL("../assets/icons/mouse-3.png", import.meta.url).href,
+    32: new URL("../assets/icons/mouse-1.png", import.meta.url).href,
+  },
+  keen: {
+    16: new URL(
+      "../assets/icons/games/commander-keen-logo.png",
+      import.meta.url,
+    ).href,
+    32: new URL(
+      "../assets/icons/games/commander-keen-logo.png",
+      import.meta.url,
+    ).href,
+  },
+  diablo: {
+    16: new URL("../assets/icons/diablo-16.png", import.meta.url).href,
+    32: new URL("../assets/icons/diablo-32.png", import.meta.url).href,
+  },
+  msdos: {
+    16: new URL("../assets/icons/ms_dos-1.png", import.meta.url).href,
+    32: new URL("../assets/icons/ms_dos-1.png", import.meta.url).href,
+  },
+  esheep: {
+    16: new URL("../apps/esheep/esheep.webp", import.meta.url).href,
+    32: new URL("../apps/esheep/esheep.webp", import.meta.url).href,
+  },
+  minesweeper: {
+    16: new URL(
+      "../apps/minesweeper/assets/minesweeper-icon-small.png",
+      import.meta.url,
+    ).href,
+    32: new URL(
+      "../apps/minesweeper/assets/minesweeper-icon-large.png",
+      import.meta.url,
+    ).href,
+  },
+  wordpad: {
+    16: new URL("../assets/icons/write_wordpad-0.png", import.meta.url).href,
+    32: new URL("../assets/icons/write_wordpad-1.png", import.meta.url).href,
+  },
+  calculator: {
+    16: new URL("../assets/icons/calc-16.png", import.meta.url).href,
+    32: new URL("../assets/icons/calc-32.png", import.meta.url).href,
+  },
+  helpBook: {
+    16: new URL("../assets/icons/directory_explorer-3.png", import.meta.url)
+      .href,
+    32: new URL("../assets/icons/directory_explorer-3.png", import.meta.url)
+      .href,
+  },
+  helpBookOpen: {
+    16: new URL("../assets/icons/directory_explorer-4.png", import.meta.url)
+      .href,
+    32: new URL("../assets/icons/directory_explorer-4.png", import.meta.url)
+      .href,
+  },
+  helpPage: {
+    16: new URL("../assets/icons/file_lines-1.png", import.meta.url).href,
+    32: new URL("../assets/icons/file_lines-0.png", import.meta.url).href,
+  },
+  quake: {
+    16: new URL("../assets/icons/quake-16.png", import.meta.url).href,
+    32: new URL("../assets/icons/quake-32.png", import.meta.url).href,
+  },
+  dxball: {
+    16: new URL("../assets/icons/games/dx-ball.png", import.meta.url).href,
+    32: new URL("../assets/icons/games/dx-ball.png", import.meta.url).href,
+  },
+  spidersolitaire: {
+    16: new URL("../assets/icons/spider-16.png", import.meta.url).href,
+    32: new URL("../assets/icons/spider-32.png", import.meta.url).href,
+  },
+  freecell: {
+    16: new URL("../assets/icons/game_freecell-2.png", import.meta.url).href,
+    32: new URL("../assets/icons/game_freecell-2.png", import.meta.url).href,
+  },
+  buggyprogram: {
+    16: new URL("../assets/icons/msg_warning-0.png", import.meta.url).href,
+    32: new URL("../assets/icons/msg_warning-0.png", import.meta.url).href,
+  },
+  error: {
+    16: new URL("../assets/icons/msg_error-2.png", import.meta.url).href,
+    32: new URL("../assets/icons/msg_error-0.png", import.meta.url).href,
+  },
+};
+
+export const SHORTCUT_OVERLAY = {
+  16: new URL("../assets/icons/overlay_shortcut_16.png", import.meta.url).href,
+  32: new URL("../assets/icons/overlay_shortcut_32.png", import.meta.url).href,
 };

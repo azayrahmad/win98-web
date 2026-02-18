@@ -1,0 +1,75 @@
+.downloader-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.search-bar {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.search-input {
+    flex-grow: 1;
+    padding: 3px 5px;
+}
+
+.results-container {
+    flex-grow: 1;
+    position: relative;
+    overflow-y: auto;
+    background: white;
+}
+
+.results-list {
+    padding: 5px;
+}
+
+.game-card {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #dfdfdf;
+}
+
+.game-card:last-child {
+    border-bottom: none;
+}
+
+.game-thumb {
+    width: 64px;
+    height: 48px;
+    object-fit: contain;
+    background: #eee;
+    border: 1px solid #999;
+}
+
+.game-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.game-title {
+    font-weight: bold;
+}
+
+.game-id {
+    font-size: 10px;
+    color: #666;
+}
+
+.status-info {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+}
+
+.hidden {
+    display: none;
+}

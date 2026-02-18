@@ -1,0 +1,208 @@
+.solitaire-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: #008000;
+    box-sizing: border-box;
+    background-repeat: no-repeat;
+    touch-action: none;
+    background-size: cover;
+}
+
+.solitaire-container .game-board {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+.solitaire-container .top-piles {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.solitaire-container .stock-pile,
+.solitaire-container .waste-pile-container {
+    width: 71px;
+    height: 96px;
+    position: relative;
+}
+
+.solitaire-container .waste-pile,
+.solitaire-container .drawn-card-pile {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.solitaire-container .foundation-pile {
+    width: 71px;
+    height: 96px;
+    position: relative;
+}
+
+.solitaire-container .foundation-piles {
+    grid-column: 4 / -1; /* Span from column 4 to the end */
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.solitaire-container .tableau-piles {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.solitaire-container .tableau-pile {
+    width: 71px;
+    min-height: 96px;
+    position: relative;
+    height: 100%;
+}
+
+.solitaire-container .stock-placeholder,
+.solitaire-container .foundation-placeholder,
+.solitaire-container .tableau-placeholder {
+    width: 71px;
+    height: 96px;
+    border-radius: 5px;
+    box-sizing: border-box;
+
+    background-color: #008000;
+}
+
+.deck-selection-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    padding: 10px;
+}
+
+.solitaire-container .tableau-placeholder {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.solitaire-container .stock-placeholder {
+    background-image: url("./assets/solitaire.png");
+    background-position: -710px -384px; /* stockpile-draw */
+}
+
+.solitaire-container .stock-placeholder.recycling-depleted {
+    background-position: -781px -384px; /* stockpile-empty */
+}
+
+.card-back-preview {
+    width: 71px;
+    height: 96px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background-image: url("./assets/solitaire.png");
+    padding: 0;
+    border: 3px solid white;
+}
+
+.card-back-preview:active {
+    filter: invert(100%);
+}
+
+.card-back-preview.selected {
+    border: 3px solid black;
+}
+
+.solitaire-container .foundation-placeholder {
+    background-image: url("./assets/solitaire.png");
+    background-position: -852px -384px; /* foundation-background */
+}
+
+.solitaire-container .stock-pile .card,
+.solitaire-container .waste-pile .card,
+.solitaire-container .drawn-card-pile .card,
+.solitaire-container .foundation-pile .card {
+    position: absolute !important;
+}
+
+.solitaire-container .card {
+    width: 71px;
+    height: 96px;
+    border: none;
+    border-radius: 5px;
+    box-sizing: border-box;
+    /* position: absolute; */
+    cursor: pointer;
+    user-select: none;
+    background-color: #ffffff;
+}
+
+.solitaire-container .tableau-pile .card {
+    position: absolute;
+    left: 0 !important;
+}
+
+.solitaire-container .card.face-up {
+    color: transparent;
+    font-size: 0;
+}
+
+.solitaire-container .card.face-down {
+    background-color: #8b0000;
+}
+
+.solitaire-container .card.dragging {
+    visibility: hidden;
+}
+
+.dragged-stack {
+    width: 71px;
+}
+
+.dragged-outline {
+    position: absolute;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.dragged-outline-card {
+    position: absolute;
+    width: 71px;
+    height: 96px;
+    border: 2px solid black;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.card.invert-colors,
+.tableau-placeholder.invert-colors,
+.foundation-placeholder.invert-colors {
+    filter: invert(1);
+}
+
+.status-bar {
+    height: 20px;
+    background-color: var(--ButtonFace);
+    border-top: 1px solid var(--ButtonShadow);
+    padding: 2px 5px;
+    box-sizing: border-box;
+    font-size: 12px;
+    color: var(--ButtonText);
+    line-height: 16px;
+    flex-shrink: 0;
+}
+
+.solitaire-container .card.face-down[class*="cardback"] {
+    background-image: url(./assets/solitaire.png);
+}
+
+.win-animation-canvas {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+}

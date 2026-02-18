@@ -25,3 +25,7 @@ Image Resizer is a utility designed to enlarge digital images while maintaining 
 6.  Click the **Enlarge** button. The resized image will appear in the right preview panel.
 7.  The status bar at the bottom will show the original and new dimensions.
 8.  Click the **Download** button to save the enlarged image to your computer.
+
+## Screenshot
+
+![Screenshot of the image-resizer app](./screenshot.png)

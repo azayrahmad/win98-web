@@ -1,0 +1,30 @@
+<div class="monitor-preview-container">
+  <div class="display-settings-preview"></div>
+</div>
+<div class="display-info">
+    <span>Display:</span>
+    <span class="browser-info"></span>
+</div>
+<div class="settings-controls">
+    <fieldset class="colors-fieldset">
+        <legend>Colors</legend>
+        <select id="color-mode-select"></select>
+        <div id="color-spectrum-preview"></div>
+    </fieldset>
+    <fieldset class="screen-area-fieldset">
+        <legend>Screen area</legend>
+        <div class="resolution-slider-container">
+            <span>Less</span>
+            <input id="resolution-slider" type="range" min="0" max="3" value="1" />
+            <span>More</span>
+        </div>
+        <div class="current-resolution">800 by 600 pixels</div>
+    </fieldset>
+</div>
+<div class="advanced-container">
+  <div class="field-row">
+      <input type="checkbox" id="extend-checkbox" disabled checked/>
+      <label for="extend-checkbox">Extend my Windows desktop onto this monitor.</label>
+  </div>
+  <button class="advanced-button" disabled>Advanced...</button>
+</div>

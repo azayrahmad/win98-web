@@ -1,0 +1,29 @@
+@import '/src/shared/styles/98.css';
+@import './styles/layout.css';
+@import './styles/print.css';
+
+/* Fix for paths that were relative to styles/ */
+.help-window .toolbar button .icon {
+	background-image: url("/win98-web/apps/paint/images/help-viewer-toolbar-icons-grayscale.png");
+}
+.help-window .toolbar button:not([disabled]):hover .icon {
+	background-image: url("/win98-web/apps/paint/images/help-viewer-toolbar-icons.png");
+}
+
+.paint-container {
+    padding: 0;
+    overflow: hidden;
+}
+
+.jspaint {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #c0c0c0;
+    background-color: var(--surface);
+}
+
+#paint.os-window {
+    display: flex !important;
+}

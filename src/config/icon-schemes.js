@@ -1,4 +1,4 @@
-import { ICONS } from "./icons.js";
+import { ICONS } from './icons.js';
 
 // A helper function to create the icon object, pointing to both 16 and 32 sizes
 const createIcon = (path) => {
@@ -26,14 +26,70 @@ const createIcon = (path) => {
   };
 };
 
+export class IconItem {
+  constructor(paths = {}) {
+    this["16"] = paths["16"] || "";
+    this["32"] = paths["32"] || "";
+  }
+}
+
+export class IconScheme {
+  static ALL_ICONS = [
+    "myComputer",
+    "myDocuments",
+    "networkNeighborhood",
+    "recycleBinEmpty",
+    "recycleBinFull",
+  ];
+
+  constructor(id, icons = {}) {
+    this.id = id;
+    this.icons = {};
+
+    for (const iconKey of IconScheme.ALL_ICONS) {
+      this.icons[iconKey] = new IconItem(icons[iconKey] || {});
+    }
+  }
+
+  /**
+   * Gets the icon URL for a given name and size, falling back to the default scheme if not found.
+   * @param {string} iconName
+   * @param {number|string} size - 16 or 32
+   * @returns {string|null}
+   */
+  getIcon(iconName, size = 32) {
+    const icon = this.getIconObj(iconName);
+    if (icon && icon[size]) {
+      return icon[size];
+    }
+    return null;
+  }
+
+  /**
+   * Gets the icon object containing 16 and 32 sizes, falling back to default.
+   * @param {string} iconName
+   * @returns {Object|null}
+   */
+  getIconObj(iconName) {
+    const icon = this.icons[iconName];
+    if (icon && (icon["16"] || icon["32"])) return icon;
+
+    if (this.id !== "default") {
+      return iconSchemes.default?.getIconObj(iconName);
+    }
+
+    return null;
+  }
+}
+
 export const iconSchemes = {
-  default: {
+  default: new IconScheme("default", {
     myComputer: ICONS.computer,
     recycleBinFull: ICONS.recycleBinFull,
     recycleBinEmpty: ICONS.recycleBinEmpty,
     networkNeighborhood: ICONS.networkNeighborhood,
-  },
-  "dangerous-creatures": {
+  }),
+  "dangerous-creatures": new IconScheme("dangerous-creatures", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/Dangerous Creatures My Computer-16.png",
@@ -74,8 +130,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  "inside-your-computer": {
+  }),
+  "inside-your-computer": new IconScheme("inside-your-computer", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/Inside your Computer My Computer-16.png",
@@ -116,8 +172,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  "leonardo-da-vinci": {
+  }),
+  "leonardo-da-vinci": new IconScheme("leonardo-da-vinci", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/Leonardo da Vinci My Computer-16.png",
@@ -158,8 +214,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  "more-windows": {
+  }),
+  "more-windows": new IconScheme("more-windows", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/More Windows My Computer-16.png",
@@ -200,8 +256,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  mystery: {
+  }),
+  mystery: new IconScheme("mystery", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/Mystery My Computer-16.png",
@@ -242,8 +298,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  nature: {
+  }),
+  nature: new IconScheme("nature", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/Nature My Computer-16.png",
@@ -284,8 +340,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  science: {
+  }),
+  science: new IconScheme("science", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/Science My Computer-16.png",
@@ -326,8 +382,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  sports: {
+  }),
+  sports: new IconScheme("sports", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/Sports My Computer-16.png",
@@ -368,8 +424,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  "60s-usa": {
+  }),
+  "60s-usa": new IconScheme("60s-usa", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/The 60's USA My Computer-16.png",
@@ -410,8 +466,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  "the-golden-era": {
+  }),
+  "the-golden-era": new IconScheme("the-golden-era", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/The Golden Era My Computer-16.png",
@@ -452,8 +508,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  travel: {
+  }),
+  travel: new IconScheme("travel", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/Travel My Computer-16.png",
@@ -494,8 +550,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  "windows-98": {
+  }),
+  "windows-98": new IconScheme("windows-98", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/Windows 98 My Computer-16.png",
@@ -536,8 +592,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  baseball: {
+  }),
+  baseball: new IconScheme("baseball", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/Baseball My Computer-16.png",
@@ -578,8 +634,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  jungle: {
+  }),
+  jungle: new IconScheme("jungle", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/Jungle My Computer-16.png",
@@ -620,8 +676,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  space: {
+  }),
+  space: new IconScheme("space", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/Space My Computer-16.png",
@@ -662,8 +718,8 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
-  underwater: {
+  }),
+  underwater: new IconScheme("underwater", {
     myComputer: {
       16: new URL(
         "../assets/icons/theme-icons/Underwater My Computer-16.png",
@@ -704,5 +760,5 @@ export const iconSchemes = {
         import.meta.url,
       ).href,
     },
-  },
+  }),
 };

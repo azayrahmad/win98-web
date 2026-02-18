@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>DOSBox Host</title>
+    <style>
+        body { margin: 0; padding: 0; background: black; color: white; overflow: hidden; font-family: sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+        #status { position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.5); padding: 5px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.5s; }
+        #status.visible { opacity: 1; }
+        #hidden { display: none; }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="status">Initializing...</div>
+
+    <div id="hidden">
+        <input type="file" id="file-upload">
+        <input type="file" id="file-import">
+        <div id="maindiv"></div>
+        <div id="importModal"></div>
+        <div id="loginModal"></div>
+        <div id="settingsModal"></div>
+        <div id="divInstructions"></div>
+        <div id="mobileDiv"></div>
+        <div id="mobileButtons"></div>
+        <div id="topPanel"></div>
+        <div id="errorOuter"></div>
+        <div id="dropArea"></div>
+        <div id="myProgress"></div>
+        <div id="canvasDiv"></div>
+        <select id="romselect"></select>
+    </div>
+
+    <script>
+        window.rivets = { bind: () => {}, formatters: {} };
+        window.toastr = { info: console.log, success: console.log, error: console.error };
+        window.saveAs = () => {};
+        window.ROMLIST = [];
+        window.DOSWASMSETTINGS = { CLOUDSAVEURL: "", DEFAULTIMG: "" };
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/zip.js/2.3.12/zip.min.js"></script>
+
+    <script>
+        const statusEl = document.getElementById('status');
+        let statusTimeout;
+
+        function showStatus(text, duration = 3000) {
+            statusEl.innerText = text;
+            statusEl.classList.add('visible');
+            clearTimeout(statusTimeout);
+            if (duration > 0) {
+                statusTimeout = setTimeout(() => {
+                    statusEl.classList.remove('visible');
+                }, duration);
+            }
+        }
+
+        function patchApp() {
+            if (!window.myApp) return;
+
+            const originalInit = window.myApp.initModule;
+            const newInit = function() {
+                if (originalInit) originalInit.apply(window.myApp, arguments);
+                showStatus("Ready", 2000);
+                window.parent.postMessage({ type: "DOSBOX_READY" }, "*");
+            };
+            window.myApp.initModule = newInit;
+            if (window.Module) {
+                window.Module.onRuntimeInitialized = newInit;
+                window.Module.onExit = function() {
+                    window.parent.postMessage({ type: "DOSBOX_EXIT" }, "*");
+                };
+            }
+
+            const originalPrint = window.myApp.processPrintStatement;
+            window.myApp.processPrintStatement = function(text) {
+                if (originalPrint) originalPrint.apply(window.myApp, arguments);
+                if (text && text.indexOf("QUIT_DOSBOX") !== -1) {
+                    window.parent.postMessage({ type: "DOSBOX_EXIT" }, "*");
+                }
+                if (text.startsWith("DEBUG_ShowMsg:")) {
+                    const msg = text.substring(15).trim();
+                    if (msg && msg.length > 1) showStatus(msg);
+                }
+            };
+            if (window.Module) window.Module.print = window.myApp.processPrintStatement;
+        }
+
+        window.startWithCommands = async function(commands) {
+            showStatus("Starting emulator...", 0);
+
+            try { Module.FS.mkdir('/uploaded'); } catch(e) {}
+            try { Module.FS.mkdir('/res'); } catch(e) {}
+            try { Module.FS.mkdir('/save'); } catch(e) {}
+
+            try {
+                const fontResp = await fetch('main.ttf');
+                const fontData = await fontResp.arrayBuffer();
+                Module.FS.writeFile('/res/arial.ttf', new Uint8Array(fontData));
+            } catch (e) {}
+
+            Module.FS.writeFile('config.txt', "0\r\n0\r\n0\r\n0\r\n0\r\n0\r\n0\r\n");
+
+            try {
+                const confResp = await fetch('dosbox-x-for-web.conf');
+                let confText = await confResp.text();
+                confText += `\r\n[autoexec]\r\n@echo off\r\nmount c .\r\nc:\r\n${commands}\r\n`;
+                Module.FS.writeFile('dosbox.conf', confText);
+            } catch (e) {
+                // Fallback config if fetch fails
+                Module.FS.writeFile('dosbox.conf', `[dosbox]\r\nmemsize=32\r\n[cpu]\r\ncycles=auto\r\n[autoexec]\r\nmount c .\r\nc:\r\n${commands}\r\n`);
+            }
+
+            if (window.myApp.initAudio) window.myApp.initAudio();
+
+            window.myApp.sendKey = Module.cwrap('neil_send_key', null, ['number']);
+            window.myApp.sendMouseMovement = Module.cwrap('neil_send_mouse_movement', null, ['number', 'number']);
+            window.myApp.sendDosControls = Module.cwrap('neil_send_dos_controls', null, ['string', 'string', 'string', 'array', 'number']);
+
+            Module.callMain([]);
+            if (window.myApp.configureEmulator) window.myApp.configureEmulator();
+        };
+
+        async function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = resolve;
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+        }
+
+        async function init() {
+            try {
+                await loadScript('script.js');
+                patchApp();
+            } catch (e) {
+                console.error("Failed to load scripts", e);
+                showStatus("Failed to load scripts", 0);
+            }
+        }
+
+        init();
+
+        // Ensure we capture on any click within the host
+        window.addEventListener('click', () => {
+            if (window.myApp && !window.myApp.rivetsData.mobileMode) {
+                window.myApp.captureMouse();
+            }
+        });
+    </script>
+</body>
+</html>

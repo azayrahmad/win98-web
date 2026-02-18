@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Windows 98 - Not Found</title>
+        <style>
+            @font-face {
+                font-family: "IBM BIOS";
+                src: url("./src/assets/fonts/Web437_IBM_VGA_8x14.woff") format("woff");
+            }
+            body {
+                background-color: #0000aa;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                color: #ffffff;
+                font-family: "IBM BIOS", Courier, monospace;
+            }
+            #terminal {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: #0000aa;
+            }
+            .xterm-viewport {
+                overflow: hidden !important;
+            }
+            /* Ensure the xterm terminal itself has the correct background */
+            .xterm-screen {
+                background-color: #0000aa !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="terminal"></div>
+        <script type="module">
+            import { Terminal } from "@xterm/xterm";
+            import "@xterm/xterm/css/xterm.css";
+
+            const term = new Terminal({
+                cursorStyle: "underline",
+                cursorBlink: true,
+                theme: {
+                    background: "#0000aa",
+                    foreground: "#ffffff",
+                    blue: "#0000aa", // Map ANSI blue to our BSOD blue
+                },
+                fontFamily: '"IBM BIOS", Courier, monospace',
+                fontSize: 18,
+                rows: 25,
+                cols: 80,
+                allowTransparency: true,
+            });
+
+            const container = document.getElementById("terminal");
+            term.open(container);
+
+            // Initial clear
+            term.write("\x1b[H\x1b[2J");
+
+            // Draw centered "Windows" header in white block
+            // Use ANSI 47 for white background, 34 for blue text
+            const headerPadding = " ".repeat(35);
+            term.write("\x1b[1;1H" + headerPadding + "\x1b[47m\x1b[34m Windows \x1b[0m\r\n\r\n");
+
+            const lines = [
+                "",
+                "      A fatal exception 0E has occurred at 0028:C001F32F in VXD VMM(01) +",
+                "      0001F32F. The current application will be terminated.",
+                "",
+                "      *  Press any key to restart your computer.",
+                "      *  Press CTRL+ALT+DEL again to restart your computer. You will lose",
+                "         any unsaved information in all applications.",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "                           Press any key to continue "
+            ];
+
+            term.write("\x1b[37m" + lines.join("\r\n"));
+
+            const goToMain = () => {
+                const baseUrl = import.meta.env.BASE_URL || "/win98-web/";
+                window.location.href = baseUrl;
+            };
+
+            term.onKey(goToMain);
+            window.addEventListener("keydown", goToMain);
+            window.addEventListener("click", goToMain);
+            window.addEventListener("touchstart", goToMain);
+
+            term.focus();
+        </script>
+    </body>
+</html>

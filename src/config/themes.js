@@ -1,10 +1,10 @@
-import { wallpapers } from "./wallpapers.js";
+import { wallpapers } from './wallpapers.js';
 
 export const themes = {
   default: {
     id: "default",
     name: "Windows Default",
-    stylesheet: "windows-default.css",
+    colorSchemeId: "default",
     wallpaper: null,
     soundScheme: "Default",
     iconScheme: "default",
@@ -12,7 +12,7 @@ export const themes = {
   "60s-usa": {
     id: "60s-usa",
     name: "The 60's USA",
-    stylesheet: "60s-usa.css",
+    colorSchemeId: "60s-usa",
     wallpaper: wallpapers.themes.find((w) => w.id === "the60sUSA").src,
     soundScheme: "60s USA",
     iconScheme: "60s-usa",
@@ -20,7 +20,7 @@ export const themes = {
   "dangerous-creatures": {
     id: "dangerous-creatures",
     name: "Dangerous Creatures",
-    stylesheet: "dangerous-creatures.css",
+    colorSchemeId: "dangerous-creatures",
     wallpaper: wallpapers.themes.find((w) => w.id === "dangerousCreatures").src,
     soundScheme: "Dangerous Creatures",
     iconScheme: "dangerous-creatures",
@@ -28,7 +28,7 @@ export const themes = {
   baseball: {
     id: "baseball",
     name: "Baseball",
-    stylesheet: "baseball.css",
+    colorSchemeId: "baseball",
     wallpaper: wallpapers.themes.find((w) => w.id === "baseball").src,
     soundScheme: "Baseball",
     iconScheme: "baseball",
@@ -36,7 +36,7 @@ export const themes = {
   jungle: {
     id: "jungle",
     name: "Jungle",
-    stylesheet: "jungle.css",
+    colorSchemeId: "jungle",
     wallpaper: wallpapers.themes.find((w) => w.id === "jungle").src,
     soundScheme: "Jungle",
     iconScheme: "jungle",
@@ -44,7 +44,7 @@ export const themes = {
   space: {
     id: "space",
     name: "Space",
-    stylesheet: "space.css",
+    colorSchemeId: "space",
     wallpaper: wallpapers.themes.find((w) => w.id === "space").src,
     soundScheme: "Space",
     iconScheme: "space",
@@ -53,7 +53,7 @@ export const themes = {
   underwater: {
     id: "underwater",
     name: "Underwater",
-    stylesheet: "underwater.css",
+    colorSchemeId: "underwater",
     wallpaper: wallpapers.themes.find((w) => w.id === "underwater").src,
     soundScheme: "Underwater",
     iconScheme: "underwater",
@@ -62,14 +62,14 @@ export const themes = {
   //'memphis-milano': {
   //  id: 'memphis-milano',
   //  name: 'Memphis Milano',
-  //  stylesheet: 'memphis-milano.css',
+  //  colorSchemeId: 'memphis-milano',
   //  wallpaper: null,
   //  soundScheme: 'Default',
   //},
   "inside-your-computer": {
     id: "inside-your-computer",
     name: "Inside Your Computer",
-    stylesheet: "inside-your-computer.css",
+    colorSchemeId: "inside-your-computer",
     wallpaper: wallpapers.themes.find((w) => w.id === "insideYourComputer").src,
     soundScheme: "Inside Your Computer",
     iconScheme: "inside-your-computer",
@@ -77,7 +77,7 @@ export const themes = {
   sports: {
     id: "sports",
     name: "Sports",
-    stylesheet: "sports.css",
+    colorSchemeId: "sports",
     wallpaper: wallpapers.themes.find((w) => w.id === "sports").src,
     soundScheme: "Sports",
     iconScheme: "sports",
@@ -85,7 +85,7 @@ export const themes = {
   "leonardo-da-vinci": {
     id: "leonardo-da-vinci",
     name: "Leonardo da Vinci",
-    stylesheet: "leonardo-da-vinci.css",
+    colorSchemeId: "leonardo-da-vinci",
     wallpaper: wallpapers.themes.find((w) => w.id === "leonardoDaVinci").src,
     soundScheme: "Leonardo da Vinci",
     iconScheme: "leonardo-da-vinci",
@@ -93,7 +93,7 @@ export const themes = {
   "more-windows": {
     id: "more-windows",
     name: "More Windows",
-    stylesheet: "more-windows.css",
+    colorSchemeId: "more-windows",
     wallpaper: wallpapers.themes.find((w) => w.id === "moreWindows").src,
     soundScheme: "Default", // Or create a new sound scheme if one exists
     iconScheme: "more-windows",
@@ -101,7 +101,7 @@ export const themes = {
   mystery: {
     id: "mystery",
     name: "Mystery",
-    stylesheet: "mystery.css",
+    colorSchemeId: "mystery",
     wallpaper: wallpapers.themes.find((w) => w.id === "mystery").src,
     soundScheme: "Mystery",
     iconScheme: "mystery",
@@ -109,7 +109,7 @@ export const themes = {
   nature: {
     id: "nature",
     name: "Nature",
-    stylesheet: "nature.css",
+    colorSchemeId: "nature",
     wallpaper: wallpapers.themes.find((w) => w.id === "nature").src,
     soundScheme: "Nature",
     iconScheme: "nature",
@@ -117,7 +117,7 @@ export const themes = {
   science: {
     id: "science",
     name: "Science",
-    stylesheet: "science.css",
+    colorSchemeId: "science",
     wallpaper: wallpapers.themes.find((w) => w.id === "science").src,
     soundScheme: "Science",
     iconScheme: "science",
@@ -125,7 +125,7 @@ export const themes = {
   "the-golden-era": {
     id: "the-golden-era",
     name: "The Golden Era",
-    stylesheet: "the-golden-era.css",
+    colorSchemeId: "the-golden-era",
     wallpaper: wallpapers.themes.find((w) => w.id === "theGoldenEra").src,
     soundScheme: "The Golden Era",
     iconScheme: "the-golden-era",
@@ -133,7 +133,7 @@ export const themes = {
   travel: {
     id: "travel",
     name: "Travel",
-    stylesheet: "travel.css",
+    colorSchemeId: "travel",
     wallpaper: wallpapers.themes.find((w) => w.id === "travel").src,
     soundScheme: "Travel",
     iconScheme: "travel",
@@ -141,7 +141,7 @@ export const themes = {
   "windows-98": {
     id: "windows-98",
     name: "Windows 98",
-    stylesheet: "win-98.css",
+    colorSchemeId: "windows-98",
     wallpaper: wallpapers.themes.find((w) => w.id === "windows98").src,
     soundScheme: "Windows 98",
     iconScheme: "windows-98",
