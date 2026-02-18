@@ -30,12 +30,14 @@ import { existsAsync } from "./zenfs-utils.js";
 import { RecycleBinManager } from "../shell/explorer/file-operations/recycle-bin-manager.js";
 import { appManager } from "./app-manager.js";
 import { WindowManager } from "./window-manager.js";
+import { SpeechManager } from "./speech-manager.js";
 
 export async function initializeOS() {
   const isMSDOSMode = window.location.hash === "#msdos";
 
   // Initialize Window Management System
   window.System = new WindowManager();
+  window.System.speechManager = new SpeechManager();
 
   const path = window.location.pathname;
   const profileName = path.startsWith("/win98-web/")

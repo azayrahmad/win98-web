@@ -238,54 +238,8 @@ export function launchClippyApp(app, agentName = currentAgentName) {
     const ttsEnabled = agent.isTTSEnabled();
     if (ttsEnabled) {
       const setDefaultVoice = () => {
-        const voices = agent.getTTSVoices();
-        if (voices.length > 0) {
-          // Improved voice selection logic
-          const englishVoices = voices.filter((v) => v.lang.startsWith("en"));
-
-          // Prioritize male-sounding voices by name patterns
-          let defaultVoice = englishVoices.find(
-            (v) =>
-              v.name.toLowerCase().includes("male") ||
-              v.name.toLowerCase().includes("david") ||
-              v.name.toLowerCase().includes("alex") ||
-              v.name.toLowerCase().includes("fred") ||
-              v.name.toLowerCase().includes("daniel") ||
-              v.name.toLowerCase().includes("george") ||
-              v.name.toLowerCase().includes("paul") ||
-              v.name.toLowerCase().includes("tom") ||
-              v.name.toLowerCase().includes("mark") ||
-              v.name.toLowerCase().includes("james") ||
-              v.name.toLowerCase().includes("michael"),
-          );
-
-          // If no male voice found, prefer voices that are NOT obviously female
-          if (!defaultVoice) {
-            const femaleNames = [
-              "zira",
-              "hazel",
-              "samantha",
-              "susan",
-              "karen",
-              "sara",
-              "emma",
-              "lucy",
-              "anna",
-            ];
-            const nonFemaleVoices = englishVoices.filter(
-              (v) =>
-                !femaleNames.some((name) =>
-                  v.name.toLowerCase().includes(name),
-                ) && !v.name.toLowerCase().includes("female"),
-            );
-
-            if (nonFemaleVoices.length > 0) {
-              defaultVoice = nonFemaleVoices[0]; // Take first non-female voice
-            } else {
-              defaultVoice = englishVoices[0]; // Fallback to any English voice
-            }
-          }
-
+        const defaultVoice = window.System.speechManager.getDefaultVoice();
+        if (defaultVoice) {
           agent.setTTSOptions({
             voice: defaultVoice,
             rate: 0.9,
@@ -294,7 +248,8 @@ export function launchClippyApp(app, agentName = currentAgentName) {
           });
         }
       };
-      if (window.speechSynthesis.getVoices().length) {
+
+      if (window.System.speechManager.getVoices().length) {
         setDefaultVoice();
       } else {
         window.speechSynthesis.addEventListener(
