@@ -317,6 +317,16 @@ export const ICONS = {
     32: new URL("../assets/icons/windows_update_large-4.png", import.meta.url)
       .href,
   },
+  transportTycoon: {
+    16: new URL(
+      "../assets/icons/transport-tycoon-deluxe-16.png",
+      import.meta.url,
+    ).href,
+    32: new URL(
+      "../assets/icons/transport-tycoon-deluxe-32.png",
+      import.meta.url,
+    ).href,
+  },
   controlPanel: {
     16: new URL(
       "../assets/icons/directory_control_panel-1.png",

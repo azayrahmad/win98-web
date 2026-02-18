@@ -1,12 +1,10 @@
 // src/config/apps.js
-import { ZenExplorerApp } from '../shell/explorer/explorer-app.js';
-import { ShowDialogWindow } from '../shared/components/dialog-window.js';
-import { getIcon } from '../shared/utils/icon-resolver.js';
-import {
-  getRecycleBinItems,
-} from '../system/recycle-bin-utils.js';
-import { SPECIAL_FOLDER_PATHS } from './special-folders.js';
-import { appRegistry } from './app-registry.js';
+import { ZenExplorerApp } from "../shell/explorer/explorer-app.js";
+import { ShowDialogWindow } from "../shared/components/dialog-window.js";
+import { getIcon } from "../shared/utils/icon-resolver.js";
+import { getRecycleBinItems } from "../system/recycle-bin-utils.js";
+import { SPECIAL_FOLDER_PATHS } from "./special-folders.js";
+import { appRegistry } from "./app-registry.js";
 
 // --- Dynamic App Loading ---
 
@@ -47,7 +45,8 @@ const systemApps = [
   {
     id: "internet-explorer",
     title: "Internet Explorer",
-    description: "Browse the web.", category: "",
+    description: "Browse the web.",
+    category: "",
     get icon() {
       return getIcon("internet-explorer");
     },
@@ -119,10 +118,10 @@ const systemApps = [
           });
         },
         enabled: () => {
-            // This is tricky because apps.js is outside the extension system's usual context
-            // and getRecycleBinItems might be old.
-            // For now, let's keep it simple.
-            return true;
+          // This is tricky because apps.js is outside the extension system's usual context
+          // and getRecycleBinItems might be old.
+          // For now, let's keep it simple.
+          return true;
         },
       },
       "MENU_DIVIDER",
@@ -237,7 +236,8 @@ const systemApps = [
     action: {
       type: "function",
       handler: async () => {
-        const { showUpdateConfirmation } = await import("../system/update-manager.js");
+        const { showUpdateConfirmation } =
+          await import("../system/update-manager.js");
         await showUpdateConfirmation();
       },
     },
