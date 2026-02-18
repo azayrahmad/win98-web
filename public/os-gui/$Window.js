@@ -3,6 +3,8 @@
 
   const E = document.createElement.bind(document);
 
+  const { get_os_scale, is_os_zoom, get_mouse_pos } = window.os_gui_utils;
+
   /**
    * @param {Element | object | null | undefined} element
    * @returns {string}
@@ -1694,9 +1696,10 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
       const screenRect = document
         .getElementById("screen")
         .getBoundingClientRect();
+      const scale = is_os_zoom() ? 1 : get_os_scale();
       $w.css({
-        left: drag_pointer_x - screenRect.left - drag_offset_x,
-        top: drag_pointer_y - screenRect.top - drag_offset_y,
+        left: (drag_pointer_x - screenRect.left) / scale - drag_offset_x,
+        top: (drag_pointer_y - screenRect.top) / scale - drag_offset_y,
       });
     };
     $w.$titlebar.css("touch-action", "none");
@@ -1755,8 +1758,9 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
       const screenRect = document
         .getElementById("screen")
         .getBoundingClientRect();
-      drag_offset_x = e.clientX - screenRect.left - $w.position().left;
-      drag_offset_y = e.clientY - screenRect.top - $w.position().top;
+      const scale = is_os_zoom() ? 1 : get_os_scale();
+      drag_offset_x = (e.clientX - screenRect.left) / scale - $w.position().left;
+      drag_offset_y = (e.clientY - screenRect.top) / scale - $w.position().top;
       drag_pointer_x = e.clientX;
       drag_pointer_y = e.clientY;
       drag_pointer_id = e.pointerId ?? e.originalEvent?.pointerId; // originalEvent doesn't exist for triggerHandler()
@@ -1900,14 +1904,13 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
             height: $w.outerHeight(),
           };
 
+          const scale = is_os_zoom() ? 1 : get_os_scale();
           resize_offset_x =
-            e.clientX +
-            scrollX -
+            (e.clientX + scrollX) / scale -
             rect.x -
             (x_axis === HANDLE_RIGHT ? rect.width : 0);
           resize_offset_y =
-            e.clientY +
-            scrollY -
+            (e.clientY + scrollY) / scale -
             rect.y -
             (y_axis === HANDLE_BOTTOM ? rect.height : 0);
           resize_pointer_x = e.clientX;
@@ -1947,8 +1950,11 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
           $w.bringTitleBarInBounds();
         }
         function update_resize() {
-          const mouse_x = resize_pointer_x + scrollX - resize_offset_x;
-          const mouse_y = resize_pointer_y + scrollY - resize_offset_y;
+          const scale = is_os_zoom() ? 1 : get_os_scale();
+          const mouse_x =
+            (resize_pointer_x + scrollX) / scale - resize_offset_x;
+          const mouse_y =
+            (resize_pointer_y + scrollY) / scale - resize_offset_y;
           let delta_x = 0;
           let delta_y = 0;
           let width, height;

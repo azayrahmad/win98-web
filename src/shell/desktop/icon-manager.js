@@ -117,8 +117,14 @@ export class IconManager {
 
     this.isLassoing = true;
     const containerRect = this.container.getBoundingClientRect();
-    const lassoStartX = e.clientX - containerRect.left + this.container.scrollLeft;
-    const lassoStartY = e.clientY - containerRect.top + this.container.scrollTop;
+    const isZoom = window.os_gui_utils.is_os_zoom();
+    const scale = window.os_gui_utils.get_os_scale();
+    const rectLeft = isZoom ? containerRect.left : containerRect.left / scale;
+    const rectTop = isZoom ? containerRect.top : containerRect.top / scale;
+    const pos = window.os_gui_utils.get_mouse_pos(e);
+
+    const lassoStartX = pos.x - rectLeft + this.container.scrollLeft;
+    const lassoStartY = pos.y - rectTop + this.container.scrollTop;
 
 
     this.lasso = document.createElement("div");
@@ -133,8 +139,9 @@ export class IconManager {
       if (!this.isLassoing) return;
       this.wasLassoing = true;
 
-      const currentX = moveEvent.clientX - containerRect.left + this.container.scrollLeft;
-      const currentY = moveEvent.clientY - containerRect.top + this.container.scrollTop;
+      const movePos = window.os_gui_utils.get_mouse_pos(moveEvent);
+      const currentX = movePos.x - rectLeft + this.container.scrollLeft;
+      const currentY = movePos.y - rectTop + this.container.scrollTop;
 
       const width = Math.abs(currentX - lassoStartX);
       const height = Math.abs(currentY - lassoStartY);
@@ -224,8 +231,9 @@ export class IconManager {
 
   handleTouchStart(e, icon) {
     if (e.touches.length !== 1) return;
-    this.touchStartX = e.touches[0].clientX;
-    this.touchStartY = e.touches[0].clientY;
+    const pos = window.os_gui_utils.get_mouse_pos(e.touches[0]);
+    this.touchStartX = pos.x;
+    this.touchStartY = pos.y;
     this.touchIcon = icon;
     this.isTouchDragging = false;
 
@@ -239,8 +247,9 @@ export class IconManager {
     if (this.isTouchDragging) return;
     if (e.touches.length !== 1) return;
 
-    const touchX = e.touches[0].clientX;
-    const touchY = e.touches[0].clientY;
+    const pos = window.os_gui_utils.get_mouse_pos(e.touches[0]);
+    const touchX = pos.x;
+    const touchY = pos.y;
     const dist = Math.sqrt(
       Math.pow(touchX - this.touchStartX, 2) +
         Math.pow(touchY - this.touchStartY, 2),
@@ -274,13 +283,15 @@ export class IconManager {
       this.setSelection(new Set([icon]));
     }
 
-    const startX = e.clientX;
-    const startY = e.clientY;
+    const pos = window.os_gui_utils.get_mouse_pos(e);
+    const startX = pos.x;
+    const startY = pos.y;
 
     const onMouseMove = (moveEvent) => {
+      const movePos = window.os_gui_utils.get_mouse_pos(moveEvent);
       const dist = Math.sqrt(
-        Math.pow(moveEvent.clientX - startX, 2) +
-          Math.pow(moveEvent.clientY - startY, 2),
+        Math.pow(movePos.x - startX, 2) +
+          Math.pow(movePos.y - startY, 2),
       );
       if (dist > 5) {
         document.removeEventListener("mousemove", onMouseMove);

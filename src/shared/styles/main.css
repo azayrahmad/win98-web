@@ -85,6 +85,11 @@ html {
     cursor: var(--cursor-default);
 }
 
+#os-scale-wrapper {
+    width: 100%;
+    height: 100%;
+}
+
 #screen {
     position: relative;
     overflow: hidden;

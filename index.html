@@ -208,8 +208,9 @@
         </style>
     </head>
 
-    <body class="scanlines">
-        <div id="screen">
+    <body>
+        <div id="os-scale-wrapper">
+            <div id="screen" class="scanlines">
             <section
                 id="boot-screen"
                 aria-live="polite"
@@ -279,7 +280,8 @@
                     </filter>
                 </defs>
             </svg>
-            <script type="module" src="/src/main.js"></script>
+                <script type="module" src="/src/main.js"></script>
+            </div>
         </div>
     </body>
 </html>

@@ -14,7 +14,7 @@
     display: block;
     pointer-events: none;
     content: "";
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     bottom: 0;
@@ -52,7 +52,7 @@
         filter 0.5s ease;
 }
 
-.scanlines #screen {
+#screen.scanlines {
     animation:
         crt-flicker 0.15s infinite,
         crt-power-on 0.8s ease-out forwards;

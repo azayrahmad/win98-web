@@ -32,6 +32,7 @@ import { appManager } from "./app-manager.js";
 import { WindowManager } from "./window-manager.js";
 
 export async function initializeOS() {
+  initScreenManager();
   const isMSDOSMode = window.location.hash === "#msdos";
 
   // Initialize Window Management System
@@ -394,7 +395,6 @@ export async function initializeOS() {
     window.addEventListener("keydown", resetInactivityTimer);
 
     resetInactivityTimer();
-    initScreenManager();
   } catch (error) {
     if (error.message !== "Setup interrupted") {
       console.error("An error occurred during boot:", error);

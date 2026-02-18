@@ -587,6 +587,8 @@ export class SolitaireApp extends Application {
     const cardDiv = target.closest(".card");
     if (!cardDiv) return;
 
+    const { get_rect } = window.os_gui_utils;
+
     const pileType = cardDiv.dataset.pileType;
     const pileIndex = parseInt(cardDiv.dataset.pileIndex, 10);
     const cardIndex = parseInt(cardDiv.dataset.cardIndex, 10);
@@ -632,8 +634,8 @@ export class SolitaireApp extends Application {
     else return;
 
     const cardsToDrag = fromPile.cards.slice(cardIndex);
-    const containerRect = this.container.getBoundingClientRect();
-    const cardRect = cardDiv.getBoundingClientRect();
+    const containerRect = get_rect(this.container);
+    const cardRect = get_rect(cardDiv);
     this.dragOffsetX = clientX - cardRect.left;
     this.dragOffsetY = clientY - cardRect.top;
 
@@ -699,7 +701,9 @@ export class SolitaireApp extends Application {
     if (!this.isDragging) return;
     this.wasDragged = true;
 
-    const containerRect = this.container.getBoundingClientRect();
+    const { get_rect } = window.os_gui_utils;
+
+    const containerRect = get_rect(this.container);
     const x = clientX - containerRect.left - this.dragOffsetX;
     const y = clientY - containerRect.top - this.dragOffsetY;
     this.draggedElement.style.left = `${x}px`;
@@ -834,11 +838,13 @@ export class SolitaireApp extends Application {
     if (event.button !== 0) return; // Only main button
     this.wasDragged = false;
     this.doubleTapHandled = false;
-    this.handleStart(event.clientX, event.clientY, event.target, false);
+    const pos = window.os_gui_utils.get_mouse_pos(event);
+    this.handleStart(pos.x, pos.y, event.target, false);
   }
 
   onMouseMove(event) {
-    this.handleMove(event.clientX, event.clientY);
+    const pos = window.os_gui_utils.get_mouse_pos(event);
+    this.handleMove(pos.x, pos.y);
   }
 
   onMouseUp(event) {
@@ -855,13 +861,15 @@ export class SolitaireApp extends Application {
     window.addEventListener("touchmove", this.boundOnTouchMove, { passive: false });
     window.addEventListener("touchend", this.boundOnTouchEnd);
 
-    this.handleStart(touch.clientX, touch.clientY, touch.target, true);
+    const pos = window.os_gui_utils.get_mouse_pos(touch);
+    this.handleStart(pos.x, pos.y, touch.target, true);
     event.preventDefault();
   }
 
   onTouchMove(event) {
     const touch = event.touches[0];
-    this.handleMove(touch.clientX, touch.clientY);
+    const pos = window.os_gui_utils.get_mouse_pos(touch);
+    this.handleMove(pos.x, pos.y);
     if (this.isDragging) {
       event.preventDefault();
     }
@@ -904,8 +912,9 @@ export class SolitaireApp extends Application {
 
     const canvas = this.win.element.querySelector(".win-animation-canvas");
     const gameBoard = this.win.element.querySelector(".game-board");
-    const boardRect = gameBoard.getBoundingClientRect();
-    const containerRect = this.container.getBoundingClientRect();
+    const { get_rect } = window.os_gui_utils;
+    const boardRect = get_rect(gameBoard);
+    const containerRect = get_rect(this.container);
 
     canvas.width = boardRect.width;
     canvas.height = boardRect.height;

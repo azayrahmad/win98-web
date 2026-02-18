@@ -7,6 +7,8 @@ import {
   getAvailableResolutions,
   setResolution,
   getCurrentResolutionId,
+  getScale,
+  setScale,
 } from '../../../system/screen-manager.js';
 
 const PALETTES = {
@@ -64,6 +66,8 @@ export const settingsTab = {
     const $colorModeSelect = win.$content.find("#color-mode-select");
     const $resolutionSlider = win.$content.find("#resolution-slider");
     const $currentResolution = win.$content.find(".current-resolution");
+    const $scalingSlider = win.$content.find("#scaling-slider");
+    const $currentScaling = win.$content.find(".current-scaling");
     const $browserInfo = win.$content.find(".browser-info");
 
     const colorModes = getColorModes();
@@ -88,6 +92,11 @@ export const settingsTab = {
     );
     app.selectedResolution = currentResolutionId;
 
+    const currentScale = getScale();
+    $scalingSlider.val(currentScale);
+    $currentScaling.text(`${currentScale.toFixed(1)}x`);
+    app.selectedScale = currentScale;
+
     $browserInfo.text(navigator.userAgent);
 
     $colorModeSelect.on("change", (e) => {
@@ -105,6 +114,13 @@ export const settingsTab = {
       );
       app._enableApplyButton(win);
     });
+
+    $scalingSlider.on("input", (e) => {
+      const scale = parseFloat($(e.target).val());
+      app.selectedScale = scale;
+      $currentScaling.text(`${scale.toFixed(1)}x`);
+      app._enableApplyButton(win);
+    });
   },
   applyChanges(app) {
     if (app.selectedColorMode) {
@@ -112,6 +128,9 @@ export const settingsTab = {
     }
     if (app.selectedResolution) {
       setResolution(app.selectedResolution);
+    }
+    if (app.selectedScale) {
+      setScale(app.selectedScale);
     }
   },
 };

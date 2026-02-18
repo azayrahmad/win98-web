@@ -74,9 +74,12 @@
       const menuRect = menuPopup.element.getBoundingClientRect();
       wrap.classList.remove("measuring");
 
-      const screenRect = screen.getBoundingClientRect();
-      const relX = x - screenRect.left;
-      const relY = y - screenRect.top;
+      const { get_rect, get_os_scale, is_os_zoom } = window.os_gui_utils;
+      const screenRect = get_rect(screen);
+      const scale = is_os_zoom() ? 1 : get_os_scale();
+
+      const relX = x / scale - screenRect.left;
+      const relY = y / scale - screenRect.top;
 
       let finalX = relX;
       let finalY = relY;
