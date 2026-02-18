@@ -242,17 +242,6 @@ const systemApps = [
       },
     },
   },
-  {
-    id: "transporttycoon",
-    title: "Transport Tycoon Deluxe",
-    description: "An open-source simulation game.",
-    icon: ICONS.transportTycoon,
-    appClass: TransportTycoonApp,
-    width: 800,
-    height: 600,
-    resizable: true,
-    isSingleton: true,
-  },
 ];
 
 // --- Combine and Export ---
