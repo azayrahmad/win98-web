@@ -211,8 +211,14 @@
       const submenuItems =
         typeof item.submenu === "function" ? item.submenu() : item.submenu;
 
-      const parentRect = parentEl.getBoundingClientRect();
-      const event = { pageX: parentRect.left, pageY: parentRect.bottom };
+      const { get_rect, is_os_zoom, get_os_scale } = window.os_gui_utils;
+      const parentRect = get_rect(parentEl);
+      const scale = is_os_zoom() ? 1 : get_os_scale();
+
+      const event = {
+        clientX: parentRect.left * scale,
+        clientY: parentRect.bottom * scale,
+      };
       this.activeMenu = new window.ContextMenu(submenuItems, event);
     }
 
@@ -341,11 +347,14 @@
         );
       }
 
-      document.body.appendChild(this.overflowMenu);
+      const { get_rect } = window.os_gui_utils;
+      const screen = document.getElementById("screen");
+      const screenRect = get_rect(screen);
+      screen.appendChild(this.overflowMenu);
 
-      const parentRect = parentEl.getBoundingClientRect();
-      this.overflowMenu.style.left = `${parentRect.left}px`;
-      this.overflowMenu.style.top = `${parentRect.bottom}px`;
+      const parentRect = get_rect(parentEl);
+      this.overflowMenu.style.left = `${parentRect.left - screenRect.left}px`;
+      this.overflowMenu.style.top = `${parentRect.bottom - screenRect.top}px`;
 
       this.closeMenuOnClickOutside = (e) => {
         if (!this.overflowMenu.contains(e.target) && e.target !== parentEl) {

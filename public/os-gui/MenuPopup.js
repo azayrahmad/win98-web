@@ -252,7 +252,7 @@
           const submenu_popup_el_actual = submenu_popup.element;
           submenu_popup_el.appendChild(submenu_popup_el_actual);
 
-          document.body?.appendChild(submenu_popup_el);
+          document.getElementById("screen")?.appendChild(submenu_popup_el);
           // submenu_popup_el.style.display = "none"; // Managed by .open class
           item_el.setAttribute("aria-haspopup", "true");
           item_el.setAttribute("aria-expanded", "false");
@@ -284,38 +284,45 @@
               window.inheritTheme(submenu_popup_el, menu_popup_el);
             }
             if (!submenu_popup_el.parentElement) {
-              document.body.appendChild(submenu_popup_el);
+              document.getElementById("screen")?.appendChild(submenu_popup_el);
             }
             submenu_popup_el.dispatchEvent(new CustomEvent("update", {}));
 
-            const rect = item_el.getBoundingClientRect();
+            const { get_rect } = window.os_gui_utils;
+            const rect = get_rect(item_el);
 
             // Measure without showing
             submenu_popup_el.classList.add("measuring");
-            const submenu_popup_rect = submenu_popup_el.getBoundingClientRect();
+            const submenu_popup_rect = get_rect(submenu_popup_el);
             submenu_popup_el.classList.remove("measuring");
+
+            const screen = document.getElementById("screen");
+            const screenRect = get_rect(screen);
 
             let final_x =
               (get_direction() === "rtl"
                 ? rect.left - submenu_popup_rect.width
-                : rect.right) + window.scrollX;
-            let final_y = rect.top + window.scrollY;
+                : rect.right);
+            let final_y = rect.top;
             let from_left = false;
 
             if (get_direction() === "rtl") {
-              if (final_x < 0) {
+              if (final_x < screenRect.left) {
                 final_x = rect.right;
                 from_left = true;
               }
             } else {
-              if (final_x + submenu_popup_rect.width > innerWidth) {
+              if (final_x + submenu_popup_rect.width > screenRect.right) {
                 final_x = rect.left - submenu_popup_rect.width;
                 from_left = true;
               }
             }
-            if (final_y + submenu_popup_rect.height > innerHeight) {
-              final_y = Math.max(0, innerHeight - submenu_popup_rect.height);
+            if (final_y + submenu_popup_rect.height > screenRect.bottom) {
+              final_y = Math.max(screenRect.top, screenRect.bottom - submenu_popup_rect.height);
             }
+
+            final_x -= screenRect.left;
+            final_y -= screenRect.top;
 
             submenu_popup_el.style.left = `${final_x}px`;
             submenu_popup_el.style.top = `${final_y}px`;

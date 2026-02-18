@@ -116,11 +116,10 @@ export class IconManager {
     if (e.button !== 0) return; // Only for left click
 
     this.isLassoing = true;
-    const containerRect = this.container.getBoundingClientRect();
-    const isZoom = window.os_gui_utils.is_os_zoom();
-    const scale = window.os_gui_utils.get_os_scale();
-    const rectLeft = isZoom ? containerRect.left : containerRect.left / scale;
-    const rectTop = isZoom ? containerRect.top : containerRect.top / scale;
+    const { get_rect } = window.os_gui_utils;
+    const containerRect = get_rect(this.container);
+    const rectLeft = containerRect.left;
+    const rectTop = containerRect.top;
     const pos = window.os_gui_utils.get_mouse_pos(e);
 
     const lassoStartX = pos.x - rectLeft + this.container.scrollLeft;

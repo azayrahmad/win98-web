@@ -70,15 +70,19 @@
     }
 
     /**
-     * @param {MouseEvent | Touch | PointerEvent} e
+     * @param {MouseEvent | Touch | PointerEvent | {clientX?: number, clientY?: number, pageX?: number, pageY?: number}} e
      * @returns {{x: number, y: number}}
      */
     function get_mouse_pos(e) {
-        if (is_os_zoom()) {
-            return { x: e.clientX, y: e.clientY };
-        }
+        const clientX = e.clientX ?? e.pageX ?? 0;
+        const clientY = e.clientY ?? e.pageY ?? 0;
         const scale = get_os_scale();
-        return { x: e.clientX / scale, y: e.clientY / scale };
+        const screen_el = document.getElementById("screen") || document.body;
+        const screen_rect = screen_el.getBoundingClientRect();
+        return {
+            x: (clientX - screen_rect.left) / scale,
+            y: (clientY - screen_rect.top) / scale,
+        };
     }
 
     /**
@@ -87,15 +91,14 @@
      */
     function get_rect(el) {
         const rect = el.getBoundingClientRect();
-        if (is_os_zoom()) {
-            return rect;
-        }
         const scale = get_os_scale();
+        const screen_el = document.getElementById("screen") || document.body;
+        const screen_rect = screen_el.getBoundingClientRect();
         return {
-            left: rect.left / scale,
-            top: rect.top / scale,
-            right: rect.right / scale,
-            bottom: rect.bottom / scale,
+            left: (rect.left - screen_rect.left) / scale,
+            top: (rect.top - screen_rect.top) / scale,
+            right: (rect.right - screen_rect.left) / scale,
+            bottom: (rect.bottom - screen_rect.top) / scale,
             width: rect.width / scale,
             height: rect.height / scale,
         };

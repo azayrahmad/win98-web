@@ -348,7 +348,7 @@
       menus_el.appendChild(menu_button_el);
 
       const menu_popup_el = E("div", { class: "menu-popup-wrapper to-down" });
-      document.body?.appendChild(menu_popup_el);
+      document.getElementById("screen")?.appendChild(menu_popup_el);
       const menu_popup = new MenuPopup(menu_items, {
         handleKeyDown,
         closeMenus: close_menus,
@@ -370,24 +370,33 @@
       );
 
       const update_position = () => {
-        const rect = menu_button_el.getBoundingClientRect();
+        const { get_rect } = window.os_gui_utils;
+        const rect = get_rect(menu_button_el);
 
         // Measure without showing
         menu_popup_el.classList.add("measuring");
-        const popup_rect = menu_popup_el.getBoundingClientRect();
+        const popup_rect = get_rect(menu_popup_el);
         menu_popup_el.classList.remove("measuring");
 
-        menu_popup_el.style.position = "absolute";
-        menu_popup_el.style.left = `${(get_direction() === "rtl" ? rect.right - popup_rect.width : rect.left) + window.scrollX}px`;
-        menu_popup_el.style.top = `${rect.bottom + window.scrollY}px`;
+        const screen = document.getElementById("screen");
+        const screenRect = get_rect(screen);
 
-        const final_left = parseFloat(menu_popup_el.style.left);
-        if (final_left + popup_rect.width > innerWidth + window.scrollX) {
-          menu_popup_el.style.left = `${innerWidth + window.scrollX - popup_rect.width}px`;
+        menu_popup_el.style.position = "absolute";
+        let final_left = (get_direction() === "rtl" ? rect.right - popup_rect.width : rect.left);
+        let final_top = rect.bottom;
+
+        if (final_left + popup_rect.width > screenRect.right) {
+          final_left = screenRect.right - popup_rect.width;
         }
-        if (final_left < window.scrollX) {
-          menu_popup_el.style.left = `${window.scrollX}px`;
+        if (final_left < screenRect.left) {
+          final_left = screenRect.left;
         }
+
+        final_left -= screenRect.left;
+        final_top -= screenRect.top;
+
+        menu_popup_el.style.left = `${final_left}px`;
+        menu_popup_el.style.top = `${final_top}px`;
       };
       window.addEventListener("resize", update_position);
       menu_popup_el.addEventListener("update", update_position);
@@ -435,7 +444,7 @@
         menu_popup_el.setAttribute("dir", get_direction());
         if (window.inheritTheme) window.inheritTheme(menu_popup_el, menus_el);
         if (!menu_popup_el.parentElement)
-          document.body.appendChild(menu_popup_el);
+          document.getElementById("screen")?.appendChild(menu_popup_el);
         top_level_highlight(menus_key);
         menu_popup_el.dispatchEvent(new CustomEvent("update", {}));
         selecting_menus = true;

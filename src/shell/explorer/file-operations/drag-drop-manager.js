@@ -22,13 +22,12 @@ export class DragDropManager {
         this.isDragging = true;
         this.isTouchDrag = isTouch;
 
-        const isZoom = window.os_gui_utils.is_os_zoom();
-        const scale = window.os_gui_utils.get_os_scale();
+        const { get_rect } = window.os_gui_utils;
 
         this.draggedItems = iconElements.map(el => {
-            const rect = el.getBoundingClientRect();
-            const rectLeft = isZoom ? rect.left : rect.left / scale;
-            const rectTop = isZoom ? rect.top : rect.top / scale;
+            const rect = get_rect(el);
+            const rectLeft = rect.left;
+            const rectTop = rect.top;
             return {
                 element: el,
                 path: el.getAttribute('data-path'),
@@ -167,14 +166,12 @@ export class DragDropManager {
         }
 
         if (container) {
-            const rect = container.getBoundingClientRect();
-            const isZoom = window.os_gui_utils.is_os_zoom();
-            const scale = window.os_gui_utils.get_os_scale();
-            const rectLeft = isZoom ? rect.left : rect.left / scale;
-            const rectTop = isZoom ? rect.top : rect.top / scale;
+            const rect = window.os_gui_utils.get_rect(container);
+            const rectLeft = rect.left;
+            const rectTop = rect.top;
 
-            dropX = x - rectLeft + (container.scrollLeft || 0) - offsetX;
-            dropY = y - rectTop + (container.scrollTop || 0) - offsetY;
+            dropX = x - rectLeft + (container.scrollLeft / window.os_gui_utils.get_os_scale() || 0) - offsetX;
+            dropY = y - rectTop + (container.scrollTop / window.os_gui_utils.get_os_scale() || 0) - offsetY;
         }
         const sourceDir = sourcePaths[0].substring(0, sourcePaths[0].lastIndexOf('/')) || '/';
         if (!isCopy && destinationPath === sourceDir) {
