@@ -26,26 +26,34 @@ export function getThemedIconObj(specialType, isEmpty = true) {
       : iconSchemes[schemeNameOrObj] || iconSchemes.default;
   const defaultScheme = iconSchemes.default;
 
+  let icon;
   switch (specialType) {
     case "computer":
-      return scheme.myComputer || defaultScheme.myComputer || ICONS.computer;
+      icon = scheme.myComputer || defaultScheme.myComputer || ICONS.computer;
+      break;
     case "recycle":
-      return isEmpty
+      icon = isEmpty
         ? scheme.recycleBinEmpty ||
             defaultScheme.recycleBinEmpty ||
             ICONS.recycleBinEmpty
         : scheme.recycleBinFull ||
             defaultScheme.recycleBinFull ||
             ICONS.recycleBinFull;
+      break;
     case "network":
-      return (
+      icon =
         scheme.networkNeighborhood ||
         defaultScheme.networkNeighborhood ||
-        ICONS.networkNeighborhood
-      );
+        ICONS.networkNeighborhood;
+      break;
     default:
       return null;
   }
+
+  if (typeof icon === "string") {
+    return { 16: icon, 32: icon };
+  }
+  return icon;
 }
 
 /**
