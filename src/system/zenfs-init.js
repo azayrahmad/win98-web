@@ -43,16 +43,27 @@ export async function initFileSystem(onProgress) {
     let cDriveFs;
     if (window.electronAPI) {
       const handle = await new Promise((resolve) => {
-        window.electronAPI.onCDriveHandle((h) => resolve(h));
+        const timeout = setTimeout(() => {
+          resolve(null);
+        }, 30000); // 30s timeout for folder selection
+        window.electronAPI.onCDriveHandle((h) => {
+          clearTimeout(timeout);
+          resolve(h);
+        });
         window.electronAPI.requestCDriveHandle();
       });
       if (!handle) {
-        throw new Error("C: drive handle not received. A folder must be selected to continue.");
+        throw new Error("C: drive handle not received or folder selection cancelled. A host folder must be selected to use the standalone version.");
       }
-      cDriveFs = await resolveMountConfig({
-        backend: WebAccess,
-        handle: handle,
-      });
+      try {
+        cDriveFs = await resolveMountConfig({
+          backend: WebAccess,
+          handle: handle,
+        });
+      } catch (err) {
+        console.error("Failed to mount host folder as C: drive:", err);
+        throw new Error(`Failed to mount host folder: ${err.message}`);
+      }
     } else {
       cDriveFs = await resolveMountConfig({
         backend: IndexedDB,

@@ -6,5 +6,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   isElectron: () => ipcRenderer.invoke('is-electron'),
   onDeviceInserted: (callback) => ipcRenderer.on('device-inserted', (event, data) => callback(data)),
   requestCDriveHandle: () => ipcRenderer.send('request-c-drive-handle'),
-  onCDriveHandle: (callback) => ipcRenderer.on('c-drive-handle', (event, handle) => callback(handle)),
+  onCDriveHandle: (callback) => ipcRenderer.once('c-drive-handle', (event, handle) => callback(handle)),
 });

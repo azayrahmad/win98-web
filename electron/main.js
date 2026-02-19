@@ -1,9 +1,10 @@
-import electron from 'electron';
-const { app, BrowserWindow, Menu, ipcMain, dialog, webUtils, session } = electron;
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const { app, BrowserWindow, Menu, ipcMain, dialog, webUtils, session } = require('electron');
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import Store from 'electron-store';
 
+const Store = require('electron-store');
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const store = new Store();
 
@@ -131,6 +132,11 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  console.log('Electron Version:', process.versions.electron);
+  if (!webUtils) {
+    console.error('CRITICAL: electron.webUtils is undefined. File system access will be restricted.');
+  }
+
   // Intercept /win98-web/ paths to support hardcoded absolute paths in Electron
   // Also handle /src/ paths for dev mode if needed
   session.defaultSession.webRequest.onBeforeRequest(
