@@ -39,10 +39,26 @@ export async function initFileSystem(onProgress) {
     fs.mount("/", rootFs);
 
     if (onProgress) onProgress("Mounting C: drive...");
-    const cDriveFs = await resolveMountConfig({
-      backend: IndexedDB,
-      name: "win98-c-drive",
-    });
+
+    let cDriveFs;
+    if (window.electronAPI) {
+      const handle = await new Promise((resolve) => {
+        window.electronAPI.onCDriveHandle((h) => resolve(h));
+        window.electronAPI.requestCDriveHandle();
+      });
+      if (!handle) {
+        throw new Error("C: drive handle not received. A folder must be selected to continue.");
+      }
+      cDriveFs = await resolveMountConfig({
+        backend: WebAccess,
+        handle: handle,
+      });
+    } else {
+      cDriveFs = await resolveMountConfig({
+        backend: IndexedDB,
+        name: "win98-c-drive",
+      });
+    }
     // Ensure C: mount point exists in root
     if (!(await existsAsync("/C:"))) {
       await fs.promises.mkdir("/C:");

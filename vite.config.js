@@ -13,7 +13,7 @@ export default defineConfig({
     "import.meta.env.APP_VERSION": JSON.stringify(appVersion),
   },
   assetsInclude: ["**/*.ani"],
-  base: "/win98-web/",
+  base: process.env.ELECTRON_BUILD === "true" ? "./" : "/win98-web/",
   server: {
     hmr: {
       protocol: "ws",

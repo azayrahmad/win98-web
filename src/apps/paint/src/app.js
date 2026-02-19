@@ -578,9 +578,9 @@ const news_seen_key = "jspaint latest news seen";
 const latest_news_datetime = $this_version_news.find("time").attr("datetime");
 const $news_indicator = $(`
 	<a class="news-indicator" href="#project-news">
-		<img src="/win98-web/apps/paint//win98-web/apps/paint/images/winter/present.png" width="24" height="22" alt=""/>
-		<!--<img src="/win98-web/apps/paint//win98-web/apps/paint/images/about/news.gif" width="40" height="16" alt=""/>-->
-		<!--<img src="/win98-web/apps/paint//win98-web/apps/paint/images/new.gif" width="40" height="16" alt=""/>-->
+		<img src="/win98-web/apps/paint/images/winter/present.png" width="24" height="22" alt=""/>
+		<!--<img src="/win98-web/apps/paint/images/about/news.gif" width="40" height="16" alt=""/>-->
+		<!--<img src="/win98-web/apps/paint/images/new.gif" width="40" height="16" alt=""/>-->
 		<span class="marquee" dir="ltr" style="--text-width: 69ch; --animation-duration: 3s;">
 			<span>
 				Discord server, Head Tracker, Quick Undo Button, Enlarge UI, and Dwell Clicker
@@ -623,7 +623,7 @@ if ($news_indicator.text().includes("Bubblegum")) {
 	const bubbles = [];
 	const make_bubble = () => {
 		const $bubble = $(E("img")).attr({
-			src: "/win98-web/apps/paint//win98-web/apps/paint/images/bubblegum/bubble.png",
+			src: "/win98-web/apps/paint/images/bubblegum/bubble.png",
 			width: 24,
 			height: 24,
 			alt: "",
@@ -733,17 +733,17 @@ const theme_updated_period = 20 * day;
 const theme_new_period = 40 * day;
 const theme_soon_period = 40 * day;
 if (Date.now() < Date.parse("2024-02-22") + theme_new_period) {
-	$("[role=menuitem][aria-label*='Modern Dark'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint//win98-web/apps/paint/images/new2.gif' alt='New!'/>");
+	$("[role=menuitem][aria-label*='Modern Dark'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint/images/new2.gif' alt='New!'/>");
 }
 if (Date.now() < Date.parse("2024-02-24") + theme_soon_period) {
-	// $("[role=menuitem][aria-label*='Bubblegum'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint//win98-web/apps/paint/images/soon-twist-anim.gif' alt='Coming Soon!' class='too-big-soon-gif'/>");
-	// $("[role=menuitem][aria-label*='Retro Futurist'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint//win98-web/apps/paint/images/soon.gif' alt='Coming Soon!'/>");
-	// $("[role=menuitem][aria-label*='Picnic'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint//win98-web/apps/paint/images/soon.gif' alt='Coming Soon!'/>");
+	// $("[role=menuitem][aria-label*='Bubblegum'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint/images/soon-twist-anim.gif' alt='Coming Soon!' class='too-big-soon-gif'/>");
+	// $("[role=menuitem][aria-label*='Retro Futurist'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint/images/soon.gif' alt='Coming Soon!'/>");
+	// $("[role=menuitem][aria-label*='Picnic'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint/images/soon.gif' alt='Coming Soon!'/>");
 }
 if (Date.now() < Date.parse("2024-02-22") + theme_updated_period) {
-	$("[role=menuitem][aria-label*='Modern Light'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint//win98-web/apps/paint/images/updated.gif' alt='Updated!'/>");
-	$("[role=menuitem][aria-label*='Classic Dark'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint//win98-web/apps/paint/images/updated.gif' alt='Updated!'/>");
-	$("[role=menuitem][aria-label*='Occult'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint//win98-web/apps/paint/images/updated.gif' alt='Updated!'/>");
+	$("[role=menuitem][aria-label*='Modern Light'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint/images/updated.gif' alt='Updated!'/>");
+	$("[role=menuitem][aria-label*='Classic Dark'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint/images/updated.gif' alt='Updated!'/>");
+	$("[role=menuitem][aria-label*='Occult'] .menu-item-shortcut").append("<img src='/win98-web/apps/paint/images/updated.gif' alt='Updated!'/>");
 }
 
 

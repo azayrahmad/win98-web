@@ -144,6 +144,15 @@
         <script src="./os-gui/AddressBar.js"></script>
         <script src="./clippy/clippy.js"></script>
         <script src="./clippy/clippy_extensions_complete.js"></script>
+        <script type="module">
+            window.BASE_URL = import.meta.env.BASE_URL || "/win98-web/";
+            // Enforce trailing slash for GitHub Pages compatibility with relative paths
+            if (location.hostname.includes('github.io') &&
+                location.pathname.endsWith('/win98-web') &&
+                !location.pathname.endsWith('/')) {
+                location.replace(location.pathname + '/' + location.search + location.hash);
+            }
+        </script>
         <style>
             body.booting {
                 display: flex;

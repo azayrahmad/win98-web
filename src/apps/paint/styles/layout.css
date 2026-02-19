@@ -840,10 +840,10 @@ whereas it breaks component docking calculations if used to shift the colors box
     left: 0;
 }
 .help-window .toolbar button .icon {
-    background-image: url("/win98-web/apps/paint/images/help-viewer-toolbar-icons-grayscale.png");
+    background-image: url("../apps/paint/images/help-viewer-toolbar-icons-grayscale.png");
 }
 .help-window .toolbar button:not([disabled]):hover .icon {
-    background-image: url("/win98-web/apps/paint/images/help-viewer-toolbar-icons.png");
+    background-image: url("../apps/paint/images/help-viewer-toolbar-icons.png");
 }
 .help-window .toolbar button[disabled] .icon {
     filter: saturate(0%) opacity(50%); /* fallback */
