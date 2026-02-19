@@ -1,6 +1,7 @@
-import { app, BrowserWindow, Menu, ipcMain, dialog, webUtils, session } from 'electron';
+import electron from 'electron';
+const { app, BrowserWindow, Menu, ipcMain, dialog, webUtils, session } = electron;
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import Store from 'electron-store';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -131,13 +132,22 @@ function createWindow() {
 
 app.whenReady().then(() => {
   // Intercept /win98-web/ paths to support hardcoded absolute paths in Electron
+  // Also handle /src/ paths for dev mode if needed
   session.defaultSession.webRequest.onBeforeRequest(
-    { urls: ['*:///win98-web/*', 'file://*/win98-web/*'] },
+    { urls: ['*://*/win98-web/*', 'file:///win98-web/*'] },
     (details, callback) => {
-      let url = details.url;
+      const url = details.url;
       if (url.includes('/win98-web/')) {
-        url = url.replace('/win98-web/', '/');
-        callback({ redirectURL: url });
+        const index = url.indexOf('/win98-web/');
+        const relativePart = url.substring(index + '/win98-web/'.length);
+        let newUrl;
+        if (process.env.VITE_DEV_SERVER_URL) {
+          newUrl = new URL(relativePart, process.env.VITE_DEV_SERVER_URL).toString();
+        } else {
+          const basePath = path.join(__dirname, '..');
+          newUrl = pathToFileURL(path.join(basePath, 'dist', relativePart)).toString();
+        }
+        callback({ redirectURL: newUrl });
       } else {
         callback({});
       }

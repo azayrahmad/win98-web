@@ -361,7 +361,7 @@ export class PaintApp extends Application {
     }
 
     async _loadDependencies() {
-        const baseUrl = import.meta.env.BASE_URL || "/win98-web/";
+        const baseUrl = window.BASE_URL || import.meta.env.BASE_URL || "/win98-web/";
         const cleanBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
         const libs = [
             `${cleanBase}apps/paint/lib/pako-2.0.3.min.js`,
@@ -390,7 +390,7 @@ export class PaintApp extends Application {
     }
 
     _injectHTML() {
-        const baseUrl = import.meta.env.BASE_URL || "/win98-web/";
+        const baseUrl = window.BASE_URL || import.meta.env.BASE_URL || "/win98-web/";
         const cleanBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
         // Remove existing fragments if any (to avoid duplicate IDs)
         this.win.$content.find('#about-paint, #news, #jspaint-svg-filters').remove();
