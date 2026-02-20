@@ -20,40 +20,21 @@ function parseINIString(data) {
     } else if (regex.param.test(line)) {
       var match = line.match(regex.param);
       if (section) {
-        // @ts-ignore
+        // @ts-ignore (could refactor to store section as an object, and use match result instead of test)
         value[section][match[1]] = match[2];
       } else {
-        // @ts-ignore
+        // @ts-ignore (could refactor to use match result instead of test)
         value[match[1]] = match[2];
       }
     } else if (regex.section.test(line)) {
       var match = line.match(regex.section);
-      // @ts-ignore
+      // @ts-ignore (could refactor to use match result instead of test)
       value[match[1]] = {};
-      // @ts-ignore
+      // @ts-ignore (could refactor to use match result instead of test)
       section = match[1];
     }
   });
   return value;
-}
-
-/**
- * Gets a value from a parsed INI object case-insensitively.
- * @param {Record<string, any>} obj
- * @param {string} section
- * @param {string} [key]
- * @returns {any}
- */
-function getINIValue(obj, section, key) {
-  const sectionKey = Object.keys(obj).find(
-    (k) => k.toLowerCase() === section.toLowerCase(),
-  );
-  if (!sectionKey) return undefined;
-  if (!key) return obj[sectionKey];
-  const valueKey = Object.keys(obj[sectionKey]).find(
-    (k) => k.toLowerCase() === key.toLowerCase(),
-  );
-  return valueKey ? obj[sectionKey][valueKey] : undefined;
 }
 
 /**
@@ -613,7 +594,7 @@ function inheritTheme(target, source) {
  */
 function getColorsFromThemeFile(themeIni) {
   const theme = parseINIString(themeIni);
-  const colorsSection = getINIValue(theme, "Control Panel\\Colors");
+  const colorsSection = theme["Control Panel\\Colors"];
   if (!colorsSection || typeof colorsSection !== "object") {
     return undefined;
   }
@@ -640,31 +621,22 @@ async function getIconsFromThemeFile(themeIni, themeDir) {
     myComputer: "{20D04FE0-3AEA-1069-A2D8-08002B30309D}",
     networkNeighborhood: "{208D2C60-3AEA-1069-A2D7-08002B30309D}",
     recycleBin: "{645FF040-5081-101B-9F08-00AA002F954E}",
-    myDocuments: "{450D8FBA-AD25-11D0-98A8-0800361B1103}",
   };
 
   for (const [key, clsid] of Object.entries(clsidMap)) {
     const sectionName = `CLSID\\${clsid}\\DefaultIcon`;
-    const section = getINIValue(theme, sectionName);
+    const section = theme[sectionName];
     if (section && typeof section === "object") {
       if (key === "recycleBin") {
-        const fullPath = getINIValue(theme, sectionName, "full");
-        if (fullPath) {
-          icons.recycleBinFull = await resolveThemePath(
-            fullPath.split(",")[0],
-            themeDir,
-          );
+        if (section["full"]) {
+          icons.recycleBinFull = await resolveThemePath(section["full"].split(",")[0], themeDir);
         }
-        const emptyPath = getINIValue(theme, sectionName, "empty");
-        if (emptyPath) {
-          icons.recycleBinEmpty = await resolveThemePath(
-            emptyPath.split(",")[0],
-            themeDir,
-          );
+        if (section["empty"]) {
+          icons.recycleBinEmpty = await resolveThemePath(section["empty"].split(",")[0], themeDir);
         }
       } else {
-        const path = getINIValue(theme, sectionName, "DefaultValue") ||
-          Object.values(section)[0];
+        // For My Computer and Network, DefaultValue is often the first key
+        const path = section["DefaultValue"] || Object.values(section)[0];
         if (path) {
           icons[key] = await resolveThemePath(path.split(",")[0], themeDir);
         }
@@ -682,14 +654,14 @@ async function getIconsFromThemeFile(themeIni, themeDir) {
  */
 async function getCursorsFromThemeFile(themeIni, themeDir) {
   const theme = parseINIString(themeIni);
-  const cursorSection = getINIValue(theme, "Control Panel\\Cursors");
+  const cursorSection = theme["Control Panel\\Cursors"];
   if (!cursorSection || typeof cursorSection !== "object") {
     return undefined;
   }
 
   const cursors = {};
   for (const [role, path] of Object.entries(cursorSection)) {
-    if (path && role.toLowerCase() !== "defaultvalue") {
+    if (path && role !== "DefaultValue") {
       cursors[role] = await resolveThemePath(path, themeDir);
     }
   }
@@ -703,28 +675,17 @@ async function getCursorsFromThemeFile(themeIni, themeDir) {
  */
 async function getDesktopConfigFromThemeFile(themeIni, themeDir) {
   const theme = parseINIString(themeIni);
-  const desktopSection = getINIValue(theme, "Control Panel\\Desktop");
+  const desktopSection = theme["Control Panel\\Desktop"];
   if (!desktopSection || typeof desktopSection !== "object") {
     return undefined;
   }
 
   return {
-    wallpaper: await resolveThemePath(
-      getINIValue(theme, "Control Panel\\Desktop", "Wallpaper"),
-      themeDir,
-    ),
-    tileWallpaper: getINIValue(theme, "Control Panel\\Desktop", "TileWallpaper"),
-    wallpaperStyle: getINIValue(
-      theme,
-      "Control Panel\\Desktop",
-      "WallpaperStyle",
-    ),
-    pattern: getINIValue(theme, "Control Panel\\Desktop", "Pattern"),
-    screenSaveActive: getINIValue(
-      theme,
-      "Control Panel\\Desktop",
-      "ScreenSaveActive",
-    ),
+    wallpaper: await resolveThemePath(desktopSection["Wallpaper"], themeDir),
+    tileWallpaper: desktopSection["TileWallpaper"],
+    wallpaperStyle: desktopSection["WallpaperStyle"],
+    pattern: desktopSection["Pattern"],
+    screenSaveActive: desktopSection["ScreenSaveActive"],
   };
 }
 
@@ -737,18 +698,19 @@ async function getSoundsFromThemeFile(themeIni, themeDir) {
   const theme = parseINIString(themeIni);
   const sounds = {};
 
+  // Structure: [AppEvents\Schemes\Apps\<AppName>\<Event>\.Current]
+  // We care about .Default and Explorer
   const base = "AppEvents\\Schemes\\Apps";
   const apps = [".Default", "Explorer"];
 
   for (const sectionName in theme) {
-    if (sectionName.toLowerCase().startsWith(base.toLowerCase())) {
+    if (sectionName.startsWith(base)) {
       const parts = sectionName.split("\\");
-      if (parts.length >= 6 && parts[5].toLowerCase() === ".current") {
+      if (parts.length >= 6 && parts[5] === ".Current") {
         const app = parts[3];
         const event = parts[4];
-        if (apps.some((a) => a.toLowerCase() === app.toLowerCase())) {
-          const path = getINIValue(theme, sectionName, "DefaultValue") ||
-            Object.values(theme[sectionName])[0];
+        if (apps.includes(app)) {
+          const path = theme[sectionName]["DefaultValue"] || Object.values(theme[sectionName])[0];
           if (path) {
             if (!sounds[app]) sounds[app] = {};
             sounds[app][event] = await resolveThemePath(path, themeDir);
