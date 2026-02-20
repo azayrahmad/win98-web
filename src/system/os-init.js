@@ -16,6 +16,7 @@ import {
   prepareBootScreen,
   getTerminal,
   writeBootError,
+  writeBootMessage,
 } from "./boot-screen.js";
 import { preloadThemeAssets } from "./asset-preloader.js";
 import { launchApp } from "./app-manager.js";
@@ -151,6 +152,34 @@ export async function initializeOS() {
       document.getElementById("boot-screen-content").style.display = "flex";
 
       await prepareBootScreen();
+    });
+
+    await executeBootStep(async () => {
+      const currentVersion = import.meta.env.APP_VERSION;
+      const term = getTerminal();
+      if (term) {
+        term.write(`Windows 98 Web Edition v${currentVersion}\r\n`);
+      }
+
+      let logElement = startBootProcessStep("Checking for updates...");
+      try {
+        const { getLatestVersion } = await import("./version-utils.js");
+        const latestVersion = await getLatestVersion();
+
+        if (latestVersion && latestVersion !== currentVersion) {
+          finalizeBootProcessStep(logElement, "UPDATE AVAILABLE");
+          writeBootMessage(`A new version (${latestVersion}) is available.`);
+          writeBootMessage(
+            `Please use 'Windows Update' from the Start menu to update.`,
+          );
+          // Give user a moment to read it
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        } else {
+          finalizeBootProcessStep(logElement, "OK");
+        }
+      } catch (e) {
+        finalizeBootProcessStep(logElement, "FAILED", e);
+      }
     });
 
     function loadCustomApps() {

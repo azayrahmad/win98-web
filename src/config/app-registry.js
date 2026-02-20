@@ -540,7 +540,8 @@ export const appRegistry = {
     id: "webamp",
     title: "Winamp",
     description: "A classic music player.",
-    icon: ICONS.webamp, category: "",
+    icon: ICONS.webamp,
+    category: "",
     hasTaskbarButton: true,
     isSingleton: true,
     tray: {
