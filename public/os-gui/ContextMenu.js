@@ -69,12 +69,14 @@
       wrap.style.zIndex = window.os_gui_utils.get_new_menu_z_index();
       wrap.style.position = "absolute";
 
+      const { get_rect } = window.os_gui_utils;
+      const screenRect = get_rect(screen);
+
       // Measure without showing
       wrap.classList.add("measuring");
-      const menuRect = menuPopup.element.getBoundingClientRect();
+      const menuRect = get_rect(menuPopup.element);
       wrap.classList.remove("measuring");
 
-      const screenRect = screen.getBoundingClientRect();
       const relX = x - screenRect.left;
       const relY = y - screenRect.top;
 
@@ -116,7 +118,8 @@
     };
 
     // Position at pointer
-    positionAt(event.pageX, event.pageY);
+    const mousePos = window.os_gui_utils.get_mouse_pos(event);
+    positionAt(mousePos.x, mousePos.y);
 
     // After positioning, dispatch an update event to set initial checkbox states
     menuPopup.element.dispatchEvent(new CustomEvent("update", {}));

@@ -23,6 +23,7 @@ export const LOCAL_STORAGE_KEYS = {
   SOUND_SCHEME: 'soundScheme',
   COLOR_MODE: 'colorMode',
   SCREEN_RESOLUTION: 'screenResolution',
+  SCREEN_SCALE: 'screenScale',
   DROPPED_FILES: 'droppedFiles',
   SOLITAIRE_CARD_BACK: 'solitaire:cardBack',
   SOLITAIRE_DRAW_OPTION: 'solitaireDrawOption',

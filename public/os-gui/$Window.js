@@ -3,6 +3,8 @@
 
   const E = document.createElement.bind(document);
 
+  const { get_os_scale, is_os_zoom, get_mouse_pos } = window.os_gui_utils;
+
   /**
    * @param {Element | object | null | undefined} element
    * @returns {string}
@@ -831,8 +833,9 @@
         $w.trigger("minimize");
         if (minimize_target_el && !$w.hasClass("minimized-without-taskbar")) {
           window.playSound?.("Minimize");
-          const before_rect = $w.$titlebar[0].getBoundingClientRect();
-          const after_rect = minimize_target_el.getBoundingClientRect();
+          const { get_rect } = window.os_gui_utils;
+          const before_rect = get_rect($w.$titlebar[0]);
+          const after_rect = get_rect(minimize_target_el);
           $w.animateTitlebar(before_rect, after_rect, () => {
             $w.hide();
             $w.blur();
@@ -931,16 +934,17 @@
             }
           };
 
-          const before_rect = $w.$titlebar[0].getBoundingClientRect();
+          const { get_rect } = window.os_gui_utils;
+          const before_rect = get_rect($w.$titlebar[0]);
           let after_rect;
           $w.css("transform", "");
           if ($w.hasClass("minimized-without-taskbar")) {
             instantly_unminimize();
-            after_rect = $w.$titlebar[0].getBoundingClientRect();
+            after_rect = get_rect($w.$titlebar[0]);
             instantly_minimize();
           } else {
             instantly_minimize();
-            after_rect = $w.$titlebar[0].getBoundingClientRect();
+            after_rect = get_rect($w.$titlebar[0]);
             instantly_unminimize();
           }
           $w.animateTitlebar(before_rect, after_rect, () => {
@@ -966,9 +970,10 @@
       if ($w.is(":hidden")) {
         $w.trigger("restore");
         window.playSound?.("RestoreUp");
-        const before_rect = minimize_target_el.getBoundingClientRect();
+        const { get_rect } = window.os_gui_utils;
+        const before_rect = get_rect(minimize_target_el);
         $w.show();
-        const after_rect = $w.$titlebar[0].getBoundingClientRect();
+        const after_rect = get_rect($w.$titlebar[0]);
         $w.hide();
         $w.animateTitlebar(before_rect, after_rect, () => {
           $w.show();
@@ -1010,7 +1015,7 @@
 
         $w.addClass("maximized");
         const screen = document.getElementById("desktop-area");
-        const screenRect = screen.getBoundingClientRect();
+        const screenRect = window.os_gui_utils.get_rect(screen);
 
         $w.css({
           position: "absolute", // Changed from fixed
@@ -1034,17 +1039,18 @@
         }
       };
 
-      const before_rect = $w.$titlebar[0].getBoundingClientRect();
+      const { get_rect } = window.os_gui_utils;
+      const before_rect = get_rect($w.$titlebar[0]);
       let after_rect;
       $w.css("transform", "");
       const restoring = $w.hasClass("maximized");
       if (restoring) {
         instantly_unmaximize();
-        after_rect = $w.$titlebar[0].getBoundingClientRect();
+        after_rect = get_rect($w.$titlebar[0]);
         instantly_maximize();
       } else {
         instantly_maximize();
-        after_rect = $w.$titlebar[0].getBoundingClientRect();
+        after_rect = get_rect($w.$titlebar[0]);
         instantly_unmaximize();
       }
       $w.animateTitlebar(before_rect, after_rect, () => {
@@ -1601,7 +1607,7 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
 
     $w.applyBounds = () => {
       const screen = document.getElementById("screen");
-      const rect = screen.getBoundingClientRect();
+      const rect = window.os_gui_utils.get_rect(screen);
       $w.css({
         left: Math.max(
           0,
@@ -1617,7 +1623,7 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
     $w.bringTitleBarInBounds = () => {
       // Try to make the titlebar always accessible
       const screen = document.getElementById("screen");
-      const rect = screen.getBoundingClientRect();
+      const rect = window.os_gui_utils.get_rect(screen);
       const min_horizontal_pixels_on_screen = 40; // enough for space past a close button
       $w.css({
         left: Math.max(
@@ -1639,7 +1645,7 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
 
     $w.center = () => {
       const screen = document.getElementById("screen");
-      const rect = screen.getBoundingClientRect();
+      const rect = window.os_gui_utils.get_rect(screen);
       $w.css({
         left: (rect.width - $w.width()) / 2,
         top: (rect.height - $w.height()) / 2,
@@ -1652,7 +1658,7 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
       if ($w.hasClass("maximized")) {
         const screen = document.getElementById("desktop-area");
         if (screen) {
-          const screenRect = screen.getBoundingClientRect();
+          const screenRect = window.os_gui_utils.get_rect(screen);
           $w.css({
             width: screenRect.width,
             height: screenRect.height,
@@ -1688,12 +1694,13 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
         drag_pointer_id === 1234567890 // allowing real events to affect a drag started with a synthetic event with this fake pointerId, for jspaint's Eye Gaze Mode!!
         // @TODO: find a better way to support synthetic events (could make the fake pointerId a formal part of the API contract at least...)
       ) {
-        drag_pointer_x = e.clientX ?? drag_pointer_x;
-        drag_pointer_y = e.clientY ?? drag_pointer_y;
+        const mousePos = get_mouse_pos(e);
+        drag_pointer_x = mousePos.x;
+        drag_pointer_y = mousePos.y;
       }
-      const screenRect = document
-        .getElementById("screen")
-        .getBoundingClientRect();
+      const screenRect = window.os_gui_utils.get_rect(
+        document.getElementById("screen"),
+      );
       $w.css({
         left: drag_pointer_x - screenRect.left - drag_offset_x,
         top: drag_pointer_y - screenRect.top - drag_offset_y,
@@ -1752,11 +1759,12 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
       if (customEvent.isDefaultPrevented()) {
         return; // allow custom drag behavior of component windows in jspaint (Tools / Colors)
       }
-      const screenRect = document
-        .getElementById("screen")
-        .getBoundingClientRect();
-      drag_offset_x = e.clientX - screenRect.left - $w.position().left;
-      drag_offset_y = e.clientY - screenRect.top - $w.position().top;
+      const screenRect = window.os_gui_utils.get_rect(
+        document.getElementById("screen"),
+      );
+      const mousePos = get_mouse_pos(e);
+      drag_offset_x = mousePos.x - screenRect.left - $w.position().left;
+      drag_offset_y = mousePos.y - screenRect.top - $w.position().top;
       drag_pointer_x = e.clientX;
       drag_pointer_y = e.clientY;
       drag_pointer_id = e.pointerId ?? e.originalEvent?.pointerId; // originalEvent doesn't exist for triggerHandler()
@@ -1900,14 +1908,15 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
             height: $w.outerHeight(),
           };
 
+          const mousePos = get_mouse_pos(e);
           resize_offset_x =
-            e.clientX +
-            scrollX -
+            mousePos.x +
+            scrollX / get_os_scale() -
             rect.x -
             (x_axis === HANDLE_RIGHT ? rect.width : 0);
           resize_offset_y =
-            e.clientY +
-            scrollY -
+            mousePos.y +
+            scrollY / get_os_scale() -
             rect.y -
             (y_axis === HANDLE_BOTTOM ? rect.height : 0);
           resize_pointer_x = e.clientX;
@@ -1947,8 +1956,10 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
           $w.bringTitleBarInBounds();
         }
         function update_resize() {
-          const mouse_x = resize_pointer_x + scrollX - resize_offset_x;
-          const mouse_y = resize_pointer_y + scrollY - resize_offset_y;
+          const mouse_x =
+            resize_pointer_x + scrollX / get_os_scale() - resize_offset_x;
+          const mouse_y =
+            resize_pointer_y + scrollY / get_os_scale() - resize_offset_y;
           let delta_x = 0;
           let delta_y = 0;
           let width, height;
@@ -2076,23 +2087,28 @@ You can also disable this warning by passing {iframes: {ignoreCrossOrigin: true}
       animating_titlebar = true;
       const $eye_leader = $w.$titlebar.clone(true);
       $eye_leader.find("button").remove();
-      $eye_leader.appendTo("body");
+
+      const screen = document.getElementById("screen");
+      const { get_rect } = window.os_gui_utils;
+      const screenRect = get_rect(screen);
+
+      $eye_leader.appendTo(screen);
       const duration_ms = $Window.OVERRIDE_TRANSITION_DURATION ?? 200; // TODO: how long?
       const duration_str = `${duration_ms}ms`;
       $eye_leader.css({
         transition: `left ${duration_str} linear, top ${duration_str} linear, width ${duration_str} linear, height ${duration_str} linear`,
-        position: "fixed",
+        position: "absolute",
         zIndex: 10000000,
         pointerEvents: "none",
-        left: from.left,
-        top: from.top,
+        left: from.left - screenRect.left,
+        top: from.top - screenRect.top,
         width: from.width,
         height: from.height,
       });
       setTimeout(() => {
         $eye_leader.css({
-          left: to.left,
-          top: to.top,
+          left: to.left - screenRect.left,
+          top: to.top - screenRect.top,
           width: to.width,
           height: to.height,
         });

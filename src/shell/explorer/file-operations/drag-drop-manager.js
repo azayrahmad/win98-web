@@ -21,14 +21,19 @@ export class DragDropManager {
         if (this.isDragging) return;
         this.isDragging = true;
         this.isTouchDrag = isTouch;
+
+        const { get_rect } = window.os_gui_utils;
+
         this.draggedItems = iconElements.map(el => {
-            const rect = el.getBoundingClientRect();
+            const rect = get_rect(el);
+            const rectLeft = rect.left;
+            const rectTop = rect.top;
             return {
                 element: el,
                 path: el.getAttribute('data-path'),
                 type: el.getAttribute('data-type'),
-                offsetX: x - rect.left,
-                offsetY: y - rect.top
+                offsetX: x - rectLeft,
+                offsetY: y - rectTop
             };
         });
         this.sourceApp = sourceApp;
@@ -79,8 +84,9 @@ export class DragDropManager {
 
     _handleMouseMove(e) {
         if (!this.isDragging) return;
-        const x = e.touches ? e.touches[0].clientX : e.clientX;
-        const y = e.touches ? e.touches[0].clientY : e.clientY;
+        const pos = window.os_gui_utils.get_mouse_pos(e.touches ? e.touches[0] : e);
+        const x = pos.x;
+        const y = pos.y;
 
         if (this.isTouchDrag && e.cancelable) {
             e.preventDefault();
@@ -133,8 +139,9 @@ export class DragDropManager {
         };
 
         const isCopy = e.ctrlKey;
-        const x = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : e.clientX;
-        const y = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : e.clientY;
+        const pos = window.os_gui_utils.get_mouse_pos((e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : e);
+        const x = pos.x;
+        const y = pos.y;
 
         this._performDrop(x, y, isCopy, dragData);
         this._cleanup();
@@ -159,9 +166,12 @@ export class DragDropManager {
         }
 
         if (container) {
-            const rect = container.getBoundingClientRect();
-            dropX = x - rect.left + (container.scrollLeft || 0) - offsetX;
-            dropY = y - rect.top + (container.scrollTop || 0) - offsetY;
+            const rect = window.os_gui_utils.get_rect(container);
+            const rectLeft = rect.left;
+            const rectTop = rect.top;
+
+            dropX = x - rectLeft + (container.scrollLeft / window.os_gui_utils.get_os_scale() || 0) - offsetX;
+            dropY = y - rectTop + (container.scrollTop / window.os_gui_utils.get_os_scale() || 0) - offsetY;
         }
         const sourceDir = sourcePaths[0].substring(0, sourcePaths[0].lastIndexOf('/')) || '/';
         if (!isCopy && destinationPath === sourceDir) {

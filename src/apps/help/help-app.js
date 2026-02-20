@@ -442,10 +442,7 @@ class HelpApp extends Application {
                 action: () => forwardButton.click()
             }
         ];
-        window.ContextMenu(menu, {
-            left: e.clientX,
-            top: e.clientY
-        });
+        window.ContextMenu(menu, e);
     });
 
     webHelpButton.addEventListener("click", () => {
@@ -475,8 +472,10 @@ class HelpApp extends Application {
 
     window.addEventListener("mousemove", (e) => {
       if (!isDragging) return;
-      const rect = win.$content[0].getBoundingClientRect();
-      const x = e.clientX - rect.left;
+      const { get_rect, get_mouse_pos } = window.os_gui_utils;
+      const rect = get_rect(win.$content[0]);
+      const pos = get_mouse_pos(e);
+      const x = pos.x - rect.left;
       const sidebarWidth = Math.max(50, Math.min(x, rect.width - 50));
       sidebar.style.flexBasis = `${sidebarWidth}px`;
       sidebar.style.width = `${sidebarWidth}px`; // Ensure it stays this width

@@ -525,6 +525,8 @@ export class SpiderSolitaireApp extends Application {
     const cardDiv = target.closest(".card");
     if (!cardDiv) return;
 
+    const { get_rect } = window.os_gui_utils;
+
     const pileIndex = parseInt(cardDiv.dataset.pileIndex, 10);
     const cardIndex = parseInt(cardDiv.dataset.cardIndex, 10);
 
@@ -535,8 +537,8 @@ export class SpiderSolitaireApp extends Application {
       const fromPile = this.game.tableauPiles[pileIndex];
       const cardsToDrag = fromPile.cards.slice(cardIndex);
 
-      const containerRect = this.container.getBoundingClientRect();
-      const cardRect = cardDiv.getBoundingClientRect();
+      const containerRect = get_rect(this.container);
+      const cardRect = get_rect(cardDiv);
       this.dragOffsetX = clientX - cardRect.left;
       this.dragOffsetY = clientY - cardRect.top;
 
@@ -580,11 +582,12 @@ export class SpiderSolitaireApp extends Application {
   handleMove(clientX, clientY) {
     if (!this.isDragging) return;
     this.wasDragged = true;
-    const containerRect = this.container.getBoundingClientRect();
+    const { get_rect } = window.os_gui_utils;
+    const containerRect = get_rect(this.container);
     this.draggedElement.style.left = `${clientX - containerRect.left - this.dragOffsetX}px`;
     this.draggedElement.style.top = `${clientY - containerRect.top - this.dragOffsetY}px`;
 
-    const draggedRect = this.draggedElement.getBoundingClientRect();
+    const draggedRect = get_rect(this.draggedElement);
     const potentialTargets = this.container.querySelectorAll(
       ".tableau-pile, .tableau-placeholder",
     );
@@ -658,11 +661,13 @@ export class SpiderSolitaireApp extends Application {
   onMouseDown(event) {
     if (event.button !== 0) return; // Only main button
     this.wasDragged = false;
-    this.handleStart(event.clientX, event.clientY, event.target, false);
+    const pos = window.os_gui_utils.get_mouse_pos(event);
+    this.handleStart(pos.x, pos.y, event.target, false);
   }
 
   onMouseMove(event) {
-    this.handleMove(event.clientX, event.clientY);
+    const pos = window.os_gui_utils.get_mouse_pos(event);
+    this.handleMove(pos.x, pos.y);
   }
 
   async onMouseUp(event) {
@@ -678,13 +683,15 @@ export class SpiderSolitaireApp extends Application {
     window.addEventListener("touchmove", this.boundOnTouchMove, { passive: false });
     window.addEventListener("touchend", this.boundOnTouchEnd);
 
-    this.handleStart(touch.clientX, touch.clientY, touch.target, true);
+    const pos = window.os_gui_utils.get_mouse_pos(touch);
+    this.handleStart(pos.x, pos.y, touch.target, true);
     event.preventDefault();
   }
 
   onTouchMove(event) {
     const touch = event.touches[0];
-    this.handleMove(touch.clientX, touch.clientY);
+    const pos = window.os_gui_utils.get_mouse_pos(touch);
+    this.handleMove(pos.x, pos.y);
     if (this.isDragging) {
       event.preventDefault();
     }
@@ -748,7 +755,8 @@ export class SpiderSolitaireApp extends Application {
     return new Promise((resolve) => {
       let startRect;
       if (this.use98Style) {
-        const containerRect = this.container.getBoundingClientRect();
+        const { get_rect } = window.os_gui_utils;
+        const containerRect = get_rect(this.container);
         startRect = {
           left: containerRect.left,
           top: containerRect.bottom,
@@ -766,10 +774,11 @@ export class SpiderSolitaireApp extends Application {
           this.container.querySelector(".stock-pile").getBoundingClientRect();
       }
 
+      const { get_rect } = window.os_gui_utils;
       const tableauPileRects = Array.from(
         this.container.querySelectorAll(".tableau-pile"),
-      ).map((pile) => pile.getBoundingClientRect());
-      const containerRect = this.container.getBoundingClientRect();
+      ).map((pile) => get_rect(pile));
+      const containerRect = get_rect(this.container);
 
       const animationLayer = document.createElement("div");
       animationLayer.className = "animation-layer";
@@ -833,7 +842,8 @@ export class SpiderSolitaireApp extends Application {
 
     return new Promise((resolve) => {
       let targetRect;
-      const containerRect = this.container.getBoundingClientRect();
+      const { get_rect } = window.os_gui_utils;
+      const containerRect = get_rect(this.container);
 
       if (this.use98Style) {
         targetRect = {
@@ -850,7 +860,7 @@ export class SpiderSolitaireApp extends Application {
           this.container.querySelectorAll(".foundation-pile")[
             foundationPileIndex
           ];
-        targetRect = foundationPileEl.getBoundingClientRect();
+        targetRect = get_rect(foundationPileEl);
       }
       const animationLayer = document.createElement("div");
       animationLayer.className = "animation-layer";
@@ -875,7 +885,7 @@ export class SpiderSolitaireApp extends Application {
         );
         if (!originalCardEl) return;
 
-        const startRect = originalCardEl.getBoundingClientRect();
+        const startRect = get_rect(originalCardEl);
 
         const cardDiv = card.element.cloneNode(true);
         cardDiv.style.position = "absolute";
