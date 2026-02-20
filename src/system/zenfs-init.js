@@ -278,6 +278,40 @@ export async function initFileSystem(onProgress) {
       }
     }
 
+    if (onProgress) onProgress("Loading system themes...");
+    const { themeAssets } = await import("../config/themes-manifest.js");
+    const themeDir = "/C:/Program Files/Plus!/Themes";
+
+    // Check if we already have all themes to avoid unnecessary fetches
+    let themesNeeded = false;
+    for (const asset of themeAssets) {
+      if (!(await existsAsync(`${themeDir}/${asset}`))) {
+        themesNeeded = true;
+        break;
+      }
+    }
+
+    if (themesNeeded) {
+      for (const asset of themeAssets) {
+        const path = `${themeDir}/${asset}`;
+        if (!(await existsAsync(path))) {
+          // console.log(`Loading theme asset: ${asset}...`);
+          try {
+            // Use encodeURIComponent for asset names that might have special characters (like # or ?)
+            // but we need to be careful with spaces and quotes.
+            // themeAssets are already filenames.
+            const response = await fetch(`./themes/${encodeURIComponent(asset)}`);
+            if (!response.ok)
+              throw new Error(`HTTP error! status: ${response.status}`);
+            const buffer = await response.arrayBuffer();
+            await fs.promises.writeFile(path, new Uint8Array(buffer));
+          } catch (e) {
+            console.error(`Failed to load theme asset ${asset}:`, e);
+          }
+        }
+      }
+    }
+
     if (onProgress) onProgress("Restoring removable disks...");
     try {
       const savedHandles = await getAllDiskHandles();

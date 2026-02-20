@@ -512,6 +512,34 @@ function getWallpaperMode() {
 
 let currentWallpaperBlobUrl = null;
 
+/**
+ * Renders a Windows 8x8 pattern string to a data URL.
+ * @param {string} pattern - 8 space-separated integers
+ * @param {string} foregroundColor - CSS color for the pattern
+ * @returns {string|null}
+ */
+function renderPattern(pattern, foregroundColor = "black") {
+  if (!pattern || pattern === "(None)") return null;
+  const bits = pattern.split(" ").map((v) => parseInt(v));
+  if (bits.length !== 8) return null;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 8;
+  canvas.height = 8;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = foregroundColor;
+
+  for (let y = 0; y < 8; y++) {
+    const row = bits[y];
+    for (let x = 0; x < 8; x++) {
+      if ((row << x) & 0x80) {
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+  }
+  return canvas.toDataURL();
+}
+
 async function applyWallpaper() {
   const theme = getActiveTheme();
   const wallpaper = getItem(LOCAL_STORAGE_KEYS.WALLPAPER) || theme.wallpaper;
@@ -520,6 +548,13 @@ async function applyWallpaper() {
   if (currentWallpaperBlobUrl) {
     URL.revokeObjectURL(currentWallpaperBlobUrl);
     currentWallpaperBlobUrl = null;
+  }
+
+  // Handle Pattern
+  let patternUrl = null;
+  const desktopConfig = theme.desktopConfig || {};
+  if (desktopConfig.pattern && desktopConfig.pattern !== "(None)") {
+    patternUrl = renderPattern(desktopConfig.pattern, "black");
   }
 
   if (wallpaper) {
@@ -534,23 +569,47 @@ async function applyWallpaper() {
     }
 
     const mode = getWallpaperMode();
-    desktop.style.backgroundImage = `url(${wallpaperUrl})`;
-    desktop.style.backgroundPosition = "left top";
+    const backgrounds = [`url(${wallpaperUrl})`];
+    const repeats = [];
+    const positions = [];
+    const sizes = [];
+
     if (mode === "stretch") {
-      desktop.style.backgroundRepeat = "no-repeat";
-      desktop.style.backgroundSize = "100% 100%";
+      repeats.push("no-repeat");
+      positions.push("left top");
+      sizes.push("100% 100%");
     } else if (mode === "center") {
-      desktop.style.backgroundRepeat = "no-repeat";
-      desktop.style.backgroundSize = "auto";
-      desktop.style.backgroundPosition = "center";
+      repeats.push("no-repeat");
+      positions.push("center");
+      sizes.push("auto");
+      // If centered, show pattern underneath
+      if (patternUrl) {
+        backgrounds.push(`url(${patternUrl})`);
+        repeats.push("repeat");
+        positions.push("left top");
+        sizes.push("auto");
+      }
     } else {
       // 'tile'
-      desktop.style.backgroundRepeat = "repeat";
-      desktop.style.backgroundSize = "auto";
+      repeats.push("repeat");
+      positions.push("left top");
+      sizes.push("auto");
     }
-    desktop.style.backgroundColor = "";
+
+    desktop.style.backgroundImage = backgrounds.join(", ");
+    desktop.style.backgroundRepeat = repeats.join(", ");
+    desktop.style.backgroundPosition = positions.join(", ");
+    desktop.style.backgroundSize = sizes.join(", ");
+    desktop.style.backgroundColor = mode === "center" ? "var(--Background)" : "";
   } else {
-    desktop.style.backgroundImage = "";
+    if (patternUrl) {
+      desktop.style.backgroundImage = `url(${patternUrl})`;
+      desktop.style.backgroundRepeat = "repeat";
+      desktop.style.backgroundPosition = "left top";
+      desktop.style.backgroundSize = "auto";
+    } else {
+      desktop.style.backgroundImage = "";
+    }
     desktop.style.backgroundColor = "var(--Background)";
   }
 }
