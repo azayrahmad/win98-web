@@ -1,9 +1,9 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { createPdfViewerContent } from './pdfviewer.js';
 import { ICONS } from '../../config/icons.js';
 import { isZenFSPath, getZenFSFileAsBlob } from '../../system/zenfs-utils.js';
 
-export class PdfViewerApp extends Application {
+export class PdfViewerApp extends WindowedApplication {
   static config = {
     id: "pdf-viewer",
     title: "PDF Viewer",
@@ -42,7 +42,7 @@ export class PdfViewerApp extends Application {
     }
     const title = fileName ? `${fileName} - ${this.title}` : this.title;
 
-    this.win = new $Window({
+    this.win = this.kernel.use('ui').createWindow({
       title: title,
       outerWidth: this.width,
       outerHeight: this.height,

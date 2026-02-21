@@ -1,12 +1,10 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { fs } from "@zenfs/core";
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
-import { ShowFilePicker } from '../../shared/utils/file-picker.js';
 import "./imageviewer.css";
 import { ICONS } from '../../config/icons.js';
 import { isZenFSPath, getZenFSFileAsBlob } from '../../system/zenfs-utils.js';
 
-export class ImageViewerApp extends Application {
+export class ImageViewerApp extends WindowedApplication {
   static config = {
     id: "image-viewer",
     title: "Image Viewer",
@@ -44,7 +42,7 @@ export class ImageViewerApp extends Application {
     const title = fileName ? `${fileName} - Image Viewer` : "Image Viewer";
     this.file = file;
 
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       title: title,
       outerWidth: this.width || 400,
       outerHeight: this.height || 300,
@@ -249,7 +247,7 @@ export class ImageViewerApp extends Application {
   }
 
   async openFile() {
-    const path = await ShowFilePicker({
+    const path = await this.kernel.use('ui').showFilePicker({
       title: "Open Image",
       mode: "open",
       fileTypes: [
@@ -309,7 +307,7 @@ export class ImageViewerApp extends Application {
       suggestedName = `resized-${suggestedName}`;
     }
 
-    const path = await ShowFilePicker({
+    const path = await this.kernel.use('ui').showFilePicker({
       title: "Save Image As",
       mode: "save",
       suggestedName,
@@ -448,7 +446,7 @@ export class ImageViewerApp extends Application {
             </div>
         `;
 
-    const dialog = ShowDialogWindow({
+    const dialog = this.kernel.use('ui').showDialog({
       title: "Resize Image",
       text: dialogContent,
       modal: true,
@@ -593,7 +591,7 @@ export class ImageViewerApp extends Application {
 
         const dialogContent = `<div class="icon-selection-container">${radioItems}</div>`;
 
-        const dialog = ShowDialogWindow({
+        const dialog = this.kernel.use('ui').showDialog({
           title: "Extract Icon",
           text: dialogContent,
           modal: true,
@@ -619,7 +617,7 @@ export class ImageViewerApp extends Application {
         });
       } catch (error) {
         console.error("Failed to parse ICO file:", error);
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
           title: "Error",
           text: "Could not parse the ICO file. It might be corrupted or in an unsupported format.",
           modal: true,
@@ -628,7 +626,7 @@ export class ImageViewerApp extends Application {
       }
     };
     reader.onerror = () => {
-      ShowDialogWindow({
+      this.kernel.use('ui').showDialog({
         title: "Error",
         text: "Failed to read the ICO file.",
         modal: true,
@@ -660,7 +658,7 @@ export class ImageViewerApp extends Application {
         : originalName;
     const suggestedName = `${nameWithoutExt}-${icon.width}.png`;
 
-    const path = await ShowFilePicker({
+    const path = await this.kernel.use('ui').showFilePicker({
       title: "Extract Icon",
       mode: "save",
       suggestedName,

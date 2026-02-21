@@ -1,9 +1,8 @@
-import { Application, openApps } from '../../system/application.js';
+import { BaseProcess } from '../../system/base-process.js';
 import { launchClippyApp, getClippyMenuItems } from './clippy.js';
-import { appManager } from '../../system/app-manager.js';
 import { ICONS } from '../../config/icons.js';
 
-export class ClippyApp extends Application {
+export class ClippyApp extends BaseProcess {
     static config = {
         id: "clippy",
         title: "Assistant",
@@ -23,11 +22,6 @@ export class ClippyApp extends Application {
 
     constructor(config) {
         super(config);
-    }
-
-    _createWindow() {
-        // This app doesn't create a window.
-        return null;
     }
 
     _onLaunch() {

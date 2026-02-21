@@ -1,12 +1,10 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
-import { ShowFilePicker } from "../../shared/utils/file-picker.js";
 import { SPECIAL_FOLDER_PATHS } from "../../config/special-folders.js";
 import "./flashplayer.css";
 import { isZenFSPath, getZenFSFileAsBlob } from '../../system/zenfs-utils.js';
 
-export class FlashPlayerApp extends Application {
+export class FlashPlayerApp extends WindowedApplication {
   static config = {
     id: "flash-player",
     title: "Flash Player",
@@ -22,7 +20,7 @@ export class FlashPlayerApp extends Application {
   }
 
   _createWindow() {
-    this.win = new $Window({
+    this.win = this.kernel.use('ui').createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,
@@ -75,7 +73,7 @@ export class FlashPlayerApp extends Application {
   }
 
   async openFile() {
-    const path = await ShowFilePicker({
+    const path = await this.kernel.use('ui').showFilePicker({
       initialPath: SPECIAL_FOLDER_PATHS["my-documents"],
       fileTypes: [
         { label: "Flash Movies (*.swf)", extensions: ["swf"] },
@@ -90,7 +88,7 @@ export class FlashPlayerApp extends Application {
 
   loadSwf(fileData) {
     if (!window.RufflePlayer) {
-      ShowDialogWindow({
+      this.kernel.use('ui').showDialog({
         title: "Error",
         text: "Ruffle Player is not available.",
         buttons: [{ label: "OK", isDefault: true }],
@@ -119,7 +117,7 @@ export class FlashPlayerApp extends Application {
 
     const handleError = (e) => {
       console.error(`Ruffle failed to load the file: ${e}`);
-      ShowDialogWindow({
+      this.kernel.use('ui').showDialog({
         title: "Error",
         text: "Could not load the specified SWF file.",
         buttons: [{ label: "OK", isDefault: true }],

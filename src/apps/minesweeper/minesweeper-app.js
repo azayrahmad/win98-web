@@ -1,6 +1,5 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { MinesweeperGame } from './minesweeper-game.js';
-import { getItem, setItem } from '../../system/local-storage.js';
 import { SpriteDisplay } from './sprite-display.js';
 import "./minesweeper.css";
 import { ICONS } from '../../config/icons.js';
@@ -8,7 +7,7 @@ import { ICONS } from '../../config/icons.js';
 const HIGH_SCORES_KEY = "minesweeper_high_scores";
 const STYLE_KEY = "minesweeper.use98style";
 
-export class MinesweeperApp extends Application {
+export class MinesweeperApp extends WindowedApplication {
   static config = {
     id: "minesweeper",
     title: "Minesweeper",
@@ -21,7 +20,7 @@ export class MinesweeperApp extends Application {
   };
 
   _createWindow() {
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       icons: this.icon,
       width: this.width,
@@ -67,7 +66,7 @@ export class MinesweeperApp extends Application {
             check: () => this.use98Style,
             toggle: () => {
               this.use98Style = !this.use98Style;
-              setItem(STYLE_KEY, this.use98Style);
+              this.kernel.use('settings').set(STYLE_KEY, this.use98Style);
               this.win.$content
                 .find(".minesweeper-app")
                 .toggleClass("style-98", this.use98Style);
@@ -105,12 +104,10 @@ export class MinesweeperApp extends Application {
     this.difficulty = "beginner";
     this.isGameStarted = false;
 
-    this.use98Style = getItem(STYLE_KEY);
-    if (this.use98Style === null) {
-      this.use98Style = true;
-    }
+    const settings = this.kernel.use('settings');
+    this.use98Style = settings.get(STYLE_KEY, true);
 
-    this.highScores = getItem(HIGH_SCORES_KEY);
+    this.highScores = settings.get(HIGH_SCORES_KEY);
     if (!this.highScores || typeof this.highScores.beginner === "number") {
       this.highScores = {
         beginner: { time: 999, name: "Anonymous" },
@@ -182,7 +179,7 @@ export class MinesweeperApp extends Application {
     const contentElement = document.createElement("div");
     contentElement.innerHTML = dialogContent;
 
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Custom Field",
       content: contentElement,
       buttons: [
@@ -235,7 +232,7 @@ export class MinesweeperApp extends Application {
     const contentElement = document.createElement("div");
     contentElement.innerHTML = createScoresContent(this.highScores);
 
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Best Times",
       content: contentElement,
       buttons: [
@@ -247,7 +244,7 @@ export class MinesweeperApp extends Application {
               intermediate: { time: 999, name: "Anonymous" },
               expert: { time: 999, name: "Anonymous" },
             };
-            setItem(HIGH_SCORES_KEY, this.highScores);
+            this.kernel.use('settings').set(HIGH_SCORES_KEY, this.highScores);
             contentElement.innerHTML = createScoresContent(this.highScores);
           },
         },
@@ -261,7 +258,7 @@ export class MinesweeperApp extends Application {
   }
 
   showAboutDialog() {
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "About Minesweeper",
       text: "Minesweeper clone for azOS.",
     });
@@ -420,7 +417,7 @@ export class MinesweeperApp extends Application {
           <input type="text" id="highscore-name" value="Anonymous" style="margin-top: 5px; width: 95%"/>
         `;
 
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
           title: "Congratulations",
           content: content,
           modal: true,
@@ -434,7 +431,7 @@ export class MinesweeperApp extends Application {
                   time: this.timer,
                   name: nameInput.value || "Anonymous",
                 };
-                setItem(HIGH_SCORES_KEY, this.highScores);
+                this.kernel.use('settings').set(HIGH_SCORES_KEY, this.highScores);
                 win.close();
                 this.showHighScores();
               },

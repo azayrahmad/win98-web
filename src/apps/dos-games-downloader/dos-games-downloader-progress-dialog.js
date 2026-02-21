@@ -1,4 +1,4 @@
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
+import { kernel } from '../../system/kernel.js';
 
 export class DosGamesDownloaderProgressDialog {
   constructor(options) {
@@ -108,7 +108,7 @@ export class DosGamesDownloaderProgressDialog {
 
     content.appendChild(progressSection);
 
-    this.win = ShowDialogWindow({
+        this.win = kernel.use('ui').showDialog({
       title: this.title,
       content: content,
       modal: true,

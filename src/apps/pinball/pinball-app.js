@@ -1,5 +1,4 @@
 import { IFrameApplication } from '../../system/iframe-application.js';
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
 import { ICONS } from '../../config/icons.js';
 
 export class PinballApp extends IFrameApplication {
@@ -19,7 +18,7 @@ export class PinballApp extends IFrameApplication {
   }
 
   _createWindow() {
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       outerWidth: 620,
       outerHeight: 480,
@@ -86,7 +85,7 @@ export class PinballApp extends IFrameApplication {
         {
           label: "&About Pinball",
           action: () => {
-            ShowDialogWindow({
+            this.kernel.use('ui').showDialog({
               title: "About Pinball",
               text: "3D Pinball for Windows - Space Cadet<br>Emscripten port by alula<br><br>Integrated into azOS by Jules.",
               buttons: [{ label: "OK", isDefault: true }],
@@ -136,7 +135,7 @@ export class PinballApp extends IFrameApplication {
                 <p><b>Plunger:</b> Spacebar</p>
             </div>
         `;
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Player Keys",
       text: dialogText,
       buttons: [{ label: "OK", isDefault: true }],

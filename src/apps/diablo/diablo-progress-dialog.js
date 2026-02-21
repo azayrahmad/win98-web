@@ -1,4 +1,4 @@
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
+import { kernel } from '../../system/kernel.js';
 
 export class DiabloProgressDialog {
   constructor(options) {
@@ -46,7 +46,7 @@ export class DiabloProgressDialog {
     this.percentEl.textContent = "0%";
     content.appendChild(this.percentEl);
 
-    this.win = ShowDialogWindow({
+        this.win = kernel.use('ui').showDialog({
       title: this.title,
       content: content,
       modal: true,

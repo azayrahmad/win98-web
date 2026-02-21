@@ -1,10 +1,8 @@
-import { Application } from "../../system/application.js";
-import { ShowComingSoonDialog } from "../../shared/components/dialog-window.js";
-import { appManager } from "../../system/app-manager.js";
+import { WindowedApplication } from "../../system/application.js";
 import "./taskmanager.css";
 import { ICONS } from "../../config/icons.js";
 
-export class TaskManagerApp extends Application {
+export class TaskManagerApp extends WindowedApplication {
   static config = {
     id: "task-manager",
     title: "Task Manager",
@@ -33,6 +31,7 @@ export class TaskManagerApp extends Application {
       .data("instanceKey");
     const tableBody = $("<tbody></tbody>");
 
+    const appManager = this.kernel.use('appManager');
     const runningApps = appManager.getRunningApps();
 
     for (const [instanceKey, appInstance] of Object.entries(runningApps)) {
@@ -73,21 +72,21 @@ export class TaskManagerApp extends Application {
       const selectedItem = content.find(".task-list tr.highlighted");
       if (selectedItem.length) {
         const instanceKey = selectedItem.data("instanceKey");
-        appManager.closeApp(instanceKey);
+        this.kernel.use('appManager').closeApp(instanceKey);
       }
     });
 
     content.on("click", ".switch-to-btn", () => {
-      ShowComingSoonDialog("Switch To");
+      this.kernel.use('ui').showComingSoon("Switch To");
     });
 
     content.on("click", ".new-task-btn", () => {
-      ShowComingSoonDialog("Create New Task");
+      this.kernel.use('ui').showComingSoon("Create New Task");
     });
   }
 
   _createWindow() {
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       title: "Close Program",
       icons: this.icon,
       width: 300,

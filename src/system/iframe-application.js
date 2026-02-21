@@ -1,6 +1,6 @@
-import { Application } from './application.js';
+import { WindowedApplication } from './application.js';
 
-export class IFrameApplication extends Application {
+export class IFrameApplication extends WindowedApplication {
   constructor(config) {
     super(config);
   }

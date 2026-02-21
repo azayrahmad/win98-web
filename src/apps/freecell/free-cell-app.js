@@ -1,7 +1,6 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { Game } from './game.js';
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
 import { OptionsManager } from './options-manager.js';
 import { StatisticsManager } from './statistics-manager.js';
 import "./freecell.css";
@@ -11,7 +10,7 @@ import kingLeft from "./assets/king-left.png";
 import kingRight from "./assets/king-right.png";
 import kingWin from "./assets/king-win.png";
 
-export class FreeCellApp extends Application {
+export class FreeCellApp extends WindowedApplication {
   static config = {
     id: "freecell",
     title: "FreeCell",
@@ -22,7 +21,7 @@ export class FreeCellApp extends Application {
   };
 
   async _createWindow() {
-    const win = new window.$Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.config.title,
       innerWidth: this.config.width,
       innerHeight: this.config.height,
@@ -180,7 +179,7 @@ export class FreeCellApp extends Application {
       }
     };
 
-    const dialog = ShowDialogWindow({
+    const dialog = this.kernel.use('ui').showDialog({
       title: "Select Game",
       content: dialogContent,
       buttons: [
@@ -249,7 +248,7 @@ export class FreeCellApp extends Application {
       dialog.close();
     };
 
-    const dialog = ShowDialogWindow({
+    const dialog = this.kernel.use('ui').showDialog({
       title: "FreeCell Options",
       content: dialogContent,
       buttons: [
@@ -776,7 +775,7 @@ export class FreeCellApp extends Application {
     } else {
       // If no move was made, it was an invalid move
       if (this.options.get("displayMessagesOnIllegalMoves")) {
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
           title: "Invalid Move",
           text: "That move is not allowed.",
           buttons: [{ label: "OK" }],
@@ -829,7 +828,7 @@ export class FreeCellApp extends Application {
   _showGameOverDialog() {
     this._recordLossIfGameInProgress();
 
-    const dialog = new window.$Window({
+    const dialog = this.kernel.use('ui').createWindow({
       title: "Game Over",
       width: 280,
       height: 150,
@@ -878,7 +877,7 @@ export class FreeCellApp extends Application {
   }
 
   promptForMoveType(stack, card, fromLocation, toIndex) {
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Move to Empty Column...",
       text: "Do you want to move the entire column or just the single card?",
       buttons: [
@@ -1052,7 +1051,7 @@ export class FreeCellApp extends Application {
     const kingWinImage = this.container.querySelector(".king-win-image");
     kingWinImage.classList.add("visible");
 
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Game Over",
       text: "Congratulations, you win! Do you want to play again?",
       buttons: [
@@ -1111,7 +1110,7 @@ export class FreeCellApp extends Application {
       </div>
     `;
 
-    const dialog = ShowDialogWindow({
+    const dialog = this.kernel.use('ui').showDialog({
       title: "FreeCell Statistics",
       content: dialogContent,
       buttons: [

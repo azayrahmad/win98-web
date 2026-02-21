@@ -1,11 +1,10 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { fs } from "@zenfs/core";
-import { ShowFilePicker } from '../../shared/utils/file-picker.js';
 import { getZenFSFileAsBlob } from '../../system/zenfs-utils.js';
 import './image-resizer.css';
 import { ICONS } from '../../config/icons.js';
 
-export class ImageResizerApp extends Application {
+export class ImageResizerApp extends WindowedApplication {
     static config = {
         id: "image-resizer",
         title: "Image Resizer",
@@ -22,7 +21,7 @@ export class ImageResizerApp extends Application {
     }
 
     _createWindow() {
-        const win = this.win = new $Window({
+        const win = this.win = this.kernel.use('ui').createWindow({
             title: this.title,
             width: this.width,
             height: this.height,
@@ -128,7 +127,7 @@ export class ImageResizerApp extends Application {
         let isUpdatingDimensions = false;
 
         this.openFile = async () => {
-          const path = await ShowFilePicker({
+          const path = await this.kernel.use('ui').showFilePicker({
             title: "Open Image",
             mode: "open",
             fileTypes: [
@@ -275,7 +274,7 @@ export class ImageResizerApp extends Application {
 
         downloadBtn.addEventListener('click', async () => {
           const suggestedName = `enlarged_${enlargedCanvas.width}x${enlargedCanvas.height}.png`;
-          const path = await ShowFilePicker({
+          const path = await this.kernel.use('ui').showFilePicker({
             title: "Save Enlarged Image",
             mode: "save",
             suggestedName,

@@ -1,4 +1,4 @@
-import { Application } from "../../system/application.js";
+import { WindowedApplication } from "../../system/application.js";
 import { aboutContent } from "./about.js";
 import "./about.css";
 import { ICONS } from "../../config/icons.js";
@@ -7,7 +7,7 @@ import { renderHTML } from "../../shared/utils/dom-utils.js";
 import readmeMarkdown from "../../../README.md?raw";
 import changelogMarkdown from "../../../CHANGELOG.md?raw";
 
-export class AboutApp extends Application {
+export class AboutApp extends WindowedApplication {
   static config = {
     id: "about",
     title: "About",
@@ -27,7 +27,7 @@ export class AboutApp extends Application {
   }
 
   _createWindow() {
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,
@@ -55,7 +55,7 @@ export class AboutApp extends Application {
     // Fix image paths: in production, the 'public' folder contents are at the root
     const fixedMarkdown = markdown.replaceAll('./public/', './');
     const html = marked.parse(fixedMarkdown);
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       title: title,
       outerWidth: 600,
       outerHeight: 400,

@@ -1,11 +1,8 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { Game } from './game.js';
 import { WinAnimation } from './win-animation.js';
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
 import {
-  getItem,
-  setItem,
   LOCAL_STORAGE_KEYS,
 } from '../../system/local-storage.js';
 import { findBestDropTarget } from '../../apps/solitaire/solitaire-helper.js';
@@ -22,7 +19,7 @@ const animatedCardBacks = {
   "cardback-beach1": { frames: 3, prefix: "cardback-beach" },
 };
 
-export class SolitaireApp extends Application {
+export class SolitaireApp extends WindowedApplication {
   static config = {
     id: "solitaire",
     title: "Solitaire",
@@ -35,7 +32,7 @@ export class SolitaireApp extends Application {
   async _createWindow() {
     await preloadImage(solitaireSprite);
 
-    const win = new window.$Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.config.title,
       outerWidth: this.config.width,
       outerHeight: this.config.height,
@@ -71,13 +68,14 @@ export class SolitaireApp extends Application {
     this.container = win.element.querySelector(".solitaire-container");
     this.container.classList.add("style-98");
 
+    const settings = this.kernel.use('settings');
     this.isDragging = false;
     this.draggedElement = null;
     this.draggedCardsInfo = null;
     this.dragOffsetX = 0;
     this.dragOffsetY = 0;
     this.outlineDraggingEnabled =
-      getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_OUTLINE_DRAGGING) === true;
+      settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_OUTLINE_DRAGGING, false);
     this.hoveredTarget = null;
 
     this.cumulativeVegasScore = 0;
@@ -125,7 +123,8 @@ export class SolitaireApp extends Application {
 
   _showNewGameDialog() {
     if (this.game) {
-      ShowDialogWindow({
+      const settings = this.kernel.use('settings');
+      this.kernel.use('ui').showDialog({
         title: "New Game",
         text: "Are you sure you want to start a new game?",
         buttons: [
@@ -133,9 +132,9 @@ export class SolitaireApp extends Application {
             label: "Yes",
             action: () => {
               const keepScore =
-                getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_KEEP_SCORE) === true;
+                settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_KEEP_SCORE) === true;
               const scoringOption =
-                getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_SCORING) || "standard";
+                settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_SCORING, "standard");
               if (scoringOption === "vegas" && keepScore) {
                 this.cumulativeVegasScore = this.game.vegasScore;
               }
@@ -159,14 +158,15 @@ export class SolitaireApp extends Application {
       this.game.destroy();
     }
 
+    const settings = this.kernel.use('settings');
     const keepScore =
-      getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_KEEP_SCORE) === true;
+      settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_KEEP_SCORE) === true;
     const scoringOption =
-      getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_SCORING) || "standard";
+      settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_SCORING, "standard");
     const initialVegasScore =
       scoringOption === "vegas" && keepScore ? this.cumulativeVegasScore : 0;
 
-    this.game = new Game(initialVegasScore);
+    this.game = new Game(initialVegasScore, settings);
     this.game.onScoreUpdate = (scores) => this.updateScoreDisplay(scores);
 
     const timerElement = this.win.element.querySelector("#solitaire-timer");
@@ -194,7 +194,7 @@ export class SolitaireApp extends Application {
     if (!scoreElement) return;
 
     const scoringOption =
-      getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_SCORING) || "standard";
+      this.kernel.use('settings').get(LOCAL_STORAGE_KEYS.SOLITAIRE_SCORING, "standard");
 
     switch (scoringOption) {
       case "standard":
@@ -296,7 +296,7 @@ export class SolitaireApp extends Application {
       dialogContent.appendChild(cardDiv);
     });
 
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Select Card Back",
       content: dialogContent,
       buttons: [
@@ -887,7 +887,7 @@ export class SolitaireApp extends Application {
       }
       this.cumulativeVegasScore = this.game.vegasScore;
 
-      ShowDialogWindow({
+      this.kernel.use('ui').showDialog({
         title: "Game Over",
         text: "Congratulations, you won!\nDo you want to start another game?",
         buttons: [
@@ -924,15 +924,16 @@ export class SolitaireApp extends Application {
     const dialogContent = document.createElement("div");
     dialogContent.className = "solitaire-options-container";
 
+    const settings = this.kernel.use('settings');
     const drawOption = this.game.drawOption || "one";
     const isTimedGame =
-      getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_TIMED_GAME) === true;
+      settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_TIMED_GAME) === true;
     const scoringOption =
-      getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_SCORING) || "standard";
+      settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_SCORING, "standard");
     const showStatusBar =
-      getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_SHOW_STATUS_BAR) !== false;
+      settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_SHOW_STATUS_BAR, true);
     const keepScore =
-      getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_KEEP_SCORE) === true;
+      settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_KEEP_SCORE) === true;
 
     dialogContent.innerHTML = `
       <div class="options-row">
@@ -1023,13 +1024,14 @@ export class SolitaireApp extends Application {
 
     updateKeepScoreState(); // Initial state
 
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Options",
       content: dialogContent,
       buttons: [
         {
           label: "OK",
           action: () => {
+            const settings = this.kernel.use('settings');
             const selectedDrawOption =
               dialogContent.querySelector('input[name="draw"]:checked')?.value ??
               "one";
@@ -1046,7 +1048,7 @@ export class SolitaireApp extends Application {
             const outlineDraggingCheckbox =
               dialogContent.querySelector("#outlineDragging");
             this.outlineDraggingEnabled = outlineDraggingCheckbox.checked;
-            setItem(
+            settings.set(
               LOCAL_STORAGE_KEYS.SOLITAIRE_OUTLINE_DRAGGING,
               this.outlineDraggingEnabled,
             );
@@ -1054,7 +1056,7 @@ export class SolitaireApp extends Application {
             let gameNeedsRestart = false;
 
             if (this.game.drawOption !== selectedDrawOption) {
-              setItem(
+              settings.set(
                 LOCAL_STORAGE_KEYS.SOLITAIRE_DRAW_OPTION,
                 selectedDrawOption,
               );
@@ -1062,7 +1064,7 @@ export class SolitaireApp extends Application {
             }
 
             if (scoringOption !== selectedScoringOption) {
-              setItem(
+              settings.set(
                 LOCAL_STORAGE_KEYS.SOLITAIRE_SCORING,
                 selectedScoringOption,
               );
@@ -1070,7 +1072,7 @@ export class SolitaireApp extends Application {
             }
 
             if (isTimedGame !== newTimedGameState) {
-              setItem(
+              settings.set(
                 LOCAL_STORAGE_KEYS.SOLITAIRE_TIMED_GAME,
                 newTimedGameState,
               );
@@ -1078,7 +1080,7 @@ export class SolitaireApp extends Application {
             }
 
             if (showStatusBar !== newShowStatusBarState) {
-              setItem(
+              settings.set(
                 LOCAL_STORAGE_KEYS.SOLITAIRE_SHOW_STATUS_BAR,
                 newShowStatusBarState,
               );
@@ -1086,7 +1088,7 @@ export class SolitaireApp extends Application {
             }
 
             if (keepScore !== newKeepScoreState) {
-              setItem(
+              settings.set(
                 LOCAL_STORAGE_KEYS.SOLITAIRE_KEEP_SCORE,
                 newKeepScoreState,
               );
@@ -1110,7 +1112,7 @@ export class SolitaireApp extends Application {
 
   _updateStatusBarVisibility() {
     const showStatusBar =
-      getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_SHOW_STATUS_BAR) !== false;
+      this.kernel.use('settings').get(LOCAL_STORAGE_KEYS.SOLITAIRE_SHOW_STATUS_BAR, true);
     const statusBar = this.win.element.querySelector(".status-bar");
     if (statusBar) {
       statusBar.style.display = showStatusBar ? "flex" : "none";

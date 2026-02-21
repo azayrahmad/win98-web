@@ -1,8 +1,7 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { fs } from "@zenfs/core";
 import { Emscripten } from "@zenfs/emscripten";
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
 import { DoomProgressDialog } from './doom-progress-dialog.js';
 
 const WAD_NAMES = {
@@ -20,7 +19,7 @@ const WAD_NAMES = {
   "strife1.wad": "Strife: Quest for the Sigil",
 };
 
-export class DoomApp extends Application {
+export class DoomApp extends WindowedApplication {
   static config = {
     id: "doom",
     title: "Doom",
@@ -46,7 +45,7 @@ export class DoomApp extends Application {
   }
 
   async _createWindow() {
-    const win = new window.$Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,
@@ -116,7 +115,7 @@ export class DoomApp extends Application {
   }
 
   _showDownloadConfirmationDialog() {
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "No Doom files found",
       text: "No Doom WAD files were found in your system.<br><br>Would you like to download the shareware version (doom1.wad) to play?",
       modal: true,
@@ -211,7 +210,7 @@ export class DoomApp extends Application {
       console.error("Download failed", e);
       dialog.close();
       this.isDownloading = false;
-      ShowDialogWindow({
+      this.kernel.use('ui').showDialog({
         title: "Download Failed",
         text: `Error downloading shareware: ${e.message}`,
         buttons: [
@@ -316,7 +315,7 @@ export class DoomApp extends Application {
     content.appendChild(label);
     content.appendChild(select);
 
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Doom WAD Selection",
       content: content,
       modal: true,

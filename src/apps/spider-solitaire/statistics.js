@@ -1,14 +1,13 @@
-import { getItem, setItem } from '../../system/local-storage.js';
-
 const STATS_KEY = "spidersolitaire-statistics";
 
 export class Statistics {
-  constructor() {
+  constructor(settings) {
+    this.settings = settings;
     this.stats = this._loadStats();
   }
 
   _loadStats() {
-    const stats = getItem(STATS_KEY);
+    const stats = this.settings.get(STATS_KEY);
     if (stats) {
       return stats;
     }
@@ -16,7 +15,7 @@ export class Statistics {
   }
 
   _saveStats() {
-    setItem(STATS_KEY, this.stats);
+    this.settings.set(STATS_KEY, this.stats);
   }
 
   _getDefaultStats() {

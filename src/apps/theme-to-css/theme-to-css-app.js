@@ -1,12 +1,11 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { fs } from "@zenfs/core";
-import { ShowFilePicker } from '../../shared/utils/file-picker.js';
 import { getZenFSFileAsText } from '../../system/zenfs-utils.js';
 import { NotepadEditor } from '../../apps/notepad/notepad-editor.js';
 import "./themetocss.css";
 import { ICONS } from '../../config/icons.js';
 
-export class ThemeToCssApp extends Application {
+export class ThemeToCssApp extends WindowedApplication {
   static config = {
     id: "theme-to-css",
     title: "Theme to CSS",
@@ -23,7 +22,7 @@ export class ThemeToCssApp extends Application {
   }
 
   _createWindow() {
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       id: this.id,
       title: this.title,
       outerWidth: this.width,
@@ -97,7 +96,7 @@ export class ThemeToCssApp extends Application {
   }
 
   async _openFile() {
-    const path = await ShowFilePicker({
+    const path = await this.kernel.use('ui').showFilePicker({
       title: "Open Theme File",
       mode: "open",
       fileTypes: [
@@ -132,7 +131,7 @@ export class ThemeToCssApp extends Application {
   async _saveFile() {
     const content = this.editor.getValue();
 
-    const path = await ShowFilePicker({
+    const path = await this.kernel.use('ui').showFilePicker({
       title: "Save CSS",
       mode: "save",
       suggestedName: "theme.css",

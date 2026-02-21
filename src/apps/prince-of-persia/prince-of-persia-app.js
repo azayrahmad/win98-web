@@ -1,11 +1,10 @@
-import { Application } from '../../system/application.js';
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
+import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 
 // The $Window and MenuBar classes are loaded globally via <script> tags in index.html,
 // so they are available here without explicit imports.
 
-export class PrinceOfPersiaApp extends Application {
+export class PrinceOfPersiaApp extends WindowedApplication {
   static config = {
     id: "prince-of-persia",
     title: "Prince of Persia",
@@ -19,7 +18,7 @@ export class PrinceOfPersiaApp extends Application {
   };
 
   _createWindow() {
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       innerWidth: this.width,
       innerHeight: this.height,
@@ -126,7 +125,7 @@ export class PrinceOfPersiaApp extends Application {
       pendingState.strength = parseInt(v);
     });
 
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Prince of Persia - New Game",
       content: content,
       modal: true,
@@ -206,7 +205,7 @@ export class PrinceOfPersiaApp extends Application {
       - <b>B / Y / L / ZL:</b> Action<br>
       - <b>X:</b> Show Time / Restart Level (2x)<br>
     `;
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Prince of Persia Controls",
       text: controlsText,
       buttons: [{ label: "OK", isDefault: true }],

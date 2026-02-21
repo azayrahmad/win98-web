@@ -1,5 +1,4 @@
-import { Application } from '../../system/application.js';
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
+import { WindowedApplication } from '../../system/application.js';
 import "./media-player.css";
 import mediaPlayerHTML from "./media-player.html?raw";
 import mediaPlayerIcon from "./assets/mediaplayer.png";
@@ -7,7 +6,7 @@ import { ICONS } from '../../config/icons.js';
 import { isZenFSPath, getZenFSFileUrl } from '../../system/zenfs-utils.js';
 import { getVolume, getMuted } from '../../system/sound-manager.js';
 
-export class MediaPlayerApp extends Application {
+export class MediaPlayerApp extends WindowedApplication {
   static config = {
     id: "media-player",
     title: "Media Player",
@@ -32,7 +31,7 @@ export class MediaPlayerApp extends Application {
   }
 
   _createWindow() {
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       id: this.id,
       title: this.title,
       outerWidth: this.width || 480,
@@ -121,7 +120,7 @@ export class MediaPlayerApp extends Application {
     const content = document.createElement("div");
     content.appendChild(input);
 
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Open URL",
       content,
       buttons: [

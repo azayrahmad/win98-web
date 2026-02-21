@@ -1,6 +1,6 @@
 // src/config/apps.js
 import { ZenExplorerApp } from '../shell/explorer/explorer-app.js';
-import { ShowDialogWindow } from '../shared/components/dialog-window.js';
+import { kernel } from '../system/kernel.js';
 import { getIcon } from '../shared/utils/icon-resolver.js';
 import {
   getRecycleBinItems,
@@ -99,7 +99,7 @@ const systemApps = [
       {
         label: "Empty Recycle Bin",
         action: () => {
-          ShowDialogWindow({
+          kernel.use('ui').showDialog({
             title: "Confirm Empty Recycle Bin",
             text: "Are you sure you want to permanently delete all items in the Recycle Bin?",
             modal: true,
@@ -215,7 +215,7 @@ const systemApps = [
     action: {
       type: "function",
       handler: () => {
-        ShowDialogWindow({
+        kernel.use('ui').showDialog({
           title: "Alert",
           text: "The alert works.",
           soundEvent: "SystemHand",

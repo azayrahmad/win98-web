@@ -1,9 +1,8 @@
-import { Application } from '../../system/application.js';
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
+import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import "./reportabug.css";
 
-export default class ReportABugApp extends Application {
+export default class ReportABugApp extends WindowedApplication {
   static config = {
     id: "report-a-bug",
     title: "Report a Bug",
@@ -14,7 +13,7 @@ export default class ReportABugApp extends Application {
   };
 
   _createWindow() {
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       icons: this.icon,
       outerWidth: this.width,
@@ -58,7 +57,7 @@ export default class ReportABugApp extends Application {
 
   async handleSend() {
     if (!this.textarea.value.trim()) {
-      ShowDialogWindow({
+      this.kernel.use('ui').showDialog({
         title: "Error",
         text: "Please enter a bug description.",
         buttons: [{ label: "OK", isDefault: true }],
@@ -79,7 +78,7 @@ export default class ReportABugApp extends Application {
       </div>
     `;
 
-    const progressDialog = ShowDialogWindow({
+    const progressDialog = this.kernel.use('ui').showDialog({
       title: "Sending Report",
       content: progressDialogContent,
       buttons: [],
@@ -105,7 +104,7 @@ export default class ReportABugApp extends Application {
       progressDialog.close();
 
       if (response.ok) {
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
           title: "Report Sent",
           text: `The bug report has been sent with ID #${result.id}. We're on it!`,
           buttons: [{ label: "OK", isDefault: true }],
@@ -116,7 +115,7 @@ export default class ReportABugApp extends Application {
           this.sendButton.disabled = false;
         });
       } else {
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
           title: "Error",
           text:
             result.error ||
@@ -130,7 +129,7 @@ export default class ReportABugApp extends Application {
       }
     } catch (error) {
       progressDialog.close();
-      ShowDialogWindow({
+      this.kernel.use('ui').showDialog({
         title: "Error",
         text: "An unexpected error occurred. Please check your internet connection and try again.",
         buttons: [{ label: "OK", isDefault: true }],

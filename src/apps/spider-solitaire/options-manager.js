@@ -1,5 +1,3 @@
-import { getItem, setItem } from '../../system/local-storage.js';
-
 const OPTIONS_KEYS = {
   ANIMATE_DEALING: "spidersolitaire.options.animateDealing",
   AUTO_SAVE_ON_EXIT: "spidersolitaire.options.autoSaveOnExit",
@@ -16,69 +14,69 @@ const DEFAULTS = {
   [OPTIONS_KEYS.PROMPT_ON_OPEN]: true,
 };
 
-function getOption(key) {
-  const value = getItem(key);
-  if (value === null) {
-    return DEFAULTS[key];
+export class OptionsManager {
+  constructor(settings) {
+    this.settings = settings;
   }
-  return value;
-}
 
-function setOption(key, value) {
-  setItem(key, value);
-}
+  getOption(key) {
+    return this.settings.get(key, DEFAULTS[key]);
+  }
 
-export const options = {
+  setOption(key, value) {
+    this.settings.set(key, value);
+  }
+
   get animateDealing() {
-    return getOption(OPTIONS_KEYS.ANIMATE_DEALING);
-  },
+    return this.getOption(OPTIONS_KEYS.ANIMATE_DEALING);
+  }
   set animateDealing(value) {
-    setOption(OPTIONS_KEYS.ANIMATE_DEALING, value);
-  },
+    this.setOption(OPTIONS_KEYS.ANIMATE_DEALING, value);
+  }
 
   get autoSaveOnExit() {
-    return getOption(OPTIONS_KEYS.AUTO_SAVE_ON_EXIT);
-  },
+    return this.getOption(OPTIONS_KEYS.AUTO_SAVE_ON_EXIT);
+  }
   set autoSaveOnExit(value) {
-    setOption(OPTIONS_KEYS.AUTO_SAVE_ON_EXIT, value);
-  },
+    this.setOption(OPTIONS_KEYS.AUTO_SAVE_ON_EXIT, value);
+  }
 
   get autoOpenOnStartup() {
-    return getOption(OPTIONS_KEYS.AUTO_OPEN_ON_STARTUP);
-  },
+    return this.getOption(OPTIONS_KEYS.AUTO_OPEN_ON_STARTUP);
+  }
   set autoOpenOnStartup(value) {
-    setOption(OPTIONS_KEYS.AUTO_OPEN_ON_STARTUP, value);
-  },
+    this.setOption(OPTIONS_KEYS.AUTO_OPEN_ON_STARTUP, value);
+  }
 
   get promptOnSave() {
-    return getOption(OPTIONS_KEYS.PROMPT_ON_SAVE);
-  },
+    return this.getOption(OPTIONS_KEYS.PROMPT_ON_SAVE);
+  }
   set promptOnSave(value) {
-    setOption(OPTIONS_KEYS.PROMPT_ON_SAVE, value);
-  },
+    this.setOption(OPTIONS_KEYS.PROMPT_ON_SAVE, value);
+  }
 
   get promptOnOpen() {
-    return getOption(OPTIONS_KEYS.PROMPT_ON_OPEN);
-  },
+    return this.getOption(OPTIONS_KEYS.PROMPT_ON_OPEN);
+  }
   set promptOnOpen(value) {
-    setOption(OPTIONS_KEYS.PROMPT_ON_OPEN, value);
-  },
-};
+    this.setOption(OPTIONS_KEYS.PROMPT_ON_OPEN, value);
+  }
 
-export function getAllOptions() {
+  getAllOptions() {
     return {
-        animateDealing: options.animateDealing,
-        autoSaveOnExit: options.autoSaveOnExit,
-        autoOpenOnStartup: options.autoOpenOnStartup,
-        promptOnSave: options.promptOnSave,
-        promptOnOpen: options.promptOnOpen,
+      animateDealing: this.animateDealing,
+      autoSaveOnExit: this.autoSaveOnExit,
+      autoOpenOnStartup: this.autoOpenOnStartup,
+      promptOnSave: this.promptOnSave,
+      promptOnOpen: this.promptOnOpen,
     };
-}
+  }
 
-export function setAllOptions(newOptions) {
-    if (newOptions.animateDealing !== undefined) options.animateDealing = newOptions.animateDealing;
-    if (newOptions.autoSaveOnExit !== undefined) options.autoSaveOnExit = newOptions.autoSaveOnExit;
-    if (newOptions.autoOpenOnStartup !== undefined) options.autoOpenOnStartup = newOptions.autoOpenOnStartup;
-    if (newOptions.promptOnSave !== undefined) options.promptOnSave = newOptions.promptOnSave;
-    if (newOptions.promptOnOpen !== undefined) options.promptOnOpen = newOptions.promptOnOpen;
+  setAllOptions(newOptions) {
+    if (newOptions.animateDealing !== undefined) this.animateDealing = newOptions.animateDealing;
+    if (newOptions.autoSaveOnExit !== undefined) this.autoSaveOnExit = newOptions.autoSaveOnExit;
+    if (newOptions.autoOpenOnStartup !== undefined) this.autoOpenOnStartup = newOptions.autoOpenOnStartup;
+    if (newOptions.promptOnSave !== undefined) this.promptOnSave = newOptions.promptOnSave;
+    if (newOptions.promptOnOpen !== undefined) this.promptOnOpen = newOptions.promptOnOpen;
+  }
 }

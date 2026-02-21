@@ -1,8 +1,8 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import './quake.css';
 import { ICONS } from '../../config/icons.js';
 
-export class QuakeApp extends Application {
+export class QuakeApp extends WindowedApplication {
     static config = {
         id: 'quake',
         title: 'Quake',
@@ -24,7 +24,7 @@ export class QuakeApp extends Application {
     }
 
     _createWindow() {
-        this.win = new $Window({
+        this.win = this.kernel.use('ui').createWindow({
             title: this.title,
             outerWidth: this.width,
             outerHeight: this.height,

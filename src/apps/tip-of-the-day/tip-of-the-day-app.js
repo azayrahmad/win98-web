@@ -1,11 +1,10 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { tipOfTheDayContent } from './tip-of-the-day.js';
 import { apps } from '../../config/apps.js';
-import { launchApp } from '../../system/app-manager.js';
 import { getStartupApps, addStartupApp, removeStartupApp } from '../../system/startup-manager.js';
 import { ICONS } from '../../config/icons.js';
 
-export class TipOfTheDayApp extends Application {
+export class TipOfTheDayApp extends WindowedApplication {
     static config = {
         id: "tip-of-the-day",
         title: "Tip of the Day",
@@ -28,7 +27,7 @@ export class TipOfTheDayApp extends Application {
     }
 
     _createWindow() {
-        const win = new $Window({
+        const win = this.kernel.use('ui').createWindow({
             id: this.id,
             title: this.title,
             outerWidth: this.width,
@@ -76,7 +75,7 @@ export class TipOfTheDayApp extends Application {
                     link.addEventListener('click', (e) => {
                         e.preventDefault();
                         const appId = link.getAttribute('data-app');
-                        launchApp(appId);
+                        this.kernel.use('appManager').launchApp(appId);
                     });
                 });
             }

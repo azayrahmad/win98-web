@@ -1,14 +1,13 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { fs, mount, umount } from "@zenfs/core";
 import { Zip } from "@zenfs/archives";
 import { existsAsync } from "../../system/zenfs-utils.js";
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
 import { DosGamesDownloaderProgressDialog } from './dos-games-downloader-progress-dialog.js';
 import { getIcon } from '../../shared/utils/icon-resolver.js';
 import "./dos-games-downloader.css";
 
-export class DosGamesDownloaderApp extends Application {
+export class DosGamesDownloaderApp extends WindowedApplication {
   static config = {
     id: "dos-games-downloader",
     title: "DOS Games Downloader",
@@ -56,7 +55,7 @@ export class DosGamesDownloaderApp extends Application {
   }
 
   _createWindow() {
-    this.win = new window.$Window({
+    this.win = this.kernel.use('ui').createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,
@@ -272,7 +271,7 @@ export class DosGamesDownloaderApp extends Application {
       this._renderResults();
       dialog.close();
 
-      ShowDialogWindow({
+      this.kernel.use('ui').showDialog({
         title: "Installation Successful",
         text: `Successfully installed <b>${title}</b>!<br><br>The game is installed in:<br><code>${installDir}</code>`,
         contentIconUrl: ICONS.msdos[32],
@@ -300,7 +299,7 @@ export class DosGamesDownloaderApp extends Application {
          }
       } else {
         console.error("Installation failed", e);
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
           title: "Installation Failed",
           text: `Error: ${e.message}`,
           buttons: [{ label: "OK", isDefault: true }],

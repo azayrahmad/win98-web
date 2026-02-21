@@ -1,11 +1,11 @@
-import { Application } from "../../system/application.js";
+import { WindowedApplication } from "../../system/application.js";
 import { Terminal } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
 import "./command-prompt.css";
 import { ICONS } from "../../config/icons.js";
 import { DOSShell } from "../../system/dos-shell.js";
 
-export class CommandPromptApp extends Application {
+export class CommandPromptApp extends WindowedApplication {
   static config = {
     id: "command-prompt",
     title: "MS-DOS Prompt",
@@ -24,7 +24,7 @@ export class CommandPromptApp extends Application {
   }
 
   _createWindow() {
-    const win = new window.$Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       outerWidth: 640,
       icons: this.icon,

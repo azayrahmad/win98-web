@@ -1,8 +1,7 @@
-import { Application, openApps } from '../../system/application.js';
+import { WindowedApplication, openApps } from '../../system/application.js';
 import { mounts } from "@zenfs/core";
 import { ICONS } from '../../config/icons.js';
 import { getAssociation } from '../../system/directory.js';
-import { launchApp } from '../../system/app-manager.js';
 import { IconManager } from '../../shell/desktop/icon-manager.js';
 import { AddressBar } from '../../shell/explorer/components/address-bar.js';
 import { StatusBar } from '../../shared/components/status-bar.js';
@@ -44,7 +43,7 @@ ShellManager.registerExtension(new RecycleBinExtension());
 ShellManager.registerExtension(new NetworkNeighborhoodExtension());
 ShellManager.registerExtension(new InternetExplorerExtension());
 
-export class ZenExplorerApp extends Application {
+export class ZenExplorerApp extends WindowedApplication {
   isWebPath(path) {
     if (!path) return false;
     const p = path.toLowerCase();
@@ -181,7 +180,7 @@ export class ZenExplorerApp extends Application {
     // await initFileSystem();
 
     // 2. Setup Window
-    const win = new window.$Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,
@@ -483,7 +482,7 @@ export class ZenExplorerApp extends Application {
         const data = JSON.parse(content);
         if (data.type === "shortcut") {
           if (data.appId) {
-            launchApp(data.appId, data.args);
+            this.kernel.use('appManager').launchApp(data.appId, data.args);
             return;
           } else if (data.targetPath) {
             const stats = await ShellManager.stat(data.targetPath);
@@ -493,7 +492,7 @@ export class ZenExplorerApp extends Application {
               const targetName = data.targetPath.split("/").pop();
               const association = getAssociation(targetName);
               if (association.appId) {
-                launchApp(association.appId, ShellManager.getRealPath(data.targetPath));
+                this.kernel.use('appManager').launchApp(association.appId, ShellManager.getRealPath(data.targetPath));
               } else {
                 alert(`Cannot open file: ${targetName} (No association)`);
               }
@@ -508,7 +507,7 @@ export class ZenExplorerApp extends Application {
 
     const association = getAssociation(name);
     if (association.appId) {
-      launchApp(association.appId, ShellManager.getRealPath(fullPath));
+      this.kernel.use('appManager').launchApp(association.appId, ShellManager.getRealPath(fullPath));
     } else {
       alert(`Cannot open file: ${name} (No association)`);
     }

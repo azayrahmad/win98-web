@@ -8,7 +8,7 @@
 // and set `window.defaultMessageBoxTitle` which is used in 98.js.org to set the default title for message boxes...
 // or, couldn't we just provide the default in a wrapper function, similar to how 98.js.org does it?
 
-import { ShowDialogWindow } from "../../../shared/components/dialog-window.js";
+import { kernel } from "../../../system/kernel.js";
 // import { localize } from "./app-localization.js";
 
 const exports = {};
@@ -63,7 +63,7 @@ function showMessageBox_implementation({
 		return p.innerHTML;
 	};
 
-	const win = ShowDialogWindow({
+	const win = kernel.use('ui').showDialog({
 		title,
 		text: messageHTML || (message ? escapeHTML(message).replace(/\n/g, "<br>") : ""),
 		buttons: dialogButtons,

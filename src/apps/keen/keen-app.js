@@ -1,8 +1,7 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { fs } from "@zenfs/core";
 import { Emscripten } from "@zenfs/emscripten";
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
 import { KeenProgressDialog } from './keen-progress-dialog.js';
 
 const EPISODE_NAMES = {
@@ -11,7 +10,7 @@ const EPISODE_NAMES = {
   "keen3": "Episode 3: Keen Must Die!",
 };
 
-export class KeenApp extends Application {
+export class KeenApp extends WindowedApplication {
   static config = {
     id: "keen",
     title: "Commander Keen",
@@ -37,7 +36,7 @@ export class KeenApp extends Application {
   }
 
   async _createWindow() {
-    const win = new window.$Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       innerWidth: this.config.width,
       innerHeight: this.config.height,
@@ -119,7 +118,7 @@ export class KeenApp extends Application {
   }
 
   _showDownloadConfirmationDialog() {
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "No Commander Keen files found",
       text: "No Commander Keen game files were found in your system.<br><br>Would you like to download the shareware version (Episode 1) to play?",
       modal: true,
@@ -229,7 +228,7 @@ export class KeenApp extends Application {
       console.error("Download failed", e);
       dialog.close();
       this.isDownloading = false;
-      ShowDialogWindow({
+      this.kernel.use('ui').showDialog({
         title: "Download Failed",
         text: `Error downloading shareware: ${e.message}`,
         buttons: [
@@ -341,7 +340,7 @@ export class KeenApp extends Application {
     content.appendChild(label);
     content.appendChild(select);
 
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Commander Keen Episode Selection",
       content: content,
       modal: true,

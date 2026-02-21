@@ -1,10 +1,10 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import "./help.css";
 import contentHtml from "./help.html?raw";
 import { ICONS } from '../../config/icons.js';
 import helpData from "../../config/help.json";
 
-class HelpApp extends Application {
+class HelpApp extends WindowedApplication {
   static config = {
     id: "help",
     title: "Help Topics",
@@ -25,7 +25,7 @@ class HelpApp extends Application {
   }
 
   _createWindow() {
-    return new window.$Window({
+    return this.kernel.use('ui').createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,

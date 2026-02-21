@@ -1,5 +1,5 @@
-import { Application } from '../../system/application.js';
-import { getItem, LOCAL_STORAGE_KEYS } from '../../system/local-storage.js';
+import { WindowedApplication } from '../../system/application.js';
+import { LOCAL_STORAGE_KEYS } from '../../system/local-storage.js';
 import { backgroundTab } from './background/background.js';
 import { screensaverTab } from './screensaver/screensaver.js';
 import { settingsTab } from './settings/settings.js';
@@ -15,7 +15,7 @@ import appearanceHtml from "./appearance/appearance.html?raw";
 import energystar from "../../assets/img/EnergyStarDisplay.png";
 import { ICONS } from '../../config/icons.js';
 
-class DisplayPropertiesApp extends Application {
+class DisplayPropertiesApp extends WindowedApplication {
   static config = {
     id: "display-properties",
     title: "Display",
@@ -32,7 +32,7 @@ class DisplayPropertiesApp extends Application {
   }
 
   _createWindow() {
-    return new window.$Window({
+    return this.kernel.use('ui').createWindow({
       title: "Display Properties",
       outerWidth: this.width,
       outerHeight: this.height,
@@ -52,14 +52,15 @@ class DisplayPropertiesApp extends Application {
     win.$content.find("#settings").html(settingsHtml);
     win.$content.find("#appearance").html(appearanceHtml);
 
-    // Set initial state from localStorage
-    this.selectedWallpaper = getItem(LOCAL_STORAGE_KEYS.WALLPAPER);
+    // Set initial state from settings
+    const settings = this.kernel.use('settings');
+    this.selectedWallpaper = settings.get(LOCAL_STORAGE_KEYS.WALLPAPER);
     this.selectedWallpaperMode =
-      getItem(LOCAL_STORAGE_KEYS.WALLPAPER_MODE) || "stretch";
+      settings.get(LOCAL_STORAGE_KEYS.WALLPAPER_MODE, "stretch");
     this.selectedScreensaver =
-      getItem(LOCAL_STORAGE_KEYS.SCREENSAVER) || "none";
+      settings.get(LOCAL_STORAGE_KEYS.SCREENSAVER, "none");
     this.screensaverTimeout =
-      getItem(LOCAL_STORAGE_KEYS.SCREENSAVER_TIMEOUT) / 60000 || 1;
+      settings.get(LOCAL_STORAGE_KEYS.SCREENSAVER_TIMEOUT) / 60000 || 1;
     this.selectedColorMode = null;
     this.selectedResolution = null;
 

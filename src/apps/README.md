@@ -52,13 +52,13 @@ Applications are now dynamically loaded. To add a new application, follow these 
 
 ### 1. Create the Application Class
 
-Create a new directory in `src/apps/` and a JavaScript file ending in `-app.js` (e.g., `src/apps/my-app/my-app-app.js`). Your class must extend the base `Application` class.
+Create a new directory in `src/apps/` and a JavaScript file ending in `-app.js` (e.g., `src/apps/my-app/my-app-app.js`). Your class should extend `WindowedApplication` (for UI apps) or `BaseProcess` (for background tasks) from `../../system/application.js`.
 
 ```javascript
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 
-export class MyApp extends Application {
+export class MyApp extends WindowedApplication {
   static config = {
     id: "my-app",
     title: "My App",
@@ -70,7 +70,7 @@ export class MyApp extends Application {
   };
 
   _createWindow(filePath) {
-    const win = new window.$Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       icons: this.icon,
       width: this.width,

@@ -1,8 +1,8 @@
-import { getItem, setItem, LOCAL_STORAGE_KEYS } from './local-storage.js';
-import { ShowDialogWindow } from '../shared/components/dialog-window.js';
+import { LOCAL_STORAGE_KEYS } from './local-storage.js';
 import { renderHTML } from '../shared/utils/dom-utils.js';
-import { Application } from '../system/application.js';
+import { WindowedApplication } from '../system/application.js';
 import { apps, appClasses } from '../config/apps.js';
+import { kernel } from './kernel.js';
 import { ICONS } from '../config/icons.js';
 import { addDesktopShortcut, removeDesktopShortcut } from './zenfs-utils.js';
 import { launchApp } from './app-manager.js';
@@ -27,13 +27,13 @@ export function registerCustomApp(appInfo) {
             existingApp.icon = { 16: appInfo.icon, 32: appInfo.icon };
         }
         // Re-create the app class to capture the new HTML content in the closure
-        existingApp.appClass = class CustomApp extends Application {
+        existingApp.appClass = class CustomApp extends WindowedApplication {
             constructor(config) {
                 super(config);
             }
 
             _createWindow() {
-                const win = new $Window({
+                const win = this.kernel.use('ui').createWindow({
                     title: this.title,
                     outerWidth: this.width,
                     outerHeight: this.height,
@@ -49,13 +49,13 @@ export function registerCustomApp(appInfo) {
         return;
     }
 
-    class CustomApp extends Application {
+    class CustomApp extends WindowedApplication {
         constructor(config) {
             super(config);
         }
 
         _createWindow() {
-            const win = new $Window({
+            const win = this.kernel.use('ui').createWindow({
                 title: this.title,
                 outerWidth: this.width || 400,
                 outerHeight: this.height || 300,
@@ -84,7 +84,7 @@ export function registerCustomApp(appInfo) {
             {
                 label: 'Delete',
                 action: () => {
-                    ShowDialogWindow({
+                    kernel.use('ui').showDialog({
                         title: 'Delete App',
                         text: `Are you sure you want to delete the app "${appInfo.title}"?`,
                         modal: true,
@@ -123,9 +123,10 @@ export function deleteCustomApp(appId) {
 
     removeDesktopShortcut(appId);
 
-    const savedApps = getItem(LOCAL_STORAGE_KEYS.CUSTOM_APPS) || [];
+    const settings = kernel.use('settings');
+    const savedApps = settings.get(LOCAL_STORAGE_KEYS.CUSTOM_APPS) || [];
     const newSavedApps = savedApps.filter(savedApp => savedApp.id !== appId);
-    setItem(LOCAL_STORAGE_KEYS.CUSTOM_APPS, newSavedApps);
+    settings.set(LOCAL_STORAGE_KEYS.CUSTOM_APPS, newSavedApps);
 
     setupIcons();
 }

@@ -1,22 +1,26 @@
 import {
-  getItem,
-  setItem,
   LOCAL_STORAGE_KEYS,
 } from '../../system/local-storage.js';
 import {
   requestBusyState,
   releaseBusyState,
 } from '../../system/busy-state-manager.js';
-import { appManager } from '../../system/app-manager.js';
+import { kernel } from '../../system/kernel.js';
 
 window.clippyAppInstance = null;
-let currentAgentName =
-  getItem(LOCAL_STORAGE_KEYS.CLIPPY_AGENT_NAME) || "Clippy";
+let currentAgentName = "Clippy";
 let inputBalloonTimeout = null;
+
+// Initialize currentAgentName from settings if kernel is available
+if (kernel.isBooted || true) {
+  try {
+    currentAgentName = kernel.use('settings').get(LOCAL_STORAGE_KEYS.CLIPPY_AGENT_NAME, "Clippy");
+  } catch (e) {}
+}
 
 function setCurrentAgentName(name) {
   currentAgentName = name;
-  setItem(LOCAL_STORAGE_KEYS.CLIPPY_AGENT_NAME, name);
+  kernel.use('settings').set(LOCAL_STORAGE_KEYS.CLIPPY_AGENT_NAME, name);
 }
 
 function showClippyInputBalloon() {
@@ -151,12 +155,13 @@ export function getClippyMenuItems(app) {
     {
       label: "Enable &TTS",
       checkbox: {
-        check: () => getItem(LOCAL_STORAGE_KEYS.CLIPPY_TTS_ENABLED) ?? true,
+        check: () => kernel.use('settings').get(LOCAL_STORAGE_KEYS.CLIPPY_TTS_ENABLED, true),
         toggle: () => {
+          const settings = kernel.use('settings');
           const currentState =
-            getItem(LOCAL_STORAGE_KEYS.CLIPPY_TTS_ENABLED) ?? true;
+            settings.get(LOCAL_STORAGE_KEYS.CLIPPY_TTS_ENABLED, true);
           const newState = !currentState;
-          setItem(LOCAL_STORAGE_KEYS.CLIPPY_TTS_ENABLED, newState);
+          settings.set(LOCAL_STORAGE_KEYS.CLIPPY_TTS_ENABLED, newState);
           if (agent) agent.setTTSEnabled(newState);
         },
       },
@@ -189,7 +194,7 @@ export function getClippyMenuItems(app) {
             callback: () => {
               agent.play(agent.getGoodbyeAnimation(), 5000, () => {
                 if (appInstance) {
-                  appManager.closeApp(appInstance.id);
+                  kernel.use('appManager').closeApp(appInstance.id);
                 }
               });
             },
@@ -228,7 +233,7 @@ export function launchClippyApp(app, agentName = currentAgentName) {
     window.clippyAgent = agent;
     agent._el[0].setAttribute('data-testid', 'clippy-agent');
 
-    const ttsUserPref = getItem(LOCAL_STORAGE_KEYS.CLIPPY_TTS_ENABLED) ?? true;
+    const ttsUserPref = kernel.use('settings').get(LOCAL_STORAGE_KEYS.CLIPPY_TTS_ENABLED, true);
     agent.setTTSEnabled(ttsUserPref);
 
     agent.show();

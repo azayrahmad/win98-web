@@ -12,7 +12,10 @@ Windows 98 Web Edition is a modular web-based desktop environment that emulates 
 -   **App Manager** (`app-manager.js`): Manages the application lifecycle (launching, closing, tracking running instances).
 -   **Window Manager** (`window-manager.js`): Handles window stacking (z-index), focus, and minimize/restore logic.
 -   **ZenFS Integration** (`zenfs-init.js`): Configures the virtual file system with IndexedDB persistence for the `C:` drive.
--   **Application Base Class** (`application.js`): The abstract base class that all windowed applications must extend.
+-   **Application Hierarchy** (`base-process.js`, `application.js`):
+    - `BaseProcess`: Abstract base class for all system processes (lifecycle, tracking).
+    - `WindowedApplication` (aliased as `Application`): Extends `BaseProcess` with windowing and shell integration.
+-   **Kernel** (`kernel.js`): The central service registry. Use `kernel.use(serviceName)` to access services like `ui`, `settings`, `appManager`.
 -   **Core Utilities**: Includes specialized managers for `ScreenManager`, `ColorModeManager`, `ThemeManager`, `RecycleBinManager`, and more.
 
 ### Shell Components (`src/shell/`)
@@ -40,7 +43,7 @@ Windows 98 Web Edition is a modular web-based desktop environment that emulates 
 
 ### Application Integration
 
-Applications are dynamically discovered by `src/config/apps.js` using Vite's glob import if they follow the `src/apps/*/*-app.js` naming convention and export a class with a static `config` property.
+Applications are dynamically discovered by `src/config/apps.js` using Vite's glob import if they follow the `src/apps/*/*-app.js` naming convention and export a class with a static `config` property. Applications should extend `WindowedApplication` (for UI) or `BaseProcess` (for background tasks).
 
 #### Static Config Schema:
 ```javascript
@@ -54,8 +57,19 @@ static config = {
   resizable: true,
   isSingleton: true, // Only one instance allowed
   hasTaskbarButton: true,
-  // ... other properties from Application base class
+  // ... other properties from WindowedApplication base class
 };
+```
+
+#### Service Consumption Pattern:
+Always use the `Kernel` to interact with system features:
+```javascript
+// Show a dialog
+this.kernel.use('ui').showDialog({ title: "Hello", text: "World" });
+
+// Get/Set settings
+const value = this.kernel.use('settings').get('my-key', defaultValue);
+this.kernel.use('settings').set('my-key', newValue);
 ```
 
 ### The Global `window.System` Object
@@ -80,7 +94,7 @@ bun run preview # Preview production build
 
 ### Adding a New Application
 1.  **Create App Directory**: `src/apps/my-app/`.
-2.  **Implementation**: Create `my-app-app.js` extending `Application` from `../../system/application.js`.
+2.  **Implementation**: Create `my-app-app.js` extending `WindowedApplication` from `../../system/application.js`.
 3.  **Static Config**: Define the `static config` property on your class.
 4.  **Registration**: The app will be automatically picked up by the dynamic loader in `src/config/apps.js`.
 5.  **Icon**: Add your icon to `src/assets/icons/` and register it in `src/config/icons.js`.

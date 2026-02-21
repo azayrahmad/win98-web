@@ -1,8 +1,8 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { fs } from '@zenfs/core';
 
-export class DXBallApp extends Application {
+export class DXBallApp extends WindowedApplication {
   static config = {
     id: "dx-ball",
     title: "DX-Ball",
@@ -91,7 +91,7 @@ export class DXBallApp extends Application {
   }
 
   async _createWindow() {
-    const win = new window.$Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       outerWidth: this.config.width,
       outerHeight: this.config.height,

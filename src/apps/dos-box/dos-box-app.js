@@ -1,9 +1,9 @@
-import { Application } from "../../system/application.js";
+import { WindowedApplication } from "../../system/application.js";
 import { ICONS } from "../../config/icons.js";
 import { fs } from "@zenfs/core";
 import { Emscripten } from "@zenfs/emscripten";
 
-export class DosBoxApp extends Application {
+export class DosBoxApp extends WindowedApplication {
   static config = [
     {
       id: "dos-box",
@@ -39,7 +39,7 @@ export class DosBoxApp extends Application {
       this.args = data.args || [];
     }
 
-    const win = new window.$Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.executablePath
         ? `DOSBox - ${this.executablePath.split("/").pop()}`
         : this.title,

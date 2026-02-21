@@ -1,6 +1,4 @@
-import { Application } from '../../system/application.js';
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
-import { ShowFilePicker } from '../../shared/utils/file-picker.js';
+import { WindowedApplication } from '../../system/application.js';
 import { getZenFSFileAsBlob, getZenFSFileAsText } from '../../system/zenfs-utils.js';
 import './appmaker.css';
 import '../notepad/notepad-editor.css';
@@ -11,7 +9,7 @@ import { NotepadEditor } from '../../apps/notepad/notepad-editor.js';
 import { renderHTML } from '../../shared/utils/dom-utils.js';
 import { ICONS } from '../../config/icons.js';
 
-export class AppMakerApp extends Application {
+export class AppMakerApp extends WindowedApplication {
     static config = {
         id: "app-maker",
         title: "App Maker",
@@ -30,7 +28,7 @@ export class AppMakerApp extends Application {
     }
 
     _createWindow() {
-        const win = new $Window({
+        const win = this.kernel.use('ui').createWindow({
             title: this.title,
             outerWidth: this.width,
             outerHeight: this.height,
@@ -86,7 +84,7 @@ export class AppMakerApp extends Application {
     }
 
     _showOptions() {
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
             title: 'Options',
             text: `
                 <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -157,7 +155,7 @@ export class AppMakerApp extends Application {
         };
 
         uploadButton.addEventListener('click', async () => {
-          const path = await ShowFilePicker({
+          const path = await this.kernel.use('ui').showFilePicker({
             title: "Choose App Icon",
             mode: "open",
             fileTypes: [
@@ -195,7 +193,7 @@ export class AppMakerApp extends Application {
     }
 
     async _openHtmlFile() {
-      const path = await ShowFilePicker({
+      const path = await this.kernel.use('ui').showFilePicker({
         title: "Open HTML File",
         mode: "open",
         fileTypes: [{ label: "HTML Files (*.html)", extensions: ["html"] }],
@@ -218,7 +216,7 @@ export class AppMakerApp extends Application {
         const appName = this.appNameInput.value || 'Preview';
         const appHtml = this.editor.getValue();
 
-        const previewWindow = new $Window({
+        const previewWindow = this.kernel.use('ui').createWindow({
             title: appName,
             outerWidth: this.appWidth,
             outerHeight: this.appHeight,
@@ -233,7 +231,7 @@ export class AppMakerApp extends Application {
         const appHtml = this.editor.getValue();
 
         if (!appName) {
-            ShowDialogWindow({
+            this.kernel.use('ui').showDialog({
                 title: 'Error',
                 text: 'Please enter an app name.',
                 soundEvent: 'SystemHand',
@@ -241,7 +239,7 @@ export class AppMakerApp extends Application {
             return;
         }
 
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
             title: 'Save App',
             text: `Are you sure you want to save the app "${appName}"?`,
             modal: true,
@@ -262,14 +260,15 @@ export class AppMakerApp extends Application {
 
                         registerCustomApp(appInfo);
 
-                        const savedApps = getItem(LOCAL_STORAGE_KEYS.CUSTOM_APPS) || [];
+                        const settings = this.kernel.use('settings');
+                        const savedApps = settings.get(LOCAL_STORAGE_KEYS.CUSTOM_APPS) || [];
                         const existingAppIndex = savedApps.findIndex(app => app.id === appId);
                         if (existingAppIndex > -1) {
                             savedApps[existingAppIndex] = appInfo;
                         } else {
                             savedApps.push(appInfo);
                         }
-                        setItem(LOCAL_STORAGE_KEYS.CUSTOM_APPS, savedApps);
+                        settings.set(LOCAL_STORAGE_KEYS.CUSTOM_APPS, savedApps);
 
                         const desktop = document.querySelector('.desktop');
                         if (desktop && typeof desktop.refreshIcons === 'function') {

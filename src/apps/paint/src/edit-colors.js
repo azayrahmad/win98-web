@@ -2,7 +2,7 @@
 /* global palette:writable */
 /* global $colorbox, localize, main_ctx, monochrome, selected_colors, selection */
 import { $Swatch, update_$swatch } from "./$ColorBox.js";
-import { ShowDialogWindow } from "../../../shared/components/dialog-window.js";
+import { kernel } from "../../../system/kernel.js";
 // import { localize } from "./app-localization.js";
 import { basic_colors, custom_colors } from "./color-data.js";
 import { detect_monochrome, handle_keyshortcuts, make_monochrome_palette, show_error_message, undoable } from "./functions.js";
@@ -565,7 +565,7 @@ function choose_color(initial_color, callback) {
 			$edit_colors_window.removeClass("defining-custom-colors"); // for mobile layout
 		});
 
-	$w = ShowDialogWindow({
+	$w = kernel.use('ui').showDialog({
 		title: localize("Edit Colors"),
 		content,
 		buttons: [

@@ -19,7 +19,7 @@ export class BuyMeACoffeeApp extends IFrameApplication {
   }
 
   _createWindow(gameConfig) {
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,

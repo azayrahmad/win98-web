@@ -4,13 +4,12 @@ import { StockPile } from './stock-pile.js';
 import { FoundationPile } from './foundation-pile.js';
 import { WastePile } from './waste-pile.js';
 import {
-  getItem,
-  setItem,
   LOCAL_STORAGE_KEYS,
 } from '../../system/local-storage.js';
 
 export class Game {
-  constructor(initialVegasScore = 0) {
+  constructor(initialVegasScore = 0, settings) {
+    this.settings = settings;
     this.initializeGame(initialVegasScore);
   }
 
@@ -22,10 +21,10 @@ export class Game {
   initializeGame(initialVegasScore = 0) {
     this.previousState = null;
     this.cardBack =
-      getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_CARD_BACK) || "cardback1";
-    this.drawOption = getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_DRAW_OPTION) || "one";
-    this.scoring = getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_SCORING) || "standard";
-    this.isTimedGame = getItem(LOCAL_STORAGE_KEYS.SOLITAIRE_TIMED_GAME) === true;
+      this.settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_CARD_BACK, "cardback1");
+    this.drawOption = this.settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_DRAW_OPTION, "one");
+    this.scoring = this.settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_SCORING, "standard");
+    this.isTimedGame = this.settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_TIMED_GAME) === true;
     this.score = 0;
     this.vegasScore = -52 + initialVegasScore;
     this.recycleCount = 0;
@@ -362,7 +361,7 @@ export class Game {
 
   setCardBack(cardBack) {
     this.cardBack = cardBack;
-    setItem(LOCAL_STORAGE_KEYS.SOLITAIRE_CARD_BACK, cardBack);
+    this.settings.set(LOCAL_STORAGE_KEYS.SOLITAIRE_CARD_BACK, cardBack);
     this.allCards.forEach((card) => card.setCardBack(cardBack));
   }
 

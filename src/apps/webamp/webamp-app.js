@@ -1,11 +1,10 @@
-import { Application } from "../../system/application.js";
+import { BaseProcess } from "../../system/base-process.js";
 import {
   createTaskbarButton,
   removeTaskbarButton,
   updateTaskbarButton,
 } from "../../shell/taskbar/taskbar.js";
 import { ICONS } from "../../config/icons.js";
-import { appManager } from "../../system/app-manager.js";
 import { getWebampMenuItems } from "./webamp.js";
 import {
   isZenFSPath,
@@ -21,7 +20,7 @@ let webampContainer = null;
 let webampTaskbarButton = null;
 let isMinimized = false;
 
-export class WebampApp extends Application {
+export class WebampApp extends BaseProcess {
   static config = {
     id: "webamp",
     title: "Winamp",
@@ -50,11 +49,6 @@ export class WebampApp extends Application {
     this.blobUrls = [];
   }
 
-  _createWindow() {
-    // Webamp doesn't use a standard OS-GUI window, it renders directly to the body.
-    // We manage its container and lifecycle here.
-    return null; // Return null to prevent default window creation.
-  }
 
   async getTrackMetadata(source, isZenFS = false) {
     try {
@@ -279,7 +273,7 @@ export class WebampApp extends Application {
           });
 
           webampInstance.onMinimize(() => this.minimizeWebamp());
-          webampInstance.onClose(() => appManager.closeApp(this.id));
+          webampInstance.onClose(() => this.kernel.use('appManager').closeApp(this.id));
 
           webampInstance
             .renderWhenReady(webampContainer)

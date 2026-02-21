@@ -1,4 +1,4 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { cursors } from '../../config/cursors.js';
 import { convertAniBinaryToCSS } from "ani-cursor";
 import { ICONS } from '../../config/icons.js';
@@ -7,7 +7,7 @@ import {
   setCursorScheme,
 } from '../../system/theme-manager.js';
 
-export class CursorExplorerApp extends Application {
+export class CursorExplorerApp extends WindowedApplication {
   static config = {
     id: "cursor-explorer",
     title: "Mouse",
@@ -25,7 +25,7 @@ export class CursorExplorerApp extends Application {
   }
 
   _createWindow() {
-    const win = new window.$Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,

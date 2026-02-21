@@ -1,4 +1,4 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { soundSchemes } from '../../config/sound-schemes.js';
 import {
   getSoundSchemeName,
@@ -6,7 +6,7 @@ import {
 } from '../../system/theme-manager.js';
 import { ICONS } from '../../config/icons.js';
 
-export class SoundSchemeExplorerApp extends Application {
+export class SoundSchemeExplorerApp extends WindowedApplication {
   static config = {
     id: "sound-scheme-explorer",
     title: "Sound Scheme Explorer",
@@ -24,7 +24,7 @@ export class SoundSchemeExplorerApp extends Application {
   }
 
   _createWindow() {
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.title,
       width: this.width,
       height: this.height,

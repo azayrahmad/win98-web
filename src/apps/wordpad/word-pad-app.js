@@ -1,12 +1,10 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { fs } from "@zenfs/core";
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
-import { ShowFilePicker } from '../../shared/utils/file-picker.js';
 import { getZenFSFileAsText } from '../../system/zenfs-utils.js';
 import "./wordpad.css";
 import { ICONS } from '../../config/icons.js';
 
-export class WordPadApp extends Application {
+export class WordPadApp extends WindowedApplication {
   static config = {
     id: "wordpad",
     title: "WordPad",
@@ -40,7 +38,7 @@ export class WordPadApp extends Application {
   }
 
   _createWindow() {
-    this.win = new $Window({
+    this.win = this.kernel.use('ui').createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,
@@ -827,7 +825,7 @@ export class WordPadApp extends Application {
   async openFile() {
     if ((await this.checkForUnsavedChanges()) === "cancel") return;
 
-    const path = await ShowFilePicker({
+    const path = await this.kernel.use('ui').showFilePicker({
       title: "Open Document",
       mode: "open",
       fileTypes: [{ label: "HTML Document (*.html)", extensions: ["html"] }],
@@ -862,7 +860,7 @@ export class WordPadApp extends Application {
   }
 
   async saveAs() {
-    const path = await ShowFilePicker({
+    const path = await this.kernel.use('ui').showFilePicker({
       title: "Save Document As",
       mode: "save",
       suggestedName:
@@ -884,7 +882,7 @@ export class WordPadApp extends Application {
   }
 
   showUnsavedChangesDialog(options = {}) {
-    return ShowDialogWindow({
+    return this.kernel.use('ui').showDialog({
       title: "WordPad",
       text: `<div style="white-space: pre-wrap">The text in the ${this.fileName} file has changed.\n\nDo you want to save the changes?</div>`,
       contentIconUrl: new URL(
@@ -986,7 +984,7 @@ export class WordPadApp extends Application {
             </div>
         `;
 
-    const dialog = ShowDialogWindow({
+    const dialog = this.kernel.use('ui').showDialog({
       title: "Find",
       width: 380,
       height: "auto",
@@ -1077,7 +1075,7 @@ export class WordPadApp extends Application {
       );
 
       if (!wrappedFound) {
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
           title: "WordPad",
           text: `Cannot find "${term}"`,
           soundEvent: "SystemHand",

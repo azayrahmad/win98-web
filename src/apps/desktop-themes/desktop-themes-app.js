@@ -1,4 +1,4 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { iconSchemes } from '../../config/icon-schemes.js';
 import {
@@ -19,8 +19,7 @@ import {
   applyThemeToPreview,
   applyPropertiesToPreview,
 } from '../../shell/display-properties/theme-preview.js';
-import { getItem, LOCAL_STORAGE_KEYS } from '../../system/local-storage.js';
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
+import { LOCAL_STORAGE_KEYS } from '../../system/local-storage.js';
 import {
   requestBusyState,
   releaseBusyState,
@@ -29,7 +28,7 @@ import screensaverManager from '../../system/screensaver-utils.js';
 import previewHtml from "./DesktopThemesPreview.html?raw";
 import "./desktop-themes.css";
 
-export class DesktopThemesApp extends Application {
+export class DesktopThemesApp extends WindowedApplication {
   static config = {
     id: "desktop-themes",
     title: "Desktop Themes",
@@ -55,7 +54,7 @@ export class DesktopThemesApp extends Application {
   }
 
   async _createWindow() {
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       id: this.id,
       title: this.title,
       outerWidth: 600,
@@ -203,7 +202,7 @@ export class DesktopThemesApp extends Application {
     const currentColorScheme = colorSchemes[currentColorSchemeId];
     const currentColorSchemeTheme = themes[currentColorSchemeId] || activeTheme;
     const currentWallpaper =
-      getItem(LOCAL_STORAGE_KEYS.WALLPAPER) || activeTheme.wallpaper;
+      this.kernel.use('settings').get(LOCAL_STORAGE_KEYS.WALLPAPER) || activeTheme.wallpaper;
 
     let currentColors = {};
     if (currentColorSchemeTheme.isCustom && currentColorSchemeTheme.colors) {
@@ -346,7 +345,7 @@ export class DesktopThemesApp extends Application {
           });
         } else {
           this.themeSelector.value = this.previousThemeId;
-          ShowDialogWindow({
+          this.kernel.use('ui').showDialog({
             title: "Error",
             text: "Could not parse the selected file.",
             buttons: [{ label: "OK" }],
@@ -354,7 +353,7 @@ export class DesktopThemesApp extends Application {
         }
       } catch (error) {
         this.themeSelector.value = this.previousThemeId;
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
           title: "Error",
           text: `An error occurred: ${error.message}`,
           buttons: [{ label: "OK" }],
@@ -365,7 +364,7 @@ export class DesktopThemesApp extends Application {
   }
 
   _promptForThemeName() {
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       title: "Save Theme",
       outerWidth: 320,
       outerHeight: "auto",
@@ -432,7 +431,7 @@ export class DesktopThemesApp extends Application {
   }
 
   _confirmAndSaveTheme(themeName) {
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Save Theme",
       text: `Do you want to save this theme as "${themeName}"?`,
       buttons: [
@@ -483,7 +482,7 @@ export class DesktopThemesApp extends Application {
     const selectedTheme = getThemes()[selectedThemeId];
 
     if (selectedTheme?.isCustom) {
-      ShowDialogWindow({
+      this.kernel.use('ui').showDialog({
         title: "Delete Scheme",
         text: `Are you sure you want to delete "${selectedTheme.name}"?`,
         buttons: [
@@ -654,7 +653,7 @@ export class DesktopThemesApp extends Application {
   }
 
   _showThemeWizard(colors, wallpaper, callback) {
-    const wizardWin = new $Window({
+    const wizardWin = this.kernel.use('ui').createWindow({
       title: "Theme Wizard",
       outerWidth: 350,
       outerHeight: 400,

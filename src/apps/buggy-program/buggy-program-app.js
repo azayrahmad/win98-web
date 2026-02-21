@@ -1,11 +1,9 @@
-import { Application } from "../../system/application.js";
-import { launchApp } from "../../system/app-manager.js";
-import { playSound } from "../../system/sound-manager.js";
+import { WindowedApplication } from "../../system/application.js";
 import { ICONS } from "../../config/icons.js";
 import warningIconUrl from "../../assets/icons/msg_warning-0.png";
 import html2canvas from "html2canvas";
 
-export class BuggyProgramApp extends Application {
+export class BuggyProgramApp extends WindowedApplication {
   static config = {
     id: "buggy-program",
     title: "buggyprogram.exe",
@@ -19,7 +17,7 @@ export class BuggyProgramApp extends Application {
   };
 
   _createWindow() {
-    const win = new window.$Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.config.title,
       width: this.config.width,
       height: this.config.height,
@@ -48,7 +46,7 @@ export class BuggyProgramApp extends Application {
 
     const okButton = win.$content.find(".ok-button")[0];
     okButton.addEventListener("click", () => {
-      launchApp("buggy-program");
+      this.kernel.use('appManager').launchApp("buggy-program");
     });
 
     setTimeout(() => {
@@ -56,7 +54,7 @@ export class BuggyProgramApp extends Application {
       okButton.classList.add("default");
     }, 0);
 
-    playSound("SystemExclamation");
+    window.playSound("SystemExclamation");
 
     setTimeout(() => {
       const desktop = document.querySelector(".desktop");
@@ -129,7 +127,7 @@ export class BuggyProgramApp extends Application {
     }, 100);
 
     win.on("close", () => {
-      launchApp("buggy-program");
+      this.kernel.use('appManager').launchApp("buggy-program");
     });
     return win;
   }

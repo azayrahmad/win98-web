@@ -1,13 +1,12 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import './diablo.css';
 import { ICONS } from '../../config/icons.js';
 import { fs } from "@zenfs/core";
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
 import { DiabloProgressDialog } from './diablo-progress-dialog.js';
 import { existsAsync } from '../../system/zenfs-utils.js';
 import { DiabloStorage } from './diablo-storage.js';
 
-export class DiabloApp extends Application {
+export class DiabloApp extends WindowedApplication {
     static config = {
         id: "diablo",
         title: "Diablo",
@@ -98,7 +97,7 @@ export class DiabloApp extends Application {
         content.appendChild(label);
         content.appendChild(select);
 
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
             title: "Diablo MPQ Selection",
             content: content,
             modal: true,
@@ -122,7 +121,7 @@ export class DiabloApp extends Application {
     }
 
     _showDownloadConfirmationDialog() {
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
             title: "No Diablo files found",
             text: "No Diablo MPQ files were found in your system.<br><br>Would you like to download the shareware version (spawn.mpq) to play?",
             modal: true,
@@ -205,7 +204,7 @@ export class DiabloApp extends Application {
             console.error("Download failed", e);
             dialog.close();
             this.isDownloading = false;
-            ShowDialogWindow({
+            this.kernel.use('ui').showDialog({
                 title: "Download Failed",
                 text: `Error downloading shareware: ${e.message}`,
                 buttons: [{ label: "OK", isDefault: true }],
@@ -312,7 +311,7 @@ export class DiabloApp extends Application {
     }
 
     _createWindow() {
-        this.win = new $Window({
+        this.win = this.kernel.use('ui').createWindow({
             title: this.title,
             outerWidth: this.width,
             outerHeight: this.height,

@@ -1,7 +1,6 @@
 // calculator-app.js - Main logic for the calculator application
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { CalculatorLogic } from './calculator-logic.js';
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
 import { Tooltip } from '../../shared/components/tooltip.js';
 import buttonDefinitions from './buttons.js'; // Import the centralized button definitions
 import "./calculator.css";
@@ -9,7 +8,7 @@ import { ICONS } from '../../config/icons.js';
 import hhc from "./calc.hhc?raw";
 import hhk from "./calc.hhk?raw";
 
-export class CalculatorApp extends Application {
+export class CalculatorApp extends WindowedApplication {
   static config = {
     id: "calculator",
     title: "Calculator",
@@ -31,7 +30,7 @@ export class CalculatorApp extends Application {
   }
 
   _createWindow() {
-    this.win = new $Window({
+    this.win = this.kernel.use('ui').createWindow({
       id: this.id,
       title: this.title,
       resizable: false, // Window is not resizable
@@ -483,7 +482,7 @@ export class CalculatorApp extends Application {
   }
 
   _showAboutDialog() {
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "About Calculator",
       text: "A Windows 98 style calculator.",
       buttons: [{ label: "OK", isDefault: true }],
@@ -526,7 +525,7 @@ export class CalculatorApp extends Application {
       return;
     }
 
-    this.statisticsWindow = new $Window({
+    this.statisticsWindow = this.kernel.use('ui').createWindow({
       title: "Statistics Box",
       outerWidth: 200,
       outerHeight: 250,

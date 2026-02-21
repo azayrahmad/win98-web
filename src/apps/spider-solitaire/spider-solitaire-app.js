@@ -1,18 +1,16 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { Game } from './game.js';
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
-import { getItem, setItem, removeItem } from '../../system/local-storage.js';
 import { findBestDropTarget } from '../../apps/solitaire/solitaire-helper.js';
 import { Statistics } from './statistics.js';
-import { options, getAllOptions, setAllOptions } from './options-manager.js';
+import { OptionsManager } from './options-manager.js';
 import "./spidersolitaire.css";
 import "../solitaire/solitaire-shared.css";
 
 const STYLE_KEY = "spidersolitaire.use98style";
 const SAVE_KEY = "spidersolitaire-saved-game";
 
-export class SpiderSolitaireApp extends Application {
+export class SpiderSolitaireApp extends WindowedApplication {
   static config = {
     id: "spider-solitaire",
     title: "Spider Solitaire",
@@ -23,13 +21,11 @@ export class SpiderSolitaireApp extends Application {
   };
 
   async _createWindow() {
-    this.statistics = new Statistics();
-    this.use98Style = getItem(STYLE_KEY);
-    if (this.use98Style === null) {
-      this.use98Style = true;
-    }
+    const settings = this.kernel.use('settings');
+    this.statistics = new Statistics(settings);
+    this.use98Style = settings.get(STYLE_KEY, true);
 
-    const win = new window.$Window({
+    const win = this.kernel.use('ui').createWindow({
       title: this.config.title,
       outerWidth: this.config.width,
       outerHeight: this.config.height,
@@ -78,9 +74,10 @@ export class SpiderSolitaireApp extends Application {
     this.boundOnTouchMove = this.onTouchMove.bind(this);
     this.boundOnTouchEnd = this.onTouchEnd.bind(this);
 
+    this.options = new OptionsManager(settings);
     this.addEventListeners();
 
-    if (options.autoOpenOnStartup) {
+    if (this.options.autoOpenOnStartup) {
       this._performOpen(true); // Suppress "not found" dialog on startup
     }
 
@@ -90,7 +87,7 @@ export class SpiderSolitaireApp extends Application {
 
     win.on("close", () => {
       this._handlePotentialLoss();
-      if (options.autoSaveOnExit) {
+      if (this.options.autoSaveOnExit) {
         this._performSave(true); // Suppress any UI/sound
       }
       this.removeEventListeners();
@@ -148,7 +145,7 @@ export class SpiderSolitaireApp extends Application {
       </fieldset>
     `;
 
-    const dialog = ShowDialogWindow({
+    const dialog = this.kernel.use('ui').showDialog({
       title: "Spider Statistics",
       content: content,
       buttons: [
@@ -181,7 +178,7 @@ export class SpiderSolitaireApp extends Application {
   }
 
   _showOptionsDialog() {
-    const currentOptions = getAllOptions();
+    const currentOptions = this.options.getAllOptions();
     const content = document.createElement("div");
     content.className = "spider-options-content";
 
@@ -208,7 +205,7 @@ export class SpiderSolitaireApp extends Application {
       </div>
     `;
 
-    const dialog = ShowDialogWindow({
+    const dialog = this.kernel.use('ui').showDialog({
       title: "Spider Options",
       content: content,
       buttons: [
@@ -222,7 +219,7 @@ export class SpiderSolitaireApp extends Application {
               promptOnSave: content.querySelector("#prompt-save").checked,
               promptOnOpen: content.querySelector("#prompt-open").checked,
             };
-            setAllOptions(newOptions);
+            this.options.setAllOptions(newOptions);
             dialog.close();
           },
         },
@@ -239,7 +236,7 @@ export class SpiderSolitaireApp extends Application {
 
   _showNewGameDialog() {
     if (this.game) {
-      ShowDialogWindow({
+      this.kernel.use('ui').showDialog({
         title: "New Game",
         text: "Are you sure you want to start a new game?",
         buttons: [
@@ -277,7 +274,7 @@ export class SpiderSolitaireApp extends Application {
             </div>
         `;
 
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "New Game",
       content: content,
       buttons: [
@@ -375,7 +372,7 @@ export class SpiderSolitaireApp extends Application {
             check: () => this.use98Style,
             toggle: () => {
               this.use98Style = !this.use98Style;
-              setItem(STYLE_KEY, this.use98Style);
+              this.kernel.use('settings').set(STYLE_KEY, this.use98Style);
               this.container.classList.toggle("style-98", this.use98Style);
               this.render();
             },
@@ -708,7 +705,7 @@ export class SpiderSolitaireApp extends Application {
       this.container.style.pointerEvents = "none";
       try {
         this.renderStock();
-        if (options.animateDealing) {
+        if (this.options.animateDealing) {
           await this.animateDealing(result.cards);
         }
         this.game.addDealtCardsToTableau(result.cards);
@@ -732,7 +729,7 @@ export class SpiderSolitaireApp extends Application {
         this.container.style.pointerEvents = "auto";
       }
     } else if (result.reason === "EMPTY_PILE") {
-      ShowDialogWindow({
+      this.kernel.use('ui').showDialog({
         title: "Invalid Move",
         text: "You cannot deal from the stock while a tableau pile is empty.",
         buttons: [{ label: "OK" }],
@@ -742,7 +739,7 @@ export class SpiderSolitaireApp extends Application {
   }
 
   animateDealing(cards) {
-    if (!options.animateDealing) {
+    if (!this.options.animateDealing) {
       return Promise.resolve();
     }
     return new Promise((resolve) => {
@@ -954,7 +951,7 @@ export class SpiderSolitaireApp extends Application {
 
   async showWinDialog() {
     this.statistics.recordWin();
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Game Over",
       text: "Congratulations, you won!\nDo you want to start another game?",
       buttons: [
@@ -1023,9 +1020,9 @@ export class SpiderSolitaireApp extends Application {
   }
 
   _saveGame() {
-    const savedGame = getItem(SAVE_KEY);
-    if (savedGame && options.promptOnSave) {
-      ShowDialogWindow({
+    const savedGame = this.kernel.use('settings').get(SAVE_KEY);
+    if (savedGame && this.options.promptOnSave) {
+      this.kernel.use('ui').showDialog({
         title: "Save Game",
         text: "A saved game already exists. Are you sure you want to replace your previously saved game with your current game?",
         buttons: [
@@ -1045,12 +1042,12 @@ export class SpiderSolitaireApp extends Application {
   _performSave(isSilent = false) {
     try {
       const gameState = this.game.toJSON();
-      setItem(SAVE_KEY, gameState);
+      this.kernel.use('settings').set(SAVE_KEY, gameState);
     } catch (error) {
       console.error("Failed to save game:", error);
       if (!isSilent) {
         window.playSound("Warning");
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
           title: "Error",
           text: "Unable to save game.",
           buttons: [{ label: "OK" }],
@@ -1061,8 +1058,8 @@ export class SpiderSolitaireApp extends Application {
   }
 
   _openGame() {
-    if (options.promptOnOpen) {
-      ShowDialogWindow({
+    if (this.options.promptOnOpen) {
+      this.kernel.use('ui').showDialog({
         title: "Open Game",
         text: "Are you sure you want to discard the game you are currently playing, and load your previously saved game?",
         buttons: [
@@ -1096,10 +1093,10 @@ export class SpiderSolitaireApp extends Application {
   _performOpen(isSilent = false) {
     this._handlePotentialLoss();
     try {
-      const savedGame = getItem(SAVE_KEY);
+      const savedGame = this.kernel.use('settings').get(SAVE_KEY);
       if (!savedGame) {
         if (!isSilent) {
-          ShowDialogWindow({
+          this.kernel.use('ui').showDialog({
             title: "Error",
             text: "Unable to load game. No saved game found.",
             buttons: [{ label: "OK" }],
@@ -1115,7 +1112,7 @@ export class SpiderSolitaireApp extends Application {
     } catch (error) {
       console.error("Failed to load game:", error);
       if (!isSilent) {
-        ShowDialogWindow({
+        this.kernel.use('ui').showDialog({
           title: "Error",
           text: "Unable to load game.",
           buttons: [{ label: "OK" }],

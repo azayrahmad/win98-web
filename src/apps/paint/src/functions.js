@@ -3,7 +3,7 @@
 /* global $thumbnail_window:writable, canvas_bounding_client_rect:writable, current_history_node:writable, file_format:writable, file_name:writable, helper_layer:writable, history_node_to_cancel_to:writable, magnification:writable, monochrome:writable, palette:writable, pointer:writable, return_to_magnification:writable, return_to_tools:writable, root_history_node:writable, saved:writable, selected_colors:writable, selected_tool:writable, selected_tools:writable, selection:writable, show_grid:writable, show_thumbnail:writable, system_file_handle:writable, textbox:writable, thumbnail_canvas:writable, tool_transparent_mode:writable, transparency:writable, undos:writable */
 /* global $canvas, $canvas_area, $colorbox, $status_text, $toolbox, $Window, AccessKeys, applyCSSProperties, decodeBMP, default_canvas_height, default_canvas_width, default_magnification, default_tool, enable_palette_loading_from_indexed_images, encodeBMP, localize, main_canvas, main_ctx, monochrome_palette, my_canvas_height, my_canvas_width, new_local_session, parseThemeFileString, pointer_active, pointers, polychrome_palette, redos, systemHooks, text_tool_font, update_fill_and_stroke_colors_and_lineWidth, UPNG, UTIF */
 
-import { ShowDialogWindow } from "../../../shared/components/dialog-window.js";
+import { kernel } from "../../../system/kernel.js";
 import { OnCanvasHelperLayer } from "./OnCanvasHelperLayer.js";
 import { OnCanvasSelection } from "./OnCanvasSelection.js";
 import { OnCanvasTextBox } from "./OnCanvasTextBox.js";
@@ -509,7 +509,7 @@ function show_custom_zoom_window() {
 
 	$fieldset.find("label").css({ display: "block" });
 
-	const $w = ShowDialogWindow({
+	const $w = kernel.use('ui').showDialog({
 		title: localize("Custom Zoom"),
 		content,
 		buttons: [
@@ -2604,7 +2604,7 @@ function image_attributes() {
 	`);
 	$transparency.find(`[value=${transparency ? "transparent" : "opaque"}]`).attr({ checked: true });
 
-	const $w = ShowDialogWindow({
+	const $w = kernel.use('ui').showDialog({
 		title: localize("Attributes"),
 		content,
 		buttonAlignment: "right",
@@ -2719,7 +2719,7 @@ function show_convert_to_black_and_white() {
 	const update_threshold_soon = debounce(update_threshold, 100);
 	$slider.on("input", update_threshold_soon);
 
-	const $w = ShowDialogWindow({
+	const $w = kernel.use('ui').showDialog({
 		title: "Convert to Black and White",
 		content,
 		buttons: [
@@ -2856,7 +2856,7 @@ function image_flip_and_rotate() {
 		$fieldset.find("input[value='arbitrary']").prop("checked", true);
 	});
 
-	const $w = ShowDialogWindow({
+	const $w = kernel.use('ui').showDialog({
 		title: localize("Flip and Rotate"),
 		content,
 		buttonAlignment: "right",
@@ -2945,7 +2945,7 @@ function image_stretch_and_skew() {
 	const skew_x = $RowInput($fieldset_skew.find("table"), "skew-x", localize("H&orizontal:"), 0, localize("Degrees"), -90, 90);
 	const skew_y = $RowInput($fieldset_skew.find("table"), "skew-y", localize("V&ertical:"), 0, localize("Degrees"), -90, 90);
 
-	const $w = ShowDialogWindow({
+	const $w = kernel.use('ui').showDialog({
 		title: localize("Stretch and Skew"),
 		content,
 		buttonAlignment: "right",
@@ -3172,7 +3172,7 @@ function save_as_prompt({
 		// and initially
 		update_extension_from_file_type(false);
 
-		const $w = ShowDialogWindow({
+		const $w = kernel.use('ui').showDialog({
 			title: dialogTitle,
 			content,
 			buttons: [
@@ -3570,7 +3570,7 @@ function show_multi_user_setup_dialog(from_current_document) {
 	`;
 	const $session_name = $(content).find("#session-name");
 
-	const $w = ShowDialogWindow({
+	const $w = kernel.use('ui').showDialog({
 		title: "Multi-User Setup",
 		content,
 		buttons: [

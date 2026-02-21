@@ -1,10 +1,9 @@
-import { Application } from '../../system/application.js';
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
+import { WindowedApplication } from '../../system/application.js';
 import defragSound from "./assets/mtrk_internal-hard-drive-defrag_clicks-clanks_1_fsp4824-35843.mp3";
 import "./defrag.css";
 import { ICONS } from '../../config/icons.js';
 
-export class DefragApp extends Application {
+export class DefragApp extends WindowedApplication {
   static config = {
     id: "defrag",
     title: "Disk Defragmenter",
@@ -40,7 +39,7 @@ export class DefragApp extends Application {
   }
 
   _createWindow() {
-    const win = new $Window({
+    const win = this.kernel.use('ui').createWindow({
       title: "Disk Defragmenter",
       outerWidth: 500,
       outerHeight: 350,
@@ -98,7 +97,7 @@ export class DefragApp extends Application {
   }
 
   _showLegend() {
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Defrag Legend",
       text: `
         <div class="legend-item"><div class="legend-color unoptimized"></div> Unoptimized data</div>
@@ -186,7 +185,7 @@ export class DefragApp extends Application {
 
     this._stopDefrag();
 
-    ShowDialogWindow({
+    this.kernel.use('ui').showDialog({
       title: "Are you sure?",
       text: "Windows has not finished defragmenting drive C.",
       buttons: [

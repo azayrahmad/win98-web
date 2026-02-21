@@ -1,11 +1,10 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { fs } from "@zenfs/core";
 import { ICONS } from '../../config/icons.js';
-import { ShowFilePicker } from '../../shared/utils/file-picker.js';
-import { setItem, LOCAL_STORAGE_KEYS } from '../../system/local-storage.js';
+import { LOCAL_STORAGE_KEYS } from '../../system/local-storage.js';
 import './paint.css'; // I'll create this file to import all paint styles
 
-export class PaintApp extends Application {
+export class PaintApp extends WindowedApplication {
     static config = {
         id: "paint",
         title: "Paint",
@@ -39,7 +38,7 @@ export class PaintApp extends Application {
         window.systemHooks = window.systemHooks || {};
 
         window.systemHooks.showOpenFileDialog = async ({ formats }) => {
-            const path = await ShowFilePicker({
+            const path = await this.kernel.use('ui').showFilePicker({
                 title: "Open",
                 mode: "open",
                 fileTypes: this._mapFormats(formats)
@@ -52,7 +51,7 @@ export class PaintApp extends Application {
         };
 
         window.systemHooks.showSaveFileDialog = async ({ formats, defaultFileName, getBlob, savedCallbackUnreliable }) => {
-            const path = await ShowFilePicker({
+            const path = await this.kernel.use('ui').showFilePicker({
                 title: "Save As",
                 mode: "save",
                 fileTypes: this._mapFormats(formats),
@@ -151,7 +150,7 @@ export class PaintApp extends Application {
     }
 
     _createWindow() {
-        const win = new $Window({
+        const win = this.kernel.use('ui').createWindow({
             id: this.id,
             title: this.title,
             outerWidth: this.width,
@@ -278,8 +277,9 @@ export class PaintApp extends Application {
         const { write_image_file, update_title, update_from_saved_file } = await import('./src/functions.js');
 
         const doSet = (path) => {
-            setItem(LOCAL_STORAGE_KEYS.WALLPAPER, path);
-            setItem(LOCAL_STORAGE_KEYS.WALLPAPER_MODE, mode);
+            const settings = this.kernel.use('settings');
+            settings.set(LOCAL_STORAGE_KEYS.WALLPAPER, path);
+            settings.set(LOCAL_STORAGE_KEYS.WALLPAPER_MODE, mode);
             document.dispatchEvent(new CustomEvent("wallpaper-changed"));
         };
 
