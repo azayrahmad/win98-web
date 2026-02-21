@@ -15,6 +15,10 @@ export class AppManager {
     return this.runningApps;
   }
 
+  isProcessRunning(appId) {
+    return Object.values(this.runningApps).some(app => app.id === appId);
+  }
+
   getAppConfig(appId) {
     return apps.find((a) => a.id === appId);
   }
@@ -53,14 +57,6 @@ export class AppManager {
       return;
     }
 
-    // Handle singleton apps that are already running
-    const runningApp = this.runningApps[appId];
-    if (runningApp && appConfig.isSingleton) {
-      runningApp.launch(data); // This will handle focus or file loading
-      releaseWaitState(launchId);
-      return runningApp;
-    }
-
     try {
       if (appConfig.appClass) {
         let AppClass = appConfig.appClass;
@@ -78,9 +74,31 @@ export class AppManager {
           throw new Error(`Application class not found for app ID: ${appId}`);
         }
 
+        // Instantiate
         const appInstance = new AppClass({ ...appConfig, id: appId });
-        // The instance will register itself in runningApps during launch into its unique instanceKey
+
+        // Determine instance key
+        const instanceKey = this._generateInstanceKey(appInstance, data);
+        appInstance.instanceKey = instanceKey;
+
+        // Handle existing instance
+        if (this.runningApps[instanceKey]) {
+          const existing = this.runningApps[instanceKey];
+          if (typeof existing.onRelaunch === "function") {
+            await existing.onRelaunch(data);
+          } else if (typeof existing.launch === "function") {
+            await existing.launch(data);
+          }
+          return existing;
+        }
+
+        // Register
+        this.runningApps[instanceKey] = appInstance;
+        openApps.set(instanceKey, appInstance); // Legacy compatibility
+
+        // Launch
         await appInstance.launch(data);
+
         document.dispatchEvent(
           new CustomEvent("app-launched", { detail: { appId } }),
         );
@@ -98,6 +116,23 @@ export class AppManager {
     } finally {
       releaseWaitState(launchId);
     }
+  }
+
+  _generateInstanceKey(appInstance, data) {
+    if (appInstance.isSingleton) {
+      return appInstance.id;
+    }
+
+    // For non-singletons, we usually want a unique ID per file or just a timestamp
+    if (typeof appInstance._getWindowId === "function") {
+        let filePath = data;
+        if (data && typeof data === "object") {
+            filePath = data.file || data.filePath || data.path;
+        }
+        return appInstance._getWindowId(filePath);
+    }
+
+    return `${appInstance.id}-${Date.now()}`;
   }
 }
 

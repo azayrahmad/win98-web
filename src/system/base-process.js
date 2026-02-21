@@ -20,22 +20,6 @@ export class BaseProcess {
    * @param {any} data
    */
   async launch(data = null) {
-    this.instanceKey = this.isSingleton ? this.id : `${this.id}-${Date.now()}`;
-
-    const appManager = this.kernel.use('appManager');
-
-    // Handle already running singleton
-    if (this.isSingleton && appManager.runningApps[this.id]) {
-        const existing = appManager.runningApps[this.id];
-        if (existing.onRelaunch) {
-            return existing.onRelaunch(data);
-        }
-        return existing;
-    }
-
-    // Register process
-    appManager.runningApps[this.instanceKey] = this;
-
     await this._onLaunch(data);
   }
 
@@ -56,16 +40,22 @@ export class BaseProcess {
 
   /**
    * Terminates the process.
+   * This is called by the process manager.
    */
   async terminate() {
     await this._cleanup();
-    const appManager = this.kernel.use('appManager');
-    delete appManager.runningApps[this.instanceKey];
 
     document.dispatchEvent(
       new CustomEvent("process-terminated", {
         detail: { id: this.id, instanceKey: this.instanceKey },
       }),
     );
+  }
+
+  /**
+   * Signal to the system that the process wants to exit.
+   */
+  exit() {
+    this.kernel.use('appManager').closeApp(this.instanceKey);
   }
 }

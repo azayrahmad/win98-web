@@ -46,6 +46,8 @@ export async function initializeOS() {
   // For backward compatibility and global access
   window.System = kernel.use("windowManager");
   window.System.kernel = kernel;
+  window.System.launchApp = launchApp;
+  window.System.appManager = appManager;
 
   const path = window.location.pathname;
   const profileName = path.startsWith("/win98-web/")
@@ -377,9 +379,6 @@ export async function initializeOS() {
     window.fs = fs;
     window.mounts = mounts;
     window.RecycleBinManager = RecycleBinManager;
-    window.System.launchApp = launchApp;
-    window.System.appManager = appManager;
-
     await kernel.boot();
     console.log("azOS initialized");
 

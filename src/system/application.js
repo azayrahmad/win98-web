@@ -1,6 +1,5 @@
 import { ShowDialogWindow } from '../shared/components/dialog-window.js';
 import { createTaskbarButton, createTrayIcon } from '../shell/taskbar/taskbar.js';
-import { appManager } from './app-manager.js';
 import { BaseProcess } from './base-process.js';
 
 const openWindows = new Map();
@@ -34,56 +33,42 @@ export class WindowedApplication extends BaseProcess {
 
   async launch(data = null) {
     let filePath = null;
-    let windowIdOverride = null;
-
     if (data) {
-      if (typeof data === "string") {
-        filePath = data;
-      } else {
-        // Handle both file objects and file path strings
-        filePath = data.file || data.filePath || data;
-        windowIdOverride = data.windowId;
-      }
+      filePath = typeof data === "string" ? data : (data.file || data.filePath || data);
     }
-
-    const windowId = windowIdOverride || this._getWindowId(filePath);
-    const instanceKey = this.isSingleton ? this.id : windowId;
-    this.instanceKey = instanceKey;
-
-    const appManager = this.kernel.use('appManager');
-
-    if (appManager.runningApps[instanceKey]) {
-      const existingApp = appManager.runningApps[instanceKey];
-      if (existingApp.win) {
-        const $win = $(existingApp.win.element);
-        if ($win.is(":visible")) {
-          existingApp.win.focus();
-        } else {
-          existingApp.win.restore();
-          setTimeout(() => existingApp.win.focus(), 0);
-        }
-      } else {
-        // Delegate to its own launch logic (e.g. for singletons or background relaunch)
-        existingApp._onLaunch(filePath);
-      }
-      return;
-    }
-
-    // Register
-    appManager.runningApps[instanceKey] = this;
-    openApps.set(instanceKey, this); // Legacy support
 
     this.win = await this._createWindow(filePath);
 
     if (this.win) {
-      this._setupWindow(windowId, instanceKey);
-      openWindows.set(windowId, this.win);
+      this._setupWindow(this.instanceKey);
+      openWindows.set(this.instanceKey, this.win);
     }
 
     if (this.hasTray) {
       createTrayIcon(this);
     }
 
+    await this._onLaunch(filePath);
+  }
+
+  /**
+   * Handle relaunch of an existing instance (e.g. focusing window or loading new file)
+   */
+  async onRelaunch(data) {
+    if (this.win) {
+      const $win = $(this.win.element);
+      if ($win.is(":visible")) {
+        this.win.focus();
+      } else {
+        this.win.restore();
+        setTimeout(() => this.win.focus(), 0);
+      }
+    }
+
+    let filePath = null;
+    if (data) {
+      filePath = typeof data === "string" ? data : (data.file || data.filePath || data);
+    }
     await this._onLaunch(filePath);
   }
 
@@ -105,8 +90,8 @@ export class WindowedApplication extends BaseProcess {
     // Optional hook for subclasses to implement for post-launch logic
   }
 
-  _setupWindow(windowId, instanceKey) {
-    this.win.element.id = windowId;
+  _setupWindow(instanceKey) {
+    this.win.element.id = instanceKey;
     this.win.element.dataset.appId = this.id;
 
     this.win.onClosed(() => {
@@ -115,19 +100,19 @@ export class WindowedApplication extends BaseProcess {
       }
       if (this.hasTaskbarButton) {
         const taskbarButton = document.querySelector(
-          `.taskbar-button[for="${windowId}"]`,
+          `.taskbar-button[for="${instanceKey}"]`,
         );
         if (taskbarButton) {
           taskbarButton.remove();
         }
       }
-      openWindows.delete(windowId);
-      appManager.closeApp(instanceKey);
+      openWindows.delete(instanceKey);
+      this.exit();
     });
 
     if (this.hasTaskbarButton) {
       const taskbarButton = createTaskbarButton(
-        windowId,
+        instanceKey,
         this.icon,
         this.title,
       );

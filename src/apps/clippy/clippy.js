@@ -12,7 +12,7 @@ let currentAgentName = "Clippy";
 let inputBalloonTimeout = null;
 
 // Initialize currentAgentName from settings if kernel is available
-if (kernel.isBooted || true) {
+if (kernel.isBooted) {
   try {
     currentAgentName = kernel.use('settings').get(LOCAL_STORAGE_KEYS.CLIPPY_AGENT_NAME, "Clippy");
   } catch (e) {}
