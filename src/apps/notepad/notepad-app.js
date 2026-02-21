@@ -1,19 +1,17 @@
-import { Application } from '../../system/application.js';
+import { WindowedApplication } from '../../system/application.js';
 import { fs } from "@zenfs/core";
 import './notepad.css';
 import './notepad-editor.css';
 import { languages } from '../../config/languages.js';
 import { HIGHLIGHT_JS_THEMES } from '../../config/highlight-js-themes.js';
-import { getItem, setItem, LOCAL_STORAGE_KEYS } from '../../system/local-storage.js';
-import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
+import { LOCAL_STORAGE_KEYS } from '../../system/local-storage.js';
 import { NotepadEditor } from '../../apps/notepad/notepad-editor.js';
 import { renderHTML } from '../../shared/utils/dom-utils.js';
 import { ICONS } from '../../config/icons.js';
-import { ShowFilePicker } from '../../shared/utils/file-picker.js';
 
 const DEFAULT_THEME = 'atom-one-light';
 
-export class NotepadApp extends Application {
+export class NotepadApp extends WindowedApplication {
     static config = {
         id: "notepad",
         title: "Notepad",
@@ -33,7 +31,8 @@ export class NotepadApp extends Application {
 
     constructor(config) {
         super(config);
-        this.wordWrap = getItem(LOCAL_STORAGE_KEYS.NOTEPAD_WORD_WRAP) ?? false;
+        const settings = this.kernel.use('settings');
+        this.wordWrap = settings.get(LOCAL_STORAGE_KEYS.NOTEPAD_WORD_WRAP, false);
         this.currentLanguage = 'text';
         this.win = null;
         this.editor = null;
@@ -41,7 +40,7 @@ export class NotepadApp extends Application {
     }
 
     _createWindow() {
-        this.win = new $Window({
+        this.win = this.kernel.use('ui').createWindow({
             title: this.title,
             outerWidth: this.width,
             outerHeight: this.height,
@@ -217,7 +216,7 @@ export class NotepadApp extends Application {
                     this.setLanguage(this.getLanguageFromExtension(this.fileName));
                 } catch (e) {
                     console.error("Error loading from ZenFS:", e);
-                    ShowDialogWindow({
+                    this.kernel.use('ui').showDialog({
                         title: "Error",
                         text: `Could not open file from ZenFS: ${data}`,
                         buttons: [{ label: "OK", isDefault: true }],
@@ -241,7 +240,7 @@ export class NotepadApp extends Application {
                     })
                     .catch((e) => {
                         console.error("Error loading file:", e);
-                        ShowDialogWindow({
+                        this.kernel.use('ui').showDialog({
                             title: "Error",
                             text: `Could not open file: ${data}`,
                             buttons: [{ label: "OK", isDefault: true }],
@@ -274,7 +273,7 @@ export class NotepadApp extends Application {
             };
             reader.onerror = (e) => {
               console.error("Error reading file:", e);
-              ShowDialogWindow({
+              this.kernel.use('ui').showDialog({
                 title: "Error",
                 text: `Could not read file: ${file.name}`,
                 buttons: [{ label: "OK", isDefault: true }],
@@ -333,7 +332,8 @@ export class NotepadApp extends Application {
             }
         });
 
-        this.currentTheme = getItem(LOCAL_STORAGE_KEYS.NOTEPAD_THEME) || DEFAULT_THEME;
+        const settings = this.kernel.use('settings');
+        this.currentTheme = settings.get(LOCAL_STORAGE_KEYS.NOTEPAD_THEME, DEFAULT_THEME);
         this.setTheme(this.currentTheme, true);
 
         // Set initial language in case of no file, then update menu
@@ -357,7 +357,7 @@ export class NotepadApp extends Application {
         }
 
         this.currentTheme = theme;
-        setItem(LOCAL_STORAGE_KEYS.NOTEPAD_THEME, theme);
+        this.kernel.use('settings').set(LOCAL_STORAGE_KEYS.NOTEPAD_THEME, theme);
 
         if (!isInitialLoad) {
             this.win.element.querySelector('.menus').dispatchEvent(new CustomEvent('update'));
@@ -367,12 +367,12 @@ export class NotepadApp extends Application {
     toggleWordWrap() {
         this.wordWrap = !this.wordWrap;
         this.editor.setWordWrap(this.wordWrap);
-        setItem(LOCAL_STORAGE_KEYS.NOTEPAD_WORD_WRAP, this.wordWrap);
+        this.kernel.use('settings').set(LOCAL_STORAGE_KEYS.NOTEPAD_WORD_WRAP, this.wordWrap);
         this.win.element.querySelector('.menus').dispatchEvent(new CustomEvent('update'));
     }
 
     _createFindWindow() {
-        this.findWindow = new $Window({
+        this.findWindow = this.kernel.use('ui').createWindow({
             title: 'Find',
             outerWidth: 400,
             toolWindow: true,
@@ -591,7 +591,7 @@ export class NotepadApp extends Application {
             editor.setSelectionRange(index, index + term.length);
             this._scrollToSelection(editor);
         } else {
-            ShowDialogWindow({
+            this.kernel.use('ui').showDialog({
                 title: 'Notepad',
                 text: `Cannot find "${term}"`,
                 soundEvent: 'SystemHand',
@@ -601,7 +601,7 @@ export class NotepadApp extends Application {
     }
 
     showUnsavedChangesDialog(options = {}) {
-        return ShowDialogWindow({
+        return this.kernel.use('ui').showDialog({
             title: 'Notepad',
             text: `<div style="white-space: pre-wrap">The text in the ${this.fileName} file has changed.\n\nDo you want to save the changes?</div>`,
             contentIconUrl: new URL('../../assets/icons/msg_warning-0.png', import.meta.url).href,
@@ -660,7 +660,7 @@ export class NotepadApp extends Application {
 
     previewMarkdown() {
         const html = marked.parse(this.editor.getValue());
-        const previewWindow = new $Window({
+        const previewWindow = this.kernel.use('ui').createWindow({
             title: 'HTML/Markdown Preview',
             innerWidth: 600,
             innerHeight: 400,
@@ -712,7 +712,7 @@ export class NotepadApp extends Application {
             { label: "All Files (*.*)", extensions: ["*"] }
         ];
 
-        const path = await ShowFilePicker({
+        const path = await this.kernel.use('ui').showFilePicker({
             title: "Open",
             mode: "open",
             fileTypes
@@ -729,7 +729,7 @@ export class NotepadApp extends Application {
                 this.setLanguage(this.getLanguageFromExtension(this.fileName));
             } catch (e) {
                 console.error("Error opening file:", e);
-                ShowDialogWindow({
+                this.kernel.use('ui').showDialog({
                     title: "Error",
                     text: `Could not open file: ${path}`,
                     buttons: [{ label: "OK", isDefault: true }],
@@ -757,7 +757,7 @@ export class NotepadApp extends Application {
                 setTimeout(() => this.editor.statusText.textContent = 'Ready', 2000);
             } catch (err) {
                 console.error('Error saving file:', err);
-                ShowDialogWindow({
+                this.kernel.use('ui').showDialog({
                     title: "Error",
                     text: `Could not save file: ${err.message}`,
                     buttons: [{ label: "OK", isDefault: true }],
@@ -774,7 +774,7 @@ export class NotepadApp extends Application {
             { label: "All Files (*.*)", extensions: ["*"] }
         ];
 
-        const path = await ShowFilePicker({
+        const path = await this.kernel.use('ui').showFilePicker({
             title: "Save As",
             mode: "save",
             fileTypes,
@@ -792,7 +792,7 @@ export class NotepadApp extends Application {
                 setTimeout(() => this.editor.statusText.textContent = 'Ready', 2000);
             } catch (err) {
                 console.error('Error saving file:', err);
-                ShowDialogWindow({
+                this.kernel.use('ui').showDialog({
                     title: "Error",
                     text: `Could not save file: ${err.message}`,
                     buttons: [{ label: "OK", isDefault: true }],

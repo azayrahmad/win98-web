@@ -1,8 +1,8 @@
-import { Application } from '../../system/application.js';
+import { BaseProcess } from '../../system/base-process.js';
 import { launchESheepApp, closeAllESheep, getESheepMenuItems } from './esheep.js';
 import { ICONS } from '../../config/icons.js';
 
-export class ESheepApp extends Application {
+export class ESheepApp extends BaseProcess {
     static config = {
         id: "esheep",
         title: "eSheep",
@@ -17,11 +17,6 @@ export class ESheepApp extends Application {
 
     constructor(config) {
         super(config);
-    }
-
-    _createWindow() {
-        // This app doesn't create a window.
-        return null;
     }
 
     _onLaunch() {

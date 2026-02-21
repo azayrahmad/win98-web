@@ -30,12 +30,22 @@ import { existsAsync } from "./zenfs-utils.js";
 import { RecycleBinManager } from "../shell/explorer/file-operations/recycle-bin-manager.js";
 import { appManager } from "./app-manager.js";
 import { WindowManager } from "./window-manager.js";
+import { kernel } from "./kernel.js";
+import { UIService } from "./ui-service.js";
+import { SettingsService } from "./settings-service.js";
 
 export async function initializeOS() {
   const isMSDOSMode = window.location.hash === "#msdos";
 
-  // Initialize Window Management System
-  window.System = new WindowManager();
+  // Initialize Kernel and System Services
+  kernel.registerService("windowManager", new WindowManager());
+  kernel.registerService("appManager", appManager);
+  kernel.registerService("ui", new UIService());
+  kernel.registerService("settings", new SettingsService());
+
+  // For backward compatibility and global access
+  window.System = kernel.use("windowManager");
+  window.System.kernel = kernel;
 
   const path = window.location.pathname;
   const profileName = path.startsWith("/win98-web/")
@@ -369,6 +379,8 @@ export async function initializeOS() {
     window.RecycleBinManager = RecycleBinManager;
     window.System.launchApp = launchApp;
     window.System.appManager = appManager;
+
+    await kernel.boot();
     console.log("azOS initialized");
 
     let inactivityTimer;

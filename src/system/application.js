@@ -1,23 +1,24 @@
 import { ShowDialogWindow } from '../shared/components/dialog-window.js';
 import { createTaskbarButton, createTrayIcon } from '../shell/taskbar/taskbar.js';
 import { appManager } from './app-manager.js';
+import { BaseProcess } from './base-process.js';
 
 const openWindows = new Map();
 export const openApps = new Map();
 
-export class Application {
+/**
+ * WindowedApplication extends BaseProcess with windowing and shell integration.
+ */
+export class WindowedApplication extends BaseProcess {
   constructor(config) {
-    if (this.constructor === Application) {
+    super(config);
+    if (this.constructor === WindowedApplication) {
       throw new TypeError(
-        'Abstract class "Application" cannot be instantiated directly.',
+        'Abstract class "WindowedApplication" cannot be instantiated directly.',
       );
     }
 
-    this.config = config; // Store the entire config object
-    this.id = config.id;
-    this.title = config.title;
     this.icon = config.icon;
-    this.isSingleton = config.isSingleton !== false;
     this.hasTaskbarButton = config.hasTaskbarButton !== false;
     this.hasTray = config.hasTray === true;
     this.tray = config.tray;
@@ -49,8 +50,10 @@ export class Application {
     const instanceKey = this.isSingleton ? this.id : windowId;
     this.instanceKey = instanceKey;
 
-    if (openApps.has(instanceKey)) {
-      const existingApp = openApps.get(instanceKey);
+    const appManager = this.kernel.use('appManager');
+
+    if (appManager.runningApps[instanceKey]) {
+      const existingApp = appManager.runningApps[instanceKey];
       if (existingApp.win) {
         const $win = $(existingApp.win.element);
         if ($win.is(":visible")) {
@@ -59,12 +62,16 @@ export class Application {
           existingApp.win.restore();
           setTimeout(() => existingApp.win.focus(), 0);
         }
-      } else if (!existingApp.win && existingApp.isSingleton) {
-        // It's a non-windowed singleton app, delegate to its own launch logic
+      } else {
+        // Delegate to its own launch logic (e.g. for singletons or background relaunch)
         existingApp._onLaunch(filePath);
       }
       return;
     }
+
+    // Register
+    appManager.runningApps[instanceKey] = this;
+    openApps.set(instanceKey, this); // Legacy support
 
     this.win = await this._createWindow(filePath);
 
@@ -78,8 +85,6 @@ export class Application {
     }
 
     await this._onLaunch(filePath);
-    openApps.set(instanceKey, this);
-    appManager.runningApps[instanceKey] = this;
   }
 
   _getWindowId(filePath) {
@@ -151,3 +156,9 @@ export class Application {
     });
   }
 }
+
+/**
+ * Legacy alias for WindowedApplication
+ * @deprecated Use WindowedApplication instead
+ */
+export const Application = WindowedApplication;
