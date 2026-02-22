@@ -1,3 +1,4 @@
+import { AddressBar } from '../../system/gui/index.js';
 import "./address-bar.css";
 
 export class AddressBar {

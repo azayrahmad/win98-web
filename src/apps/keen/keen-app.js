@@ -25,8 +25,8 @@ export class KeenApp extends WindowedApplication {
     isSingleton: true,
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     this.iframe = null;
     this.isMounted = false;
     this.isDownloading = false;
@@ -36,7 +36,7 @@ export class KeenApp extends WindowedApplication {
   }
 
   async _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.title,
       innerWidth: this.config.width,
       innerHeight: this.config.height,
@@ -118,7 +118,7 @@ export class KeenApp extends WindowedApplication {
   }
 
   _showDownloadConfirmationDialog() {
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "No Commander Keen files found",
       text: "No Commander Keen game files were found in your system.<br><br>Would you like to download the shareware version (Episode 1) to play?",
       modal: true,
@@ -228,7 +228,7 @@ export class KeenApp extends WindowedApplication {
       console.error("Download failed", e);
       dialog.close();
       this.isDownloading = false;
-      this.kernel.use('ui').showDialog({
+      this.services.ui.showDialog({
         title: "Download Failed",
         text: `Error downloading shareware: ${e.message}`,
         buttons: [
@@ -340,7 +340,7 @@ export class KeenApp extends WindowedApplication {
     content.appendChild(label);
     content.appendChild(select);
 
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Commander Keen Episode Selection",
       content: content,
       modal: true,

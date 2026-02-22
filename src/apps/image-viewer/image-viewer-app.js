@@ -1,4 +1,5 @@
 import { WindowedApplication } from '../../system/application.js';
+import { MenuBar } from '../../system/gui/index.js';
 import { fs } from "@zenfs/core";
 import "./imageviewer.css";
 import { ICONS } from '../../config/icons.js';
@@ -16,8 +17,8 @@ export class ImageViewerApp extends WindowedApplication {
     isSingleton: false,
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     this.file = null;
     this.zenfsPath = null;
     this.zoomLevel = 1;

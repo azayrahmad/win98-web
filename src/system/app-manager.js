@@ -5,7 +5,7 @@ import { kernel } from './kernel.js';
  * New code should use kernel.use('processManager').
  */
 export const appManager = {
-  getRunningApps: () => kernel.use('processManager').getRunningProcesses(),
+  getRunningApps: () => kernel.use('processManager').getRunningApps(),
   isProcessRunning: (appId) => kernel.use('processManager').isProcessRunning(appId),
   getAppConfig: (appId) => kernel.use('processManager').getAppConfig(appId),
   closeApp: (instanceKey) => kernel.use('processManager').terminate(instanceKey),

@@ -17,8 +17,8 @@ export class DXBallApp extends WindowedApplication {
     isSingleton: true,
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     this.iframe = null;
     this.scoresPath = '/C:/My Documents/DX-Ball Scores.json';
     this._boundHandleMessage = this._handleMessage.bind(this);
@@ -91,7 +91,7 @@ export class DXBallApp extends WindowedApplication {
   }
 
   async _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.title,
       outerWidth: this.config.width,
       outerHeight: this.config.height,

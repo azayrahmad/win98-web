@@ -2,6 +2,7 @@ import { apps } from '../config/apps.js';
 import { requestWaitState, releaseWaitState } from './busy-state-manager.js';
 import { playSound } from './sound-manager.js';
 import { kernel } from './kernel.js';
+import { openApps } from './application.js';
 
 /**
  * ProcessManager handles the lifecycle of all system processes.
@@ -41,6 +42,20 @@ export class ProcessManager {
    */
   isProcessRunning(appId) {
     return Array.from(this.runningProcesses.values()).some(p => p.id === appId);
+  }
+
+  /**
+   * Legacy alias for launch.
+   */
+  launchApp(appId, data = null) {
+    return this.launch(appId, data);
+  }
+
+  /**
+   * Legacy alias for terminate.
+   */
+  closeApp(instanceKey) {
+    return this.terminate(instanceKey);
   }
 
   /**
@@ -93,6 +108,7 @@ export class ProcessManager {
         kernel: kernel,
         events: this.eventBus,
         processManager: this,
+        appManager: this, // Alias for legacy/app code
         ui: kernel.use('ui'),
         settings: kernel.use('settings'),
       };
@@ -117,6 +133,7 @@ export class ProcessManager {
 
       // Register and launch
       this.runningProcesses.set(instanceKey, process);
+      openApps.set(instanceKey, process); // Compatibility
       await process.launch(data);
 
       this.eventBus.emit('process:launched', { appId, instanceKey, process });
@@ -129,7 +146,7 @@ export class ProcessManager {
       console.error(`Failed to launch process: ${appId}`, error);
       kernel.use('ui').showDialog({
           title: "Launch Error",
-          text: `Could not launch ${appId}.`,
+          text: `Could not launch ${appId}. Error: ${error.message}`,
           buttons: [{ label: "OK", isDefault: true }]
       });
     } finally {
@@ -146,6 +163,7 @@ export class ProcessManager {
     if (process) {
       // Guard against re-entry
       this.runningProcesses.delete(instanceKey);
+      openApps.delete(instanceKey); // Compatibility
 
       playSound("Close");
 

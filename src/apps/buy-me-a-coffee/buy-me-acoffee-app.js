@@ -14,12 +14,12 @@ export class BuyMeACoffeeApp extends IFrameApplication {
     isSingleton: true,
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
   }
 
   _createWindow(gameConfig) {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,

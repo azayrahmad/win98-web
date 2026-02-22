@@ -17,14 +17,14 @@ export class CommandPromptApp extends WindowedApplication {
     isSingleton: false,
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     this.terminal = null;
     this.shell = null;
   }
 
   _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.title,
       outerWidth: 640,
       icons: this.icon,

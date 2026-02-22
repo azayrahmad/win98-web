@@ -13,7 +13,7 @@ export default class ReportABugApp extends WindowedApplication {
   };
 
   _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.title,
       icons: this.icon,
       outerWidth: this.width,
@@ -57,7 +57,7 @@ export default class ReportABugApp extends WindowedApplication {
 
   async handleSend() {
     if (!this.textarea.value.trim()) {
-      this.kernel.use('ui').showDialog({
+      this.services.ui.showDialog({
         title: "Error",
         text: "Please enter a bug description.",
         buttons: [{ label: "OK", isDefault: true }],
@@ -78,7 +78,7 @@ export default class ReportABugApp extends WindowedApplication {
       </div>
     `;
 
-    const progressDialog = this.kernel.use('ui').showDialog({
+    const progressDialog = this.services.ui.showDialog({
       title: "Sending Report",
       content: progressDialogContent,
       buttons: [],
@@ -104,7 +104,7 @@ export default class ReportABugApp extends WindowedApplication {
       progressDialog.close();
 
       if (response.ok) {
-        this.kernel.use('ui').showDialog({
+        this.services.ui.showDialog({
           title: "Report Sent",
           text: `The bug report has been sent with ID #${result.id}. We're on it!`,
           buttons: [{ label: "OK", isDefault: true }],
@@ -115,7 +115,7 @@ export default class ReportABugApp extends WindowedApplication {
           this.sendButton.disabled = false;
         });
       } else {
-        this.kernel.use('ui').showDialog({
+        this.services.ui.showDialog({
           title: "Error",
           text:
             result.error ||
@@ -129,7 +129,7 @@ export default class ReportABugApp extends WindowedApplication {
       }
     } catch (error) {
       progressDialog.close();
-      this.kernel.use('ui').showDialog({
+      this.services.ui.showDialog({
         title: "Error",
         text: "An unexpected error occurred. Please check your internet connection and try again.",
         buttons: [{ label: "OK", isDefault: true }],

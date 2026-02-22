@@ -1,3 +1,4 @@
+import { MenuBar } from '../../system/gui/index.js';
 // @ts-check
 // eslint-disable-next-line no-unused-vars
 /* global pointers:writable */

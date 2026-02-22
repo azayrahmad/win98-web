@@ -1,3 +1,4 @@
+import { MenuBar } from '../../system/gui/index.js';
 import { WindowedApplication } from '../../system/application.js';
 import { getZenFSFileAsBlob, getZenFSFileAsText } from '../../system/zenfs-utils.js';
 import './appmaker.css';
@@ -21,14 +22,14 @@ export class AppMakerApp extends WindowedApplication {
         isSingleton: true,
     };
 
-    constructor(config) {
-        super(config);
+    constructor(config, services) {
+        super(config, services);
         this.appWidth = 400;
         this.appHeight = 300;
     }
 
     _createWindow() {
-        const win = this.kernel.use('ui').createWindow({
+        const win = this.services.ui.createWindow({
             title: this.title,
             outerWidth: this.width,
             outerHeight: this.height,
@@ -84,7 +85,7 @@ export class AppMakerApp extends WindowedApplication {
     }
 
     _showOptions() {
-        this.kernel.use('ui').showDialog({
+        this.services.ui.showDialog({
             title: 'Options',
             text: `
                 <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -155,7 +156,7 @@ export class AppMakerApp extends WindowedApplication {
         };
 
         uploadButton.addEventListener('click', async () => {
-          const path = await this.kernel.use('ui').showFilePicker({
+          const path = await this.services.ui.showFilePicker({
             title: "Choose App Icon",
             mode: "open",
             fileTypes: [
@@ -193,7 +194,7 @@ export class AppMakerApp extends WindowedApplication {
     }
 
     async _openHtmlFile() {
-      const path = await this.kernel.use('ui').showFilePicker({
+      const path = await this.services.ui.showFilePicker({
         title: "Open HTML File",
         mode: "open",
         fileTypes: [{ label: "HTML Files (*.html)", extensions: ["html"] }],
@@ -216,7 +217,7 @@ export class AppMakerApp extends WindowedApplication {
         const appName = this.appNameInput.value || 'Preview';
         const appHtml = this.editor.getValue();
 
-        const previewWindow = this.kernel.use('ui').createWindow({
+        const previewWindow = this.services.ui.createWindow({
             title: appName,
             outerWidth: this.appWidth,
             outerHeight: this.appHeight,
@@ -231,7 +232,7 @@ export class AppMakerApp extends WindowedApplication {
         const appHtml = this.editor.getValue();
 
         if (!appName) {
-            this.kernel.use('ui').showDialog({
+            this.services.ui.showDialog({
                 title: 'Error',
                 text: 'Please enter an app name.',
                 soundEvent: 'SystemHand',
@@ -239,7 +240,7 @@ export class AppMakerApp extends WindowedApplication {
             return;
         }
 
-        this.kernel.use('ui').showDialog({
+        this.services.ui.showDialog({
             title: 'Save App',
             text: `Are you sure you want to save the app "${appName}"?`,
             modal: true,
@@ -260,7 +261,7 @@ export class AppMakerApp extends WindowedApplication {
 
                         registerCustomApp(appInfo);
 
-                        const settings = this.kernel.use('settings');
+                        const settings = this.services.settings;
                         const savedApps = settings.get(LOCAL_STORAGE_KEYS.CUSTOM_APPS) || [];
                         const existingAppIndex = savedApps.findIndex(app => app.id === appId);
                         if (existingAppIndex > -1) {

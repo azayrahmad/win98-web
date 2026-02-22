@@ -24,7 +24,7 @@ export class SoundSchemeExplorerApp extends WindowedApplication {
   }
 
   _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.title,
       width: this.width,
       height: this.height,

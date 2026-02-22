@@ -1,4 +1,5 @@
 import { WindowedApplication } from '../../system/application.js';
+import { MenuBar } from '../../system/gui/index.js';
 import "./media-player.css";
 import mediaPlayerHTML from "./media-player.html?raw";
 import mediaPlayerIcon from "./assets/mediaplayer.png";
@@ -18,8 +19,8 @@ export class MediaPlayerApp extends WindowedApplication {
     isSingleton: false,
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     this.blobUrl = null;
   }
 
@@ -31,7 +32,7 @@ export class MediaPlayerApp extends WindowedApplication {
   }
 
   _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       id: this.id,
       title: this.title,
       outerWidth: this.width || 480,
@@ -120,7 +121,7 @@ export class MediaPlayerApp extends WindowedApplication {
     const content = document.createElement("div");
     content.appendChild(input);
 
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Open URL",
       content,
       buttons: [

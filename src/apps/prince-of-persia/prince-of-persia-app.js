@@ -1,3 +1,4 @@
+import { MenuBar } from '../../system/gui/index.js';
 import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 
@@ -18,7 +19,7 @@ export class PrinceOfPersiaApp extends WindowedApplication {
   };
 
   _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.title,
       innerWidth: this.width,
       innerHeight: this.height,
@@ -125,7 +126,7 @@ export class PrinceOfPersiaApp extends WindowedApplication {
       pendingState.strength = parseInt(v);
     });
 
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Prince of Persia - New Game",
       content: content,
       modal: true,
@@ -205,7 +206,7 @@ export class PrinceOfPersiaApp extends WindowedApplication {
       - <b>B / Y / L / ZL:</b> Action<br>
       - <b>X:</b> Show Time / Restart Level (2x)<br>
     `;
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Prince of Persia Controls",
       text: controlsText,
       buttons: [{ label: "OK", isDefault: true }],

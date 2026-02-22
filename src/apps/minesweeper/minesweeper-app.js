@@ -1,4 +1,5 @@
 import { WindowedApplication } from '../../system/application.js';
+import { MenuBar } from '../../system/gui/index.js';
 import { MinesweeperGame } from './minesweeper-game.js';
 import { SpriteDisplay } from './sprite-display.js';
 import "./minesweeper.css";

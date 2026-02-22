@@ -19,8 +19,8 @@ export class DosGamesDownloaderApp extends WindowedApplication {
     resizable: true,
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     this.results = [];
     this.isDownloading = false;
     this.installedGames = {};
@@ -55,7 +55,7 @@ export class DosGamesDownloaderApp extends WindowedApplication {
   }
 
   _createWindow() {
-    this.win = this.kernel.use('ui').createWindow({
+    this.win = this.services.ui.createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,
@@ -271,7 +271,7 @@ export class DosGamesDownloaderApp extends WindowedApplication {
       this._renderResults();
       dialog.close();
 
-      this.kernel.use('ui').showDialog({
+      this.services.ui.showDialog({
         title: "Installation Successful",
         text: `Successfully installed <b>${title}</b>!<br><br>The game is installed in:<br><code>${installDir}</code>`,
         contentIconUrl: ICONS.msdos[32],
@@ -299,7 +299,7 @@ export class DosGamesDownloaderApp extends WindowedApplication {
          }
       } else {
         console.error("Installation failed", e);
-        this.kernel.use('ui').showDialog({
+        this.services.ui.showDialog({
           title: "Installation Failed",
           text: `Error: ${e.message}`,
           buttons: [{ label: "OK", isDefault: true }],

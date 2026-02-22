@@ -1,3 +1,4 @@
+import { MenuBar } from '../../system/gui/index.js';
 // @ts-check
 /* global $Window, localize */
 // import { localize } from "./app-localization.js";

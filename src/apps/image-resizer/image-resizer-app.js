@@ -1,3 +1,4 @@
+import { MenuBar } from '../../system/gui/index.js';
 import { WindowedApplication } from '../../system/application.js';
 import { fs } from "@zenfs/core";
 import { getZenFSFileAsBlob } from '../../system/zenfs-utils.js';
@@ -16,12 +17,12 @@ export class ImageResizerApp extends WindowedApplication {
         isSingleton: false,
     };
 
-    constructor(config) {
-        super(config);
+    constructor(config, services) {
+        super(config, services);
     }
 
     _createWindow() {
-        const win = this.win = this.kernel.use('ui').createWindow({
+        const win = this.win = this.services.ui.createWindow({
             title: this.title,
             width: this.width,
             height: this.height,
@@ -127,7 +128,7 @@ export class ImageResizerApp extends WindowedApplication {
         let isUpdatingDimensions = false;
 
         this.openFile = async () => {
-          const path = await this.kernel.use('ui').showFilePicker({
+          const path = await this.services.ui.showFilePicker({
             title: "Open Image",
             mode: "open",
             fileTypes: [
@@ -274,7 +275,7 @@ export class ImageResizerApp extends WindowedApplication {
 
         downloadBtn.addEventListener('click', async () => {
           const suggestedName = `enlarged_${enlargedCanvas.width}x${enlargedCanvas.height}.png`;
-          const path = await this.kernel.use('ui').showFilePicker({
+          const path = await this.services.ui.showFilePicker({
             title: "Save Enlarged Image",
             mode: "save",
             suggestedName,

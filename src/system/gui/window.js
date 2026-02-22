@@ -154,19 +154,34 @@ export class OSWindow {
     let iconSize = 16;
 
     $w.getIconAtSize = (target_size) => {
-        if ($w.icons[target_size]) return $w.icons[target_size];
-        if ($w.icons["any"]) return $w.icons["any"];
-        const sizes = Object.keys($w.icons).filter(s => !isNaN(parseFloat(s)) && isFinite(s));
-        sizes.sort((a, b) => Math.abs(parseFloat(a) - target_size) - Math.abs(parseFloat(b) - target_size));
+        let icon = null;
+        let icon_size = target_size;
 
-        if (sizes.length) {
-            const icon = $w.icons[sizes[0]];
+        if ($w.icons[target_size]) {
+            icon = $w.icons[target_size];
+        } else if ($w.icons["any"]) {
+            icon = $w.icons["any"];
+            icon_size = "any";
+        } else {
+            const sizes = Object.keys($w.icons).filter(s => !isNaN(parseFloat(s)) && isFinite(s));
+            sizes.sort((a, b) => Math.abs(parseFloat(a) - target_size) - Math.abs(parseFloat(b) - target_size));
+            if (sizes.length) {
+                icon_size = sizes[0];
+                icon = $w.icons[icon_size];
+            }
+        }
+
+        if (icon) {
             if (typeof icon === "object" && icon.cloneNode) return icon.cloneNode(true);
-            const img = E("img", { draggable: false });
+            const img = E("img", { draggable: "false" });
             if (typeof icon === "string") img.src = icon;
             else if (icon.src) img.src = icon.src;
-            img.width = target_size;
-            img.height = target_size;
+
+            const sizeValue = isNaN(parseFloat(icon_size)) ? target_size : parseFloat(icon_size);
+            img.width = sizeValue;
+            img.height = sizeValue;
+            img.style.width = `${target_size}px`;
+            img.style.height = `${target_size}px`;
             return img;
         }
         return null;

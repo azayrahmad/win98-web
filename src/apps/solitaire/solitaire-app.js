@@ -1,3 +1,4 @@
+import { MenuBar } from '../../system/gui/index.js';
 import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { Game } from './game.js';
@@ -32,7 +33,7 @@ export class SolitaireApp extends WindowedApplication {
   async _createWindow() {
     await preloadImage(solitaireSprite);
 
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.config.title,
       outerWidth: this.config.width,
       outerHeight: this.config.height,
@@ -68,7 +69,7 @@ export class SolitaireApp extends WindowedApplication {
     this.container = win.element.querySelector(".solitaire-container");
     this.container.classList.add("style-98");
 
-    const settings = this.kernel.use('settings');
+    const settings = this.services.settings;
     this.isDragging = false;
     this.draggedElement = null;
     this.draggedCardsInfo = null;
@@ -123,8 +124,8 @@ export class SolitaireApp extends WindowedApplication {
 
   _showNewGameDialog() {
     if (this.game) {
-      const settings = this.kernel.use('settings');
-      this.kernel.use('ui').showDialog({
+      const settings = this.services.settings;
+      this.services.ui.showDialog({
         title: "New Game",
         text: "Are you sure you want to start a new game?",
         buttons: [
@@ -158,7 +159,7 @@ export class SolitaireApp extends WindowedApplication {
       this.game.destroy();
     }
 
-    const settings = this.kernel.use('settings');
+    const settings = this.services.settings;
     const keepScore =
       settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_KEEP_SCORE) === true;
     const scoringOption =
@@ -194,7 +195,7 @@ export class SolitaireApp extends WindowedApplication {
     if (!scoreElement) return;
 
     const scoringOption =
-      this.kernel.use('settings').get(LOCAL_STORAGE_KEYS.SOLITAIRE_SCORING, "standard");
+      this.services.settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_SCORING, "standard");
 
     switch (scoringOption) {
       case "standard":
@@ -296,7 +297,7 @@ export class SolitaireApp extends WindowedApplication {
       dialogContent.appendChild(cardDiv);
     });
 
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Select Card Back",
       content: dialogContent,
       buttons: [
@@ -322,7 +323,7 @@ export class SolitaireApp extends WindowedApplication {
   }
 
   _updateMenuBar(win) {
-    const menuBar = new window.MenuBar({
+    const menuBar = new MenuBar({
       Game: [
         {
           label: "New Game",
@@ -887,7 +888,7 @@ export class SolitaireApp extends WindowedApplication {
       }
       this.cumulativeVegasScore = this.game.vegasScore;
 
-      this.kernel.use('ui').showDialog({
+      this.services.ui.showDialog({
         title: "Game Over",
         text: "Congratulations, you won!\nDo you want to start another game?",
         buttons: [
@@ -924,7 +925,7 @@ export class SolitaireApp extends WindowedApplication {
     const dialogContent = document.createElement("div");
     dialogContent.className = "solitaire-options-container";
 
-    const settings = this.kernel.use('settings');
+    const settings = this.services.settings;
     const drawOption = this.game.drawOption || "one";
     const isTimedGame =
       settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_TIMED_GAME) === true;
@@ -1024,14 +1025,14 @@ export class SolitaireApp extends WindowedApplication {
 
     updateKeepScoreState(); // Initial state
 
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Options",
       content: dialogContent,
       buttons: [
         {
           label: "OK",
           action: () => {
-            const settings = this.kernel.use('settings');
+            const settings = this.services.settings;
             const selectedDrawOption =
               dialogContent.querySelector('input[name="draw"]:checked')?.value ??
               "one";
@@ -1112,7 +1113,7 @@ export class SolitaireApp extends WindowedApplication {
 
   _updateStatusBarVisibility() {
     const showStatusBar =
-      this.kernel.use('settings').get(LOCAL_STORAGE_KEYS.SOLITAIRE_SHOW_STATUS_BAR, true);
+      this.services.settings.get(LOCAL_STORAGE_KEYS.SOLITAIRE_SHOW_STATUS_BAR, true);
     const statusBar = this.win.element.querySelector(".status-bar");
     if (statusBar) {
       statusBar.style.display = showStatusBar ? "flex" : "none";

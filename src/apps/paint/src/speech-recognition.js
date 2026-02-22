@@ -1,3 +1,4 @@
+import { MenuBar } from '../../system/gui/index.js';
 // @ts-check
 // eslint-disable-next-line no-unused-vars
 /* global airbrush_size:writable, brush_size:writable, eraser_size:writable, pencil_size:writable, stroke_size:writable, pointer_active:writable, pointer_over_canvas:writable, pointer_previous:writable, pointer:writable */

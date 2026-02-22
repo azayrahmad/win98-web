@@ -38,8 +38,8 @@ export class WebampApp extends BaseProcess {
     ],
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     this.hasTaskbarButton = true;
     this.blobUrls = [];
   }
@@ -273,7 +273,7 @@ export class WebampApp extends BaseProcess {
           });
 
           webampInstance.onMinimize(() => this.minimizeWebamp());
-          webampInstance.onClose(() => this.kernel.use('appManager').closeApp(this.id));
+          webampInstance.onClose(() => this.services.appManager.closeApp(this.id));
 
           webampInstance
             .renderWhenReady(webampContainer)

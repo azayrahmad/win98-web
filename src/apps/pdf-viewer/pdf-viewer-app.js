@@ -1,4 +1,5 @@
 import { WindowedApplication } from '../../system/application.js';
+import { MenuBar } from '../../system/gui/index.js';
 import { createPdfViewerContent } from './pdfviewer.js';
 import { ICONS } from '../../config/icons.js';
 import { isZenFSPath, getZenFSFileAsBlob } from '../../system/zenfs-utils.js';
@@ -18,8 +19,8 @@ export class PdfViewerApp extends WindowedApplication {
     ],
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.min.js";
     this.pdfDoc = null;
@@ -42,7 +43,7 @@ export class PdfViewerApp extends WindowedApplication {
     }
     const title = fileName ? `${fileName} - ${this.title}` : this.title;
 
-    this.win = this.kernel.use('ui').createWindow({
+    this.win = this.services.ui.createWindow({
       title: title,
       outerWidth: this.width,
       outerHeight: this.height,

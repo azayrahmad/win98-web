@@ -15,8 +15,8 @@ export class DefragApp extends WindowedApplication {
     isSingleton: true,
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     this.data = [];
     this.gridContainer = null;
     this.startButton = null;
@@ -39,7 +39,7 @@ export class DefragApp extends WindowedApplication {
   }
 
   _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: "Disk Defragmenter",
       outerWidth: 500,
       outerHeight: 350,
@@ -97,7 +97,7 @@ export class DefragApp extends WindowedApplication {
   }
 
   _showLegend() {
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Defrag Legend",
       text: `
         <div class="legend-item"><div class="legend-color unoptimized"></div> Unoptimized data</div>
@@ -185,7 +185,7 @@ export class DefragApp extends WindowedApplication {
 
     this._stopDefrag();
 
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Are you sure?",
       text: "Windows has not finished defragmenting drive C.",
       buttons: [

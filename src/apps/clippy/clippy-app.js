@@ -20,8 +20,8 @@ export class ClippyApp extends BaseProcess {
         ],
     };
 
-    constructor(config) {
-        super(config);
+    constructor(config, services) {
+        super(config, services);
     }
 
     _onLaunch() {

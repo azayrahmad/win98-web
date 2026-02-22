@@ -1,5 +1,6 @@
 // calculator-app.js - Main logic for the calculator application
 import { WindowedApplication } from '../../system/application.js';
+import { MenuBar, ContextMenu } from '../../system/gui/index.js';
 import { CalculatorLogic } from './calculator-logic.js';
 import { Tooltip } from '../../shared/components/tooltip.js';
 import buttonDefinitions from './buttons.js'; // Import the centralized button definitions
@@ -345,7 +346,7 @@ export class CalculatorApp extends WindowedApplication {
       if (element) {
         element.addEventListener("contextmenu", (e) => {
           e.preventDefault();
-          new window.ContextMenu(
+          new ContextMenu(
             [
               {
                 label: "What's this?",
@@ -612,7 +613,7 @@ export class CalculatorApp extends WindowedApplication {
       if (button) {
         $(button).on("contextmenu", (e) => {
           e.preventDefault();
-          new window.ContextMenu(
+          new ContextMenu(
             [
               {
                 label: "What's this?",

@@ -1,3 +1,4 @@
+import { MenuBar } from '../../../system/gui/index.js';
 import { ShowDialogWindow } from "../../../shared/components/dialog-window.js";
 import { mounts } from "@zenfs/core";
 import {
@@ -23,7 +24,7 @@ export class MenuBarBuilder {
     const patchedFavorites = this._patchFavoriteActions(favorites);
     try {
       if (isWeb) {
-        return new window.MenuBar({
+        return new MenuBar({
           "&File": this._getIEFileMenuItems(),
           "&Edit": this._getIEEditMenuItems(),
           "&View": this._getIEViewMenuItems(),
@@ -32,7 +33,7 @@ export class MenuBarBuilder {
           "&Help": this._getIEHelpMenuItems(),
         });
       }
-      return new window.MenuBar({
+      return new MenuBar({
         "&File": this._getFileMenuItems(),
         "&Edit": this._getEditMenuItems(),
         "&View": this._getViewMenuItems(),
@@ -42,7 +43,7 @@ export class MenuBarBuilder {
       });
     } catch (e) {
       console.error("Failed to build MenuBar:", e);
-      return new window.MenuBar({
+      return new MenuBar({
         "&Go": this._getGoMenuItems(),
       });
     }

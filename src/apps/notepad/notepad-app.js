@@ -1,4 +1,5 @@
 import { WindowedApplication } from '../../system/application.js';
+import { MenuBar } from '../../system/gui/index.js';
 import { fs } from "@zenfs/core";
 import './notepad.css';
 import './notepad-editor.css';

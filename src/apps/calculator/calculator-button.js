@@ -1,3 +1,4 @@
+import { ContextMenu } from '../../system/gui/index.js';
 // src/apps/calculator/Calculator-button.js
 
 import { Tooltip } from '../../shared/components/tooltip.js';
@@ -47,7 +48,7 @@ export class CalculatorButton {
     if (this.tooltip) {
       button.addEventListener("contextmenu", (e) => {
         e.preventDefault();
-        new window.ContextMenu(
+        new ContextMenu(
           [
             {
               label: "What's this?",

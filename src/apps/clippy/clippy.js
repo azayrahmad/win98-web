@@ -1,3 +1,4 @@
+import { ContextMenu } from '../../system/gui/index.js';
 import {
   LOCAL_STORAGE_KEYS,
 } from '../../system/local-storage.js';
@@ -207,7 +208,7 @@ export function getClippyMenuItems(app) {
 
 export function showClippyContextMenu(event, app) {
   const menuItems = getClippyMenuItems(app);
-  new window.ContextMenu(menuItems, event);
+  new ContextMenu(menuItems, event);
 }
 
 export function launchClippyApp(app, agentName = currentAgentName) {

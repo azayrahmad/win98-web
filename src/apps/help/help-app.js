@@ -1,3 +1,4 @@
+import { ContextMenu } from '../../system/gui/index.js';
 import { WindowedApplication } from '../../system/application.js';
 import "./help.css";
 import contentHtml from "./help.html?raw";
@@ -25,7 +26,7 @@ class HelpApp extends WindowedApplication {
   }
 
   _createWindow() {
-    return this.kernel.use('ui').createWindow({
+    return this.services.ui.createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,
@@ -442,7 +443,7 @@ class HelpApp extends WindowedApplication {
                 action: () => forwardButton.click()
             }
         ];
-        window.ContextMenu(menu, {
+        ContextMenu(menu, {
             left: e.clientX,
             top: e.clientY
         });

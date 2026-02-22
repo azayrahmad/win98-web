@@ -1,3 +1,4 @@
+import { ContextMenu } from '../../system/gui/index.js';
 import { appManager } from '../../system/app-manager.js';
 
 let sheepInstances = [];
@@ -119,7 +120,7 @@ export function getESheepMenuItems(app) {
 
 export function showESheepContextMenu(event, app) {
   const menuItems = getESheepMenuItems(app);
-  new window.ContextMenu(menuItems, event);
+  new ContextMenu(menuItems, event);
 }
 
 export function launchESheepApp(app) {

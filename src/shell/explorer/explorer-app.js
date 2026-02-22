@@ -4,6 +4,8 @@ import { ICONS } from '../../config/icons.js';
 import { getAssociation } from '../../system/directory.js';
 import { IconManager } from '../../shell/desktop/icon-manager.js';
 import { AddressBar } from '../../shell/explorer/components/address-bar.js';
+import { Toolbar } from '../../system/gui/toolbar.js';
+import { ContextMenu } from '../../system/gui/context-menu.js';
 import { StatusBar } from '../../shared/components/status-bar.js';
 import { AnimatedLogo } from '../../shared/components/animated-logo.js';
 import browseUiIcons from "../../assets/icons/browse-ui-icons.png";
@@ -193,7 +195,7 @@ export class ZenExplorerApp extends WindowedApplication {
 
     // 3. Toolbar
     const toolbarItems = getToolbarItems(this);
-    this.toolbar = new window.Toolbar(toolbarItems, {
+    this.toolbar = new Toolbar(toolbarItems, {
       icons: browseUiIcons,
       iconsGrayscale: browseUiIconsGrayscale,
     });
@@ -412,11 +414,11 @@ export class ZenExplorerApp extends WindowedApplication {
       },
       onItemContext: (e, icon) => {
         const menuItems = this.contextMenuBuilder.buildItemMenu(e, icon);
-        new window.ContextMenu(menuItems, e);
+        new ContextMenu(menuItems, e);
       },
       onBackgroundContext: (e) => {
         const menuItems = this.contextMenuBuilder.buildBackgroundMenu(e);
-        new window.ContextMenu(menuItems, e);
+        new ContextMenu(menuItems, e);
       },
       onSelectionChange: () => {
         const selectedIcons = this.iconManager.selectedIcons;
@@ -890,7 +892,7 @@ export class ZenExplorerApp extends WindowedApplication {
 
     if (forceRebuild) {
       const toolbarItems = getToolbarItems(this);
-      const newToolbar = new window.Toolbar(toolbarItems, {
+      const newToolbar = new Toolbar(toolbarItems, {
         icons: browseUiIcons,
         iconsGrayscale: browseUiIconsGrayscale,
       });

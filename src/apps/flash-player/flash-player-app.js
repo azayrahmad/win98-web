@@ -1,4 +1,5 @@
 import { WindowedApplication } from '../../system/application.js';
+import { MenuBar } from '../../system/gui/index.js';
 import { ICONS } from '../../config/icons.js';
 import { SPECIAL_FOLDER_PATHS } from "../../config/special-folders.js";
 import "./flashplayer.css";
@@ -14,13 +15,13 @@ export class FlashPlayerApp extends WindowedApplication {
     resizable: true,
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     this.player = null;
   }
 
   _createWindow() {
-    this.win = this.kernel.use('ui').createWindow({
+    this.win = this.services.ui.createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,
@@ -73,7 +74,7 @@ export class FlashPlayerApp extends WindowedApplication {
   }
 
   async openFile() {
-    const path = await this.kernel.use('ui').showFilePicker({
+    const path = await this.services.ui.showFilePicker({
       initialPath: SPECIAL_FOLDER_PATHS["my-documents"],
       fileTypes: [
         { label: "Flash Movies (*.swf)", extensions: ["swf"] },
@@ -88,7 +89,7 @@ export class FlashPlayerApp extends WindowedApplication {
 
   loadSwf(fileData) {
     if (!window.RufflePlayer) {
-      this.kernel.use('ui').showDialog({
+      this.services.ui.showDialog({
         title: "Error",
         text: "Ruffle Player is not available.",
         buttons: [{ label: "OK", isDefault: true }],
@@ -117,7 +118,7 @@ export class FlashPlayerApp extends WindowedApplication {
 
     const handleError = (e) => {
       console.error(`Ruffle failed to load the file: ${e}`);
-      this.kernel.use('ui').showDialog({
+      this.services.ui.showDialog({
         title: "Error",
         text: "Could not load the specified SWF file.",
         buttons: [{ label: "OK", isDefault: true }],

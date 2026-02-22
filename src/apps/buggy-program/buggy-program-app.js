@@ -17,7 +17,7 @@ export class BuggyProgramApp extends WindowedApplication {
   };
 
   _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.config.title,
       width: this.config.width,
       height: this.config.height,
@@ -46,7 +46,7 @@ export class BuggyProgramApp extends WindowedApplication {
 
     const okButton = win.$content.find(".ok-button")[0];
     okButton.addEventListener("click", () => {
-      this.kernel.use('appManager').launchApp("buggy-program");
+      this.services.appManager.launchApp("buggy-program");
     });
 
     setTimeout(() => {
@@ -127,7 +127,7 @@ export class BuggyProgramApp extends WindowedApplication {
     }, 100);
 
     win.on("close", () => {
-      this.kernel.use('appManager').launchApp("buggy-program");
+      this.services.appManager.launchApp("buggy-program");
     });
     return win;
   }

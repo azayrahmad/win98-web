@@ -231,7 +231,7 @@ class Taskbar {
         },
       ];
 
-      new window.ContextMenu(contextMenuItems, e);
+      new ContextMenu(contextMenuItems, e);
     });
   }
 
@@ -257,7 +257,7 @@ class Taskbar {
         },
       ];
 
-      new window.ContextMenu(contextMenuItems, e);
+      new ContextMenu(contextMenuItems, e);
     });
   }
 
@@ -371,7 +371,7 @@ class Taskbar {
         },
       ];
 
-      new window.ContextMenu(contextMenuItems, e);
+      new ContextMenu(contextMenuItems, e);
     });
 
     taskbarAppArea.appendChild(taskbarButton);
@@ -671,7 +671,7 @@ export function createTrayIcon(app) {
             ? app.tray.contextMenu()
             : app.tray.contextMenu;
 
-        new window.ContextMenu(menuItems, e);
+        new ContextMenu(menuItems, e);
       }
     }
   });

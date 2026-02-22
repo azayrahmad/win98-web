@@ -21,8 +21,8 @@ export class DosBoxApp extends WindowedApplication {
     },
   ];
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     this.iframe = null;
     this.isMounted = false;
     this.baseLocalPath = "/C:"; // Mount root of C: drive
@@ -39,7 +39,7 @@ export class DosBoxApp extends WindowedApplication {
       this.args = data.args || [];
     }
 
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.executablePath
         ? `DOSBox - ${this.executablePath.split("/").pop()}`
         : this.title,

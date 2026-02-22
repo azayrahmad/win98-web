@@ -21,8 +21,8 @@ export class DiabloApp extends WindowedApplication {
         isSingleton: true,
     };
 
-    constructor(config) {
-        super(config);
+    constructor(config, services) {
+        super(config, services);
         this.win = null;
         this.iframe = null;
         this.baseLocalPath = "/C:/Program Files/Diablo";
@@ -97,7 +97,7 @@ export class DiabloApp extends WindowedApplication {
         content.appendChild(label);
         content.appendChild(select);
 
-        this.kernel.use('ui').showDialog({
+        this.services.ui.showDialog({
             title: "Diablo MPQ Selection",
             content: content,
             modal: true,
@@ -121,7 +121,7 @@ export class DiabloApp extends WindowedApplication {
     }
 
     _showDownloadConfirmationDialog() {
-        this.kernel.use('ui').showDialog({
+        this.services.ui.showDialog({
             title: "No Diablo files found",
             text: "No Diablo MPQ files were found in your system.<br><br>Would you like to download the shareware version (spawn.mpq) to play?",
             modal: true,
@@ -204,7 +204,7 @@ export class DiabloApp extends WindowedApplication {
             console.error("Download failed", e);
             dialog.close();
             this.isDownloading = false;
-            this.kernel.use('ui').showDialog({
+            this.services.ui.showDialog({
                 title: "Download Failed",
                 text: `Error downloading shareware: ${e.message}`,
                 buttons: [{ label: "OK", isDefault: true }],
@@ -311,7 +311,7 @@ export class DiabloApp extends WindowedApplication {
     }
 
     _createWindow() {
-        this.win = this.kernel.use('ui').createWindow({
+        this.win = this.services.ui.createWindow({
             title: this.title,
             outerWidth: this.width,
             outerHeight: this.height,

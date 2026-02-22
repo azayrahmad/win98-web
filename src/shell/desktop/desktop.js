@@ -594,13 +594,13 @@ export async function initDesktop(profile = null) {
         e,
         icon,
       );
-      new window.ContextMenu(menuItems, e);
+      new ContextMenu(menuItems, e);
     },
     onBackgroundContext: (e) => {
       const menuItems = desktopController.contextMenuBuilder.buildBackgroundMenu(
         e,
       );
-      new window.ContextMenu(menuItems, e);
+      new ContextMenu(menuItems, e);
     },
     onSelectionChange: () => {
       desktopController.handleSelectionChange();

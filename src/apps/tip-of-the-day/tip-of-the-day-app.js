@@ -22,12 +22,12 @@ export class TipOfTheDayApp extends WindowedApplication {
         ],
     };
 
-    constructor(config) {
-        super(config);
+    constructor(config, services) {
+        super(config, services);
     }
 
     _createWindow() {
-        const win = this.kernel.use('ui').createWindow({
+        const win = this.services.ui.createWindow({
             id: this.id,
             title: this.title,
             outerWidth: this.width,
@@ -75,7 +75,7 @@ export class TipOfTheDayApp extends WindowedApplication {
                     link.addEventListener('click', (e) => {
                         e.preventDefault();
                         const appId = link.getAttribute('data-app');
-                        this.kernel.use('appManager').launchApp(appId);
+                        this.services.appManager.launchApp(appId);
                     });
                 });
             }

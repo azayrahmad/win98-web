@@ -1,3 +1,4 @@
+import { MenuBar } from '../../system/gui/index.js';
 import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { Game } from './game.js';
@@ -328,7 +329,7 @@ export class SpiderSolitaireApp extends WindowedApplication {
       this.game?.stockPile?.canDeal() && !this.game?.checkForWin();
     const canUndo = this.game?.history?.length > 0;
 
-    const menuBar = new window.MenuBar({
+    const menuBar = new MenuBar({
       Game: [
         {
           label: "New Game",

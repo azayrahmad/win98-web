@@ -16,15 +16,15 @@ export class QuakeApp extends WindowedApplication {
         isSingleton: true,
     };
 
-    constructor(config) {
-        super(config);
+    constructor(config, services) {
+        super(config, services);
         this.win = null;
         this.iframe = null;
         this.monitorInterval = null;
     }
 
     _createWindow() {
-        this.win = this.kernel.use('ui').createWindow({
+        this.win = this.services.ui.createWindow({
             title: this.title,
             outerWidth: this.width,
             outerHeight: this.height,

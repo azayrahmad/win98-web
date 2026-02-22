@@ -1,3 +1,4 @@
+import { MenuBar } from '../../system/gui/index.js';
 import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { Game } from './game.js';
@@ -21,7 +22,7 @@ export class FreeCellApp extends WindowedApplication {
   };
 
   async _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.config.title,
       innerWidth: this.config.width,
       innerHeight: this.config.height,
@@ -101,7 +102,7 @@ export class FreeCellApp extends WindowedApplication {
   }
 
   _updateMenuBar(win) {
-    const menuBar = new window.MenuBar({
+    const menuBar = new MenuBar({
       Game: [
         {
           label: "New Game",
@@ -179,7 +180,7 @@ export class FreeCellApp extends WindowedApplication {
       }
     };
 
-    const dialog = this.kernel.use('ui').showDialog({
+    const dialog = this.services.ui.showDialog({
       title: "Select Game",
       content: dialogContent,
       buttons: [
@@ -248,7 +249,7 @@ export class FreeCellApp extends WindowedApplication {
       dialog.close();
     };
 
-    const dialog = this.kernel.use('ui').showDialog({
+    const dialog = this.services.ui.showDialog({
       title: "FreeCell Options",
       content: dialogContent,
       buttons: [
@@ -775,7 +776,7 @@ export class FreeCellApp extends WindowedApplication {
     } else {
       // If no move was made, it was an invalid move
       if (this.options.get("displayMessagesOnIllegalMoves")) {
-        this.kernel.use('ui').showDialog({
+        this.services.ui.showDialog({
           title: "Invalid Move",
           text: "That move is not allowed.",
           buttons: [{ label: "OK" }],
@@ -828,7 +829,7 @@ export class FreeCellApp extends WindowedApplication {
   _showGameOverDialog() {
     this._recordLossIfGameInProgress();
 
-    const dialog = this.kernel.use('ui').createWindow({
+    const dialog = this.services.ui.createWindow({
       title: "Game Over",
       width: 280,
       height: 150,
@@ -877,7 +878,7 @@ export class FreeCellApp extends WindowedApplication {
   }
 
   promptForMoveType(stack, card, fromLocation, toIndex) {
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Move to Empty Column...",
       text: "Do you want to move the entire column or just the single card?",
       buttons: [
@@ -1051,7 +1052,7 @@ export class FreeCellApp extends WindowedApplication {
     const kingWinImage = this.container.querySelector(".king-win-image");
     kingWinImage.classList.add("visible");
 
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Game Over",
       text: "Congratulations, you win! Do you want to play again?",
       buttons: [
@@ -1110,7 +1111,7 @@ export class FreeCellApp extends WindowedApplication {
       </div>
     `;
 
-    const dialog = this.kernel.use('ui').showDialog({
+    const dialog = this.services.ui.showDialog({
       title: "FreeCell Statistics",
       content: dialogContent,
       buttons: [

@@ -1,3 +1,4 @@
+import { MenuBar } from '../../system/gui/index.js';
 import { WindowedApplication } from '../../system/application.js';
 import { fs } from "@zenfs/core";
 import { getZenFSFileAsText } from '../../system/zenfs-utils.js';
@@ -17,12 +18,12 @@ export class ThemeToCssApp extends WindowedApplication {
     isSingleton: true,
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
   }
 
   _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       id: this.id,
       title: this.title,
       outerWidth: this.width,
@@ -96,7 +97,7 @@ export class ThemeToCssApp extends WindowedApplication {
   }
 
   async _openFile() {
-    const path = await this.kernel.use('ui').showFilePicker({
+    const path = await this.services.ui.showFilePicker({
       title: "Open Theme File",
       mode: "open",
       fileTypes: [
@@ -131,7 +132,7 @@ export class ThemeToCssApp extends WindowedApplication {
   async _saveFile() {
     const content = this.editor.getValue();
 
-    const path = await this.kernel.use('ui').showFilePicker({
+    const path = await this.services.ui.showFilePicker({
       title: "Save CSS",
       mode: "save",
       suggestedName: "theme.css",

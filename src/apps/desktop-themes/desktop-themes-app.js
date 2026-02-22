@@ -1,3 +1,4 @@
+import { MenuBar } from '../../system/gui/index.js';
 import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { iconSchemes } from '../../config/icon-schemes.js';
@@ -40,8 +41,8 @@ export class DesktopThemesApp extends WindowedApplication {
     isSingleton: true,
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     this.previousThemeId = null;
     this.customThemeProperties = null;
     this.originalFilename = "";
@@ -54,7 +55,7 @@ export class DesktopThemesApp extends WindowedApplication {
   }
 
   async _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       id: this.id,
       title: this.title,
       outerWidth: 600,
@@ -202,7 +203,7 @@ export class DesktopThemesApp extends WindowedApplication {
     const currentColorScheme = colorSchemes[currentColorSchemeId];
     const currentColorSchemeTheme = themes[currentColorSchemeId] || activeTheme;
     const currentWallpaper =
-      this.kernel.use('settings').get(LOCAL_STORAGE_KEYS.WALLPAPER) || activeTheme.wallpaper;
+      this.services.settings.get(LOCAL_STORAGE_KEYS.WALLPAPER) || activeTheme.wallpaper;
 
     let currentColors = {};
     if (currentColorSchemeTheme.isCustom && currentColorSchemeTheme.colors) {
@@ -345,7 +346,7 @@ export class DesktopThemesApp extends WindowedApplication {
           });
         } else {
           this.themeSelector.value = this.previousThemeId;
-          this.kernel.use('ui').showDialog({
+          this.services.ui.showDialog({
             title: "Error",
             text: "Could not parse the selected file.",
             buttons: [{ label: "OK" }],
@@ -353,7 +354,7 @@ export class DesktopThemesApp extends WindowedApplication {
         }
       } catch (error) {
         this.themeSelector.value = this.previousThemeId;
-        this.kernel.use('ui').showDialog({
+        this.services.ui.showDialog({
           title: "Error",
           text: `An error occurred: ${error.message}`,
           buttons: [{ label: "OK" }],
@@ -364,7 +365,7 @@ export class DesktopThemesApp extends WindowedApplication {
   }
 
   _promptForThemeName() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: "Save Theme",
       outerWidth: 320,
       outerHeight: "auto",
@@ -431,7 +432,7 @@ export class DesktopThemesApp extends WindowedApplication {
   }
 
   _confirmAndSaveTheme(themeName) {
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Save Theme",
       text: `Do you want to save this theme as "${themeName}"?`,
       buttons: [
@@ -482,7 +483,7 @@ export class DesktopThemesApp extends WindowedApplication {
     const selectedTheme = getThemes()[selectedThemeId];
 
     if (selectedTheme?.isCustom) {
-      this.kernel.use('ui').showDialog({
+      this.services.ui.showDialog({
         title: "Delete Scheme",
         text: `Are you sure you want to delete "${selectedTheme.name}"?`,
         buttons: [
@@ -653,7 +654,7 @@ export class DesktopThemesApp extends WindowedApplication {
   }
 
   _showThemeWizard(colors, wallpaper, callback) {
-    const wizardWin = this.kernel.use('ui').createWindow({
+    const wizardWin = this.services.ui.createWindow({
       title: "Theme Wizard",
       outerWidth: 350,
       outerHeight: 400,
