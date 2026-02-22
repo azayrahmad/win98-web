@@ -56,6 +56,57 @@ export class DesktopThemesApp extends Application {
       "custom-themes-changed",
       this.boundPopulateThemes,
     );
+
+    this.boundRefreshCurrentSettings = this.refreshCurrentSettings.bind(this);
+    document.addEventListener("theme-changed", this.boundRefreshCurrentSettings);
+  }
+
+  async refreshCurrentSettings() {
+    const themes = getThemes();
+    const colorSchemes = getColorSchemes();
+    const activeTheme = getActiveTheme();
+    const currentColorSchemeId = getColorSchemeId() || activeTheme.id;
+    const currentColorScheme = colorSchemes[currentColorSchemeId];
+    const currentColorSchemeTheme = themes[currentColorSchemeId] || activeTheme;
+    const currentWallpaper =
+      getItem(LOCAL_STORAGE_KEYS.WALLPAPER) || activeTheme.wallpaper;
+
+    let currentColors = {};
+    if (currentColorSchemeTheme.isCustom && currentColorSchemeTheme.colors) {
+      for (const [key, value] of Object.entries(
+        currentColorSchemeTheme.colors,
+      )) {
+        currentColors[`--${key.replace(/^--/, "")}`] = value;
+      }
+    } else if (currentColorScheme) {
+      const cssText = await fetchThemeCss(currentColorSchemeId);
+      if (cssText) {
+        const parsedVariables = parseCssVariables(cssText);
+        for (const [key, value] of Object.entries(parsedVariables)) {
+          currentColors[`--${key}`] = value;
+        }
+      }
+    } else if (activeTheme.isZenFS && activeTheme.colors) {
+      for (const [key, value] of Object.entries(activeTheme.colors)) {
+        currentColors[`--${key.replace(/^--/, "")}`] = value;
+      }
+    }
+
+    const currentIconScheme = getIconSchemeName();
+
+    this.customThemeProperties = {
+      ...currentColors,
+      wallpaper: currentWallpaper,
+      iconScheme: currentIconScheme,
+      icons: activeTheme.icons,
+      cursors: activeTheme.cursors,
+      sounds: activeTheme.sounds,
+      desktopConfig: activeTheme.desktopConfig,
+    };
+
+    if (this.themeSelector?.value === "current-settings") {
+      this.handleThemeSelection();
+    }
   }
 
   async _createWindow() {
@@ -74,6 +125,10 @@ export class DesktopThemesApp extends Application {
       document.removeEventListener(
         "custom-themes-changed",
         this.boundPopulateThemes,
+      );
+      document.removeEventListener(
+        "theme-changed",
+        this.boundRefreshCurrentSettings,
       );
     });
 
@@ -200,43 +255,7 @@ export class DesktopThemesApp extends Application {
     `;
     rightPanel.appendChild(settingsFieldset);
 
-    const themes = getThemes();
-    const colorSchemes = getColorSchemes();
-    const activeTheme = getActiveTheme();
-    const currentColorSchemeId = getColorSchemeId() || activeTheme.id;
-    const currentColorScheme = colorSchemes[currentColorSchemeId];
-    const currentColorSchemeTheme = themes[currentColorSchemeId] || activeTheme;
-    const currentWallpaper =
-      getItem(LOCAL_STORAGE_KEYS.WALLPAPER) || activeTheme.wallpaper;
-
-    let currentColors = {};
-    if (currentColorSchemeTheme.isCustom && currentColorSchemeTheme.colors) {
-      for (const [key, value] of Object.entries(
-        currentColorSchemeTheme.colors,
-      )) {
-        currentColors[`--${key.replace(/^--/, "")}`] = value;
-      }
-    } else if (currentColorScheme) {
-      const cssText = await fetchThemeCss(currentColorSchemeId);
-      if (cssText) {
-        const parsedVariables = parseCssVariables(cssText);
-        for (const [key, value] of Object.entries(parsedVariables)) {
-          currentColors[`--${key}`] = value;
-        }
-      }
-    }
-
-    const currentIconScheme = getIconSchemeName();
-
-    this.customThemeProperties = {
-      ...currentColors,
-      wallpaper: currentWallpaper,
-      iconScheme: currentIconScheme,
-      icons: activeTheme.icons,
-      cursors: activeTheme.cursors,
-      sounds: activeTheme.sounds,
-      desktopConfig: activeTheme.desktopConfig,
-    };
+    await this.refreshCurrentSettings();
 
     await this.populateThemes();
 
