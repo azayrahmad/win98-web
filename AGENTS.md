@@ -15,8 +15,8 @@ Windows 98 Web Edition is a modular web-based desktop environment that emulates 
 -   **Application Hierarchy** (`base-process.js`, `application.js`):
     - `BaseProcess`: Abstract base class for all system processes (lifecycle, tracking).
     - `WindowedApplication` (aliased as `Application`): Extends `BaseProcess` with windowing and shell integration.
--   **Kernel** (`kernel.js`): The central service registry. Use `kernel.use(serviceName)` to access services like `ui`, `settings`, `appManager`.
--   **Core Utilities**: Includes specialized managers for `ScreenManager`, `ColorModeManager`, `ThemeManager`, `RecycleBinManager`, and more.
+-   **Kernel** (`kernel.js`): The central service registry. Use `kernel.use(serviceName)` to access services like `ui`, `settings`, `appManager`, `file`, `sound`, `theme`, etc.
+-   **Core Utilities**: Includes legacy managers (e.g., `ThemeManager`) which now act as **Proxies** to the Kernel-registered Services.
 
 ### Shell Components (`src/shell/`)
 
@@ -62,15 +62,27 @@ static config = {
 ```
 
 #### Service Consumption Pattern:
-Always use the `Kernel` to interact with system features:
+Always use the `Kernel` to interact with system features. Applications inheriting from `BaseProcess` have convenience getters:
 ```javascript
 // Show a dialog
-this.kernel.use('ui').showDialog({ title: "Hello", text: "World" });
+this.ui.showDialog({ title: "Hello", text: "World" });
 
 // Get/Set settings
-const value = this.kernel.use('settings').get('my-key', defaultValue);
-this.kernel.use('settings').set('my-key', newValue);
+const value = this.settings.get('my-key', defaultValue);
+this.settings.set('my-key', newValue);
+
+// File operations
+const text = await this.file.readText('/C:/test.txt');
 ```
+
+### Architectural Patterns
+
+The system uses several key design patterns to maintain a SOLID architecture:
+
+1.  **Service Locator (Kernel)**: The `Kernel` acts as a central registry for system services. This decouples service providers from their consumers and allows for easy swapping or mocking of services during testing.
+2.  **Proxy / Adapter Pattern (Managers)**: Legacy modules like `ThemeManager` have been refactored into **Proxies**. They maintain the original API for backward compatibility but delegate all logic to the new Kernel-registered **Services**. This facilitates a smooth transition without breaking legacy code.
+3.  **Strangler Fig Pattern**: This refactoring strategy allows us to replace legacy procedural code with modern OOP structures piece by piece. By introducing the `Kernel` and `Services` while keeping the `Managers` as thin wrappers, we "strangle" the old system until it can eventually be removed.
+4.  **Facade Pattern (Services)**: Services like `FileService` provide a simplified, high-level interface to complex underlying libraries (like ZenFS), hiding implementation details from applications.
 
 ### The Global `window.System` Object
 
