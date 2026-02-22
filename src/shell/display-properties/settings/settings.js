@@ -1,13 +1,4 @@
-import {
-  getColorModes,
-  getCurrentColorMode,
-  setColorMode,
-} from '../../../system/color-mode-manager.js';
-import {
-  getAvailableResolutions,
-  setResolution,
-  getCurrentResolutionId,
-} from '../../../system/screen-manager.js';
+import { kernel } from '../../../system/kernel.js';
 
 const PALETTES = {
   16: [
@@ -66,19 +57,20 @@ export const settingsTab = {
     const $currentResolution = win.$content.find(".current-resolution");
     const $browserInfo = win.$content.find(".browser-info");
 
-    const colorModes = getColorModes();
+    const displayService = kernel.use('display');
+    const colorModes = displayService.getColorModes();
     Object.entries(colorModes).forEach(([id, mode]) => {
       const $option = $(`<option value="${id}">${mode.name}</option>`);
       $colorModeSelect.append($option);
     });
 
-    const currentColorMode = getCurrentColorMode();
+    const currentColorMode = displayService.getCurrentColorMode();
     $colorModeSelect.val(currentColorMode);
     app.selectedColorMode = currentColorMode;
     updateColorSpectrum(win, app.selectedColorMode);
 
-    const resolutions = getAvailableResolutions();
-    const currentResolutionId = getCurrentResolutionId();
+    const resolutions = displayService.getAvailableResolutions();
+    const currentResolutionId = displayService.getCurrentResolutionId();
     const currentIndex = resolutions.indexOf(currentResolutionId);
     $resolutionSlider.val(currentIndex > -1 ? currentIndex : resolutions.length - 1);
     $currentResolution.text(
@@ -107,11 +99,12 @@ export const settingsTab = {
     });
   },
   applyChanges(app) {
+    const displayService = kernel.use('display');
     if (app.selectedColorMode) {
-      setColorMode(app.selectedColorMode);
+      displayService.setColorMode(app.selectedColorMode);
     }
     if (app.selectedResolution) {
-      setResolution(app.selectedResolution);
+      displayService.setResolution(app.selectedResolution);
     }
   },
 };

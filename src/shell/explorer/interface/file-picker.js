@@ -2,7 +2,7 @@ import { fs } from "@zenfs/core";
 import { AddressBar } from '../../../shell/explorer/components/address-bar.js';
 import { IconManager } from '../../../shell/desktop/icon-manager.js';
 import { ShellManager } from '../extensions/shell-manager.js';
-import { RecycleBinManager } from '../file-operations/recycle-bin-manager.js';
+import { kernel } from '../../../system/kernel.js';
 import {
   getDisplayName,
   formatPathForDisplay,
@@ -482,7 +482,7 @@ export class FilePicker {
           else if (vItem.name === "Recycle Bin")
             iconObj = getThemedIconObj(
               "recycle",
-              await RecycleBinManager.isEmpty("/Recycle Bin"),
+            await kernel.use('recycleBin').isEmpty("/Recycle Bin"),
             );
           else if (vItem.name === "Network Neighborhood")
             iconObj = getThemedIconObj("network");

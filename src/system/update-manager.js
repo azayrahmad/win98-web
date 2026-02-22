@@ -1,6 +1,6 @@
 import { ShowDialogWindow } from "../shared/components/dialog-window.js";
 import { ICONS } from "../config/icons.js";
-import { playSound } from "./sound-manager.js";
+import { kernel } from "./kernel.js";
 import { refreshPrograms } from "../shell/start-menu/start-menu-utils.js";
 
 /**
@@ -20,7 +20,7 @@ export async function showUpdateConfirmation() {
         label: "Yes",
         isDefault: true,
         action: async () => {
-          playSound("SystemExit");
+          kernel.use('sound').play("SystemExit");
 
           // Clear Service Workers
           if ("serviceWorker" in navigator) {

@@ -1,14 +1,9 @@
 import { fs } from "@zenfs/core";
-import {
-  requestBusyState,
-  releaseBusyState,
-} from '../../../system/busy-state-manager.js';
+import { kernel } from '../../../system/kernel.js';
 import { renderFileIcon, getThemedIconObj } from './file-icon-renderer.js';
 import { ICONS } from '../../../config/icons.js';
 import { getAssociation } from '../../../system/directory.js';
-import { RecycleBinManager } from '../file-operations/recycle-bin-manager.js';
 import UndoManager from '../file-operations/undo-manager.js';
-import ClipboardManager from '../file-operations/clipboard-manager.js';
 import { ShellManager } from '../extensions/shell-manager.js';
 import {
   getDisplayName,
@@ -52,8 +47,8 @@ export class DirectoryView {
       icon = getThemedIconObj("network");
     }
 
-    if (RecycleBinManager.isRecycleBinPath(path)) {
-      const isEmpty = await RecycleBinManager.isEmpty(path);
+    if (kernel.use('recycleBin').isRecycleBinPath(path)) {
+      const isEmpty = await kernel.use('recycleBin').isEmpty(path);
       icon = getThemedIconObj("recycle", isEmpty);
     }
 
@@ -79,7 +74,7 @@ export class DirectoryView {
     let rawFiles = await ShellManager.readdir(path);
 
     rawFiles = rawFiles.filter((f) => f !== ".zen_layout.json");
-    if (RecycleBinManager.isRecycleBinPath(path)) {
+    if (kernel.use('recycleBin').isRecycleBinPath(path)) {
       rawFiles = rawFiles.filter((f) => f !== ".metadata.json");
     }
 
@@ -123,11 +118,12 @@ export class DirectoryView {
     this.app.iconContainer.innerHTML = "";
     this.app.iconManager.clearSelection();
 
+    const recycleBin = kernel.use('recycleBin');
     const isGlobalRecycleBin = path === "/Recycle Bin" || path === "/Desktop/Recycle Bin";
-    const isRecycleBin = RecycleBinManager.isRecycleBinPath(path);
+    const isRecycleBin = recycleBin.isRecycleBinPath(path);
     const isDriveRecycleBin = isRecycleBin && !isGlobalRecycleBin;
-    const metadata = isDriveRecycleBin ? await RecycleBinManager.getMetadata(path) : null;
-    const recycleBinEmpty = isRecycleBin ? await RecycleBinManager.isEmpty(path) : true;
+    const metadata = isDriveRecycleBin ? await recycleBin.getMetadata(path) : null;
+    const recycleBinEmpty = isRecycleBin ? await recycleBin.isEmpty(path) : true;
 
     if (this.app.viewMode === "details") {
       const columns = ShellManager.getColumns(path);
@@ -275,7 +271,7 @@ export class DirectoryView {
   }
 
   updateCutIcons() {
-    const { items, operation } = ClipboardManager.get();
+    const { items, operation } = kernel.use('clipboard').get();
     const cutPaths = operation === "cut" ? new Set(items) : new Set();
     const icons = this.app.iconContainer.querySelectorAll(".explorer-icon");
     icons.forEach((icon) => {
@@ -289,8 +285,8 @@ export class DirectoryView {
     if (this._isRenaming) return;
     const path = icon.getAttribute("data-path");
     const isRootItem = getParentPath(path) === "/";
-    const isRecycleBin = RecycleBinManager.isRecycleBinPath(path);
-    const isRecycledItem = RecycleBinManager.isRecycledItemPath(path);
+    const isRecycleBin = kernel.use('recycleBin').isRecycleBinPath(path);
+    const isRecycledItem = kernel.use('recycleBin').isRecycledItemPath(path);
     const isVirtual = icon.getAttribute("data-is-virtual") === "true";
     if (isRootItem || isRecycleBin || isRecycledItem || isVirtual) return;
     this._isRenaming = true;
@@ -344,7 +340,8 @@ export class DirectoryView {
         // Optimistic update
         label.textContent = newName;
 
-        requestBusyState(busyId, this.app.win.element);
+        const busy = kernel.use('busy');
+        busy.requestBusy(busyId, this.app.win.element);
         try {
           const parentPath = getParentPath(fullPath);
           const newPath = joinPath(parentPath, newName);
@@ -355,7 +352,7 @@ export class DirectoryView {
         } finally {
           await this.app.navigateTo(this.app.currentPath, true, true);
           document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win.element.id } }));
-          releaseBusyState(busyId, this.app.win.element);
+          busy.releaseBusy(busyId, this.app.win.element);
         }
       } else {
         // Already reverted by label.style.display = "" above

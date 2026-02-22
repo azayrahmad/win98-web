@@ -1,10 +1,6 @@
 import { SCREENSAVERS } from '../../../config/screensavers.js';
-import screensaverManager from '../../../system/screensaver-utils.js';
-import { setItem, LOCAL_STORAGE_KEYS } from '../../../system/local-storage.js';
-import {
-  requestBusyState,
-  releaseBusyState,
-} from '../../../system/busy-state-manager.js';
+import { LOCAL_STORAGE_KEYS } from '../../../system/local-storage.js';
+import { kernel } from '../../../system/kernel.js';
 
 function updateScreensaverPreview(win, app) {
   const $preview = win.$content.find(".display-screensaver-preview");
@@ -13,7 +9,8 @@ function updateScreensaverPreview(win, app) {
   const screensaver = SCREENSAVERS[app.selectedScreensaver];
   if (screensaver && screensaver.path) {
     const previewId = `screensaver-preview-${Date.now()}`;
-    requestBusyState(previewId, win.$content[0]);
+    const busy = kernel.use('busy');
+    busy.requestBusy(previewId, win.$content[0]);
     const $iframe = $("<iframe>")
       .attr("src", `${import.meta.env.BASE_URL}${screensaver.path}`)
       .css({
@@ -23,7 +20,7 @@ function updateScreensaverPreview(win, app) {
         "pointer-events": "none",
       })
       .on("load", () => {
-        releaseBusyState(previewId, win.$content[0]);
+        busy.releaseBusy(previewId, win.$content[0]);
       });
     $preview.append($iframe);
   }
@@ -57,13 +54,14 @@ export const screensaverTab = {
 
     $previewButton.on("click", () => {
       if (app.selectedScreensaver !== "none") {
-        screensaverManager.showPreview(app.selectedScreensaver);
+        kernel.use('screensaver').showPreview(app.selectedScreensaver);
       }
     });
   },
   applyChanges(app) {
-    screensaverManager.setCurrentScreensaver(app.selectedScreensaver);
-    setItem(
+    const screensaverService = kernel.use('screensaver');
+    screensaverService.setCurrentScreensaver(app.selectedScreensaver);
+    kernel.use('settings').set(
       LOCAL_STORAGE_KEYS.SCREENSAVER_TIMEOUT,
       app.screensaverTimeout * 60000,
     );

@@ -1,10 +1,6 @@
 import {
   LOCAL_STORAGE_KEYS,
 } from '../../system/local-storage.js';
-import {
-  requestBusyState,
-  releaseBusyState,
-} from '../../system/busy-state-manager.js';
 import { kernel } from '../../system/kernel.js';
 
 window.clippyAppInstance = null;
@@ -320,8 +316,9 @@ export function launchClippyApp(app, agentName = currentAgentName) {
       const clippyEl = agent._el[0];
       const balloonEl = agent._balloon._balloon[0];
       const speakId = `speak-${Date.now()}`;
-      requestBusyState(speakId, clippyEl);
-      requestBusyState(speakId, balloonEl);
+      const busy = kernel.use('busy');
+      busy.requestBusy(speakId, clippyEl);
+      busy.requestBusy(speakId, balloonEl);
 
       const originalCallback = options?.callback;
       const newOptions = {
@@ -331,8 +328,8 @@ export function launchClippyApp(app, agentName = currentAgentName) {
             originalCallback();
           }
           agent.isSpeaking = false;
-          releaseBusyState(speakId, clippyEl);
-          releaseBusyState(speakId, balloonEl);
+          busy.releaseBusy(speakId, clippyEl);
+          busy.releaseBusy(speakId, balloonEl);
         },
       };
       return originalSpeakAndAnimate.call(this, text, animation, newOptions);

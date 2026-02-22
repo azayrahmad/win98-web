@@ -1,10 +1,4 @@
-import {
-  getColorSchemes,
-  getColorSchemeId,
-  setColorScheme,
-  loadThemeParser,
-  applyCustomColorScheme,
-} from '../../../system/theme-manager.js';
+import { kernel } from '../../../system/kernel.js';
 import {
   applyThemeToPreview,
   applyPropertiesToPreview,
@@ -54,8 +48,9 @@ export const appearanceTab = {
     `;
     $previewContainer.prepend(styleBlock);
 
-    let currentSchemeId = getColorSchemeId();
-    const schemes = getColorSchemes();
+    const themeService = kernel.use('theme');
+    let currentSchemeId = themeService.getColorSchemeId();
+    const schemes = themeService.getColorSchemes();
 
     Object.entries(schemes).forEach(([id, scheme]) => {
       const $option = $("<option>").val(id).text(scheme.name);
@@ -95,7 +90,7 @@ export const appearanceTab = {
 
         try {
           const fileContent = await getZenFSFileAsText(path);
-          await loadThemeParser();
+          await themeService.loadThemeParser();
           const colors = window.getColorsFromThemeFile(fileContent);
 
           if (colors) {
@@ -155,11 +150,12 @@ export const appearanceTab = {
   applyChanges: function (app) {
     const $schemeSelect = app.win.$content.find("#appearance .scheme-select");
     const newSchemeId = $schemeSelect.val();
+    const themeService = kernel.use('theme');
 
     if (newSchemeId === "__load__" && this.loadedCustomScheme) {
-      applyCustomColorScheme(this.loadedCustomScheme);
+      themeService.applyCustomColorScheme(this.loadedCustomScheme);
     } else {
-      setColorScheme(newSchemeId);
+      themeService.setColorScheme(newSchemeId);
     }
   },
 };

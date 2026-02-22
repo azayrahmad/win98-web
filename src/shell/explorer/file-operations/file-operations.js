@@ -1,17 +1,11 @@
 import { fs } from "@zenfs/core";
-import {
-    requestBusyState,
-    releaseBusyState,
-} from '../../../system/busy-state-manager.js';
+import { kernel } from '../../../system/kernel.js';
 import { ShowDialogWindow } from '../../../shared/components/dialog-window.js';
 import { ProgressBarShowDialogWindow } from '../interface/progress-bar-dialog-window.js';
-import { playSound } from '../../../system/sound-manager.js';
 import { showInputDialog } from '../interface/input-dialog.js';
 import { handleFileSystemError } from './error-handler.js';
 import { joinPath, normalizePath, getPathName, getParentPath, getDriveLabel } from '../navigation/path-utils.js';
 import { ShellManager } from '../extensions/shell-manager.js';
-import ClipboardManager from './clipboard-manager.js';
-import { RecycleBinManager } from './recycle-bin-manager.js';
 import UndoManager from './undo-manager.js';
 import LayoutManager from '../interface/layout-manager.js';
 
@@ -22,12 +16,12 @@ export class FileOperations {
 
     cutItems(paths) {
         if (paths.length === 0) return;
-        ClipboardManager.set(paths, "cut");
+        kernel.use('clipboard').set(paths, "cut");
     }
 
     copyItems(paths) {
         if (paths.length === 0) return;
-        ClipboardManager.set(paths, "copy");
+        kernel.use('clipboard').set(paths, "copy");
     }
 
     async createShortcuts(paths, destinationPath = null, dialog = null) {
@@ -80,24 +74,26 @@ export class FileOperations {
     }
 
     async pasteItems(destinationPath) {
-        const { items, operation } = ClipboardManager.get();
+        const clipboard = kernel.use('clipboard');
+        const recycleBin = kernel.use('recycleBin');
+        const { items, operation } = clipboard.get();
         if (items.length === 0) return;
 
-        if (RecycleBinManager.isRecycleBinPath(destinationPath)) {
+        if (recycleBin.isRecycleBinPath(destinationPath)) {
             const totalSize = await this.getTotalSize(items);
             const dialog = new ProgressBarShowDialogWindow("recycle", items.length, totalSize);
             try {
-                await RecycleBinManager.moveItemsToRecycleBin(items, dialog);
-                if (operation === "cut") ClipboardManager.clear();
+                await recycleBin.moveItemsToRecycleBin(items, dialog);
+                if (operation === "cut") clipboard.clear();
             } finally {
                 dialog.close();
             }
             return;
         }
 
-        if (items.some(p => RecycleBinManager.isRecycledItemPath(p))) {
+        if (items.some(p => recycleBin.isRecycledItemPath(p))) {
             await this.moveItemsFromRecycleBin(items, destinationPath);
-            if (operation === "cut") ClipboardManager.clear();
+            if (operation === "cut") clipboard.clear();
             return;
         }
 
@@ -107,7 +103,7 @@ export class FileOperations {
         try {
             if (operation === "cut") {
                 await this.moveItemsDirect(items, destinationPath, {}, dialog);
-                ClipboardManager.clear();
+                clipboard.clear();
             } else if (operation === "copy") {
                 await this.copyItemsDirect(items, destinationPath, {}, dialog);
             }
@@ -117,7 +113,7 @@ export class FileOperations {
     }
 
     async pasteShortcuts(destinationPath) {
-        const { items, operation } = ClipboardManager.get();
+        const { items, operation } = kernel.use('clipboard').get();
         if (items.length === 0 || operation === "cut") return;
 
         const dialog = new ProgressBarShowDialogWindow("shortcut", items.length, 0);
@@ -351,7 +347,8 @@ export class FileOperations {
 
     async deleteItems(paths, permanent = false) {
         if (paths.length === 0) return;
-        const alreadyInRecycle = paths.some(path => RecycleBinManager.isRecycledItemPath(path));
+        const recycleBin = kernel.use('recycleBin');
+        const alreadyInRecycle = paths.some(path => recycleBin.isRecycledItemPath(path));
         const isPermanent = permanent || alreadyInRecycle;
         const message = isPermanent
             ? (paths.length === 1 ? `Are you sure you want to permanently delete '${getPathName(paths[0])}'?` : `Are you sure you want to permanently delete these ${paths.length} items?`)
@@ -370,7 +367,8 @@ export class FileOperations {
                     isDefault: true,
                     action: async () => {
                         const busyId = `delete-${Math.random()}`;
-                        requestBusyState(busyId, this.app.win.element);
+                        const busy = kernel.use('busy');
+                        busy.requestBusy(busyId, this.app.win.element);
                         const totalSize = await this.getTotalSize(paths);
                         const dialog = new ProgressBarShowDialogWindow(isPermanent ? "delete" : "recycle", paths.length, totalSize);
                         try {
@@ -380,22 +378,22 @@ export class FileOperations {
                                     await this.removeRecursiveWithProgress(path, dialog);
                                 }
                                 if (alreadyInRecycle && !dialog.cancelled) {
-                                    const recyclePath = RecycleBinManager.getRecyclePath(paths[0]);
+                                    const recyclePath = recycleBin.getRecyclePath(paths[0]);
                                     if (recyclePath) {
-                                        const metadata = await RecycleBinManager.getMetadata(recyclePath);
+                                        const metadata = await recycleBin.getMetadata(recyclePath);
                                         let changed = false;
                                         for (const path of paths) {
                                             const id = getPathName(path);
                                             if (metadata[id]) { delete metadata[id]; changed = true; }
                                         }
                                         if (changed) {
-                                            await RecycleBinManager.saveMetadata(recyclePath, metadata);
+                                            await recycleBin.saveMetadata(recyclePath, metadata);
                                             document.dispatchEvent(new CustomEvent("recycle-bin-change"));
                                         }
                                     }
                                 }
                             } else {
-                                const recycledPaths = await RecycleBinManager.moveItemsToRecycleBin(paths, dialog);
+                                const recycledPaths = await recycleBin.moveItemsToRecycleBin(paths, dialog);
                                 if (recycledPaths.length > 0) {
                                     UndoManager.push({ type: 'delete', data: { recycledPaths } });
                                 }
@@ -408,7 +406,7 @@ export class FileOperations {
                             handleFileSystemError("delete", e, "items");
                         } finally {
                             dialog.close();
-                            releaseBusyState(busyId, this.app.win.element);
+                            busy.releaseBusy(busyId, this.app.win.element);
                         }
                     }
                 },
@@ -424,7 +422,8 @@ export class FileOperations {
     async createNewFolder() {
         const busyId = `create-folder-${Math.random()}`;
         let newPath = null;
-        requestBusyState(busyId, this.app.win.element);
+        const busy = kernel.use('busy');
+        busy.requestBusy(busyId, this.app.win.element);
         try {
             const name = await this.getUniqueName(this.app.currentPath, "New Folder");
             newPath = joinPath(this.app.currentPath, name);
@@ -434,7 +433,7 @@ export class FileOperations {
         } catch (e) {
             handleFileSystemError("create", e, "folder");
         } finally {
-            releaseBusyState(busyId, this.app.win.element);
+            busy.releaseBusy(busyId, this.app.win.element);
             if (newPath) await this.app.enterRenameModeByPath(newPath);
         }
     }
@@ -442,7 +441,8 @@ export class FileOperations {
     async createNewTextFile() {
         const busyId = `create-file-${Math.random()}`;
         let newPath = null;
-        requestBusyState(busyId, this.app.win.element);
+        const busy = kernel.use('busy');
+        busy.requestBusy(busyId, this.app.win.element);
         try {
             const name = await this.getUniqueName(this.app.currentPath, "New Text Document", ".txt");
             newPath = joinPath(this.app.currentPath, name);
@@ -452,7 +452,7 @@ export class FileOperations {
         } catch (e) {
             handleFileSystemError("create", e, "file");
         } finally {
-            releaseBusyState(busyId, this.app.win.element);
+            busy.releaseBusy(busyId, this.app.win.element);
             if (newPath) await this.app.enterRenameModeByPath(newPath);
         }
     }
@@ -497,16 +497,17 @@ export class FileOperations {
     async restoreItems(paths) {
         if (paths.length === 0) return;
         const busyId = `restore-${Math.random()}`;
-        requestBusyState(busyId, this.app.win.element);
+        const busy = kernel.use('busy');
+        busy.requestBusy(busyId, this.app.win.element);
         const totalSize = await this.getTotalSize(paths);
         const dialog = new ProgressBarShowDialogWindow("restore", paths.length, totalSize);
         try {
-            await RecycleBinManager.restoreItems(paths, dialog);
+            await kernel.use('recycleBin').restoreItems(paths, dialog);
         } catch (e) {
             handleFileSystemError("restore", e, "items");
         } finally {
             dialog.close();
-            releaseBusyState(busyId, this.app.win.element);
+            busy.releaseBusy(busyId, this.app.win.element);
             await this.app.navigateTo(this.app.currentPath, true, true);
             document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win.element.id } }));
         }
@@ -515,16 +516,17 @@ export class FileOperations {
     async moveItemsFromRecycleBin(paths, destinationPath) {
         if (paths.length === 0) return;
         const busyId = `move-from-recycle-${Math.random()}`;
-        requestBusyState(busyId, this.app.win.element);
+        const busy = kernel.use('busy');
+        busy.requestBusy(busyId, this.app.win.element);
         const totalSize = await this.getTotalSize(paths);
         const dialog = new ProgressBarShowDialogWindow("move", paths.length, totalSize);
         try {
-            await RecycleBinManager.moveItemsFromRecycleBin(paths, destinationPath, dialog);
+            await kernel.use('recycleBin').moveItemsFromRecycleBin(paths, destinationPath, dialog);
         } catch (e) {
             handleFileSystemError("move", e, "items");
         } finally {
             dialog.close();
-            releaseBusyState(busyId, this.app.win.element);
+            busy.releaseBusy(busyId, this.app.win.element);
             await this.app.navigateTo(this.app.currentPath, true, true);
             document.dispatchEvent(new CustomEvent("fs-change", { detail: { sourceAppId: this.app.win.element.id } }));
         }
@@ -532,10 +534,11 @@ export class FileOperations {
 
     async emptyRecycleBin(path = null) {
         const targetPath = path || this.app.currentPath;
-        const recyclePath = RecycleBinManager.getRecyclePath(targetPath) || targetPath;
-        if (!RecycleBinManager.isRecycleBinPath(recyclePath)) return;
+        const recycleBin = kernel.use('recycleBin');
+        const recyclePath = recycleBin.getRecyclePath(targetPath) || targetPath;
+        if (!recycleBin.isRecycleBinPath(recyclePath)) return;
 
-        const isEmpty = await RecycleBinManager.isEmpty(recyclePath);
+        const isEmpty = await recycleBin.isEmpty(recyclePath);
         if (isEmpty) return;
 
         const parentWindow = (this.app.win && this.app.win.id !== 'desktop') ? this.app.win : null;
@@ -551,20 +554,21 @@ export class FileOperations {
                     isDefault: true,
                     action: async () => {
                         const busyId = `empty-recycle-${Math.random()}`;
-                        requestBusyState(busyId, this.app.win.element);
-                        const metadata = await RecycleBinManager.getMetadata(recyclePath);
+                        const busy = kernel.use('busy');
+                        busy.requestBusy(busyId, this.app.win.element);
+                        const metadata = await recycleBin.getMetadata(recyclePath);
                         const ids = Object.keys(metadata);
                         const paths = ids.map(id => joinPath(recyclePath, id));
                         const totalSize = await this.getTotalSize(paths);
                         const dialog = new ProgressBarShowDialogWindow("empty", ids.length, totalSize);
                         try {
-                            await RecycleBinManager.emptyRecycleBin(recyclePath, dialog);
-                            playSound("EmptyRecycleBin");
+                            await recycleBin.emptyRecycleBin(recyclePath, dialog);
+                            kernel.use('sound').play("EmptyRecycleBin");
                         } catch (e) {
                             handleFileSystemError("delete", e, "items");
                         } finally {
                             dialog.close();
-                            releaseBusyState(busyId, this.app.win.element);
+                            busy.releaseBusy(busyId, this.app.win.element);
                             await this.app.navigateTo(this.app.currentPath, true, true);
                         }
                     }
@@ -578,7 +582,8 @@ export class FileOperations {
         const op = UndoManager.peek();
         if (!op) return;
         const busyId = `undo-${Math.random()}`;
-        requestBusyState(busyId, this.app.win.element);
+        const busy = kernel.use('busy');
+        busy.requestBusy(busyId, this.app.win.element);
         try {
             switch (op.type) {
                 case 'rename': await this._undoRename(op.data); break;
@@ -600,7 +605,7 @@ export class FileOperations {
                 buttons: [{ label: "OK" }]
             });
         } finally {
-            releaseBusyState(busyId, this.app.win.element);
+            busy.releaseBusy(busyId, this.app.win.element);
         }
     }
 
@@ -628,7 +633,7 @@ export class FileOperations {
         }
     }
 
-    async _undoDelete(data) { await RecycleBinManager.restoreItems(data.recycledPaths || data.recycledIds); }
+    async _undoDelete(data) { await kernel.use('recycleBin').restoreItems(data.recycledPaths || data.recycledIds); }
 
     async _undoCreate(data) {
         try { await fs.promises.rm(ShellManager.getRealPath(data.path), { recursive: true }); }

@@ -1,5 +1,5 @@
 import { fs, mounts } from "@zenfs/core";
-import { RecycleBinManager } from '../file-operations/recycle-bin-manager.js';
+import { kernel } from '../../../system/kernel.js';
 import { joinPath, getPathName } from '../navigation/path-utils.js';
 import { VirtualStats } from './shell-manager.js';
 import { ICONS } from '../../../config/icons.js';
@@ -22,10 +22,11 @@ export class RecycleBinExtension {
             .filter(m => m.match(/^\/[A-Z]:$/i))
             .map(m => m.substring(1, 2).toUpperCase());
 
+        const recycleBin = kernel.use('recycleBin');
         for (const drive of drives) {
             const recyclePath = `/${drive}:/Recycled`;
             try {
-                const metadata = await RecycleBinManager.getMetadata(recyclePath);
+                const metadata = await recycleBin.getMetadata(recyclePath);
                 for (const id in metadata) {
                     // Prefix the ID with drive letter to avoid collisions and track origin
                     allEntries.push(`${drive}_${id}`);
@@ -38,8 +39,9 @@ export class RecycleBinExtension {
     }
 
     async stat(path) {
+        const recycleBin = kernel.use('recycleBin');
         if (path === this.path) {
-            const isEmpty = await RecycleBinManager.isAnyBinFull() === false;
+            const isEmpty = await recycleBin.isAnyBinFull() === false;
             return new VirtualStats({
                 isDirectory: true,
                 size: 0,
@@ -57,7 +59,7 @@ export class RecycleBinExtension {
 
             try {
                 const stats = await fs.promises.stat(realRecyclePath);
-                const metadata = await RecycleBinManager.getMetadata(`/${drive}:/Recycled`);
+                const metadata = await recycleBin.getMetadata(`/${drive}:/Recycled`);
                 const entry = metadata[id];
 
                 return new VirtualStats({

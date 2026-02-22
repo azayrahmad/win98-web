@@ -1,13 +1,9 @@
 import { apps } from '../config/apps.js';
-import {
-  requestWaitState,
-  releaseWaitState,
-} from './busy-state-manager.js';
 import { openApps } from '../system/application.js';
-import { playSound } from './sound-manager.js';
 
 export class AppManager {
-  constructor() {
+  constructor(kernel) {
+    this.kernel = kernel;
     this.runningApps = {};
   }
 
@@ -26,7 +22,7 @@ export class AppManager {
   closeApp(instanceKey) {
     const appInstance = this.runningApps[instanceKey];
     if (appInstance) {
-      playSound("Close");
+      this.kernel.use('sound').play("Close");
       // Remove the app from the registries first to prevent re-entry.
       delete this.runningApps[instanceKey];
       openApps.delete(instanceKey);
@@ -47,13 +43,14 @@ export class AppManager {
 
   async launchApp(appId, data = null) {
     const launchId = `launch-${appId}-${Date.now()}`;
-    requestWaitState(launchId);
+    const busy = this.kernel.use('busy');
+    busy.requestWait(launchId);
 
     const appConfig = this.getAppConfig(appId);
-    playSound("Open");
+    this.kernel.use('sound').play("Open");
     if (!appConfig) {
       console.error(`No application config found for ID: ${appId}`);
-      releaseWaitState(launchId);
+      busy.releaseWait(launchId);
       return;
     }
 
@@ -114,7 +111,7 @@ export class AppManager {
       console.error(`Failed to launch app: ${appId}`, error);
       alert(`Could not launch ${appId}. See console for details.`);
     } finally {
-      releaseWaitState(launchId);
+      busy.releaseWait(launchId);
     }
   }
 
@@ -136,7 +133,8 @@ export class AppManager {
   }
 }
 
-const appManager = new AppManager();
+import { kernel } from './kernel.js';
+const appManager = new AppManager(kernel);
 export const launchApp = (appId, data) => appManager.launchApp(appId, data);
 
 export function handleAppAction(app) {

@@ -12,7 +12,7 @@ import windowsStartMenuBar from "../../assets/img/win98start.png";
 import { ICONS } from '../../config/icons.js';
 import startMenuConfig from '../../config/start-menu.js';
 import { getMenuFromZenFS, getPinnedItemsFromZenFS, PINNED_PATH, START_MENU_PATH, FAVORITES_PATH } from './start-menu-utils.js';
-import { playSound } from '../../system/sound-manager.js';
+import { kernel } from '../../system/kernel.js';
 import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
 import { createShutdownDialogContent } from '../shutdown-dialog.js';
 import { showShutdownScreen } from '../shutdown-screen.js';
@@ -257,7 +257,7 @@ class StartMenu {
       menuWrapper.classList.add("to-right");
       menuWrapper.classList.add("open");
 
-      if (typeof window.playSound === "function") window.playSound("MenuPopup");
+      kernel.use('sound').play("MenuPopup");
       this.openSubmenus.push(activeMenu);
       this.addTrackedEventListener(menuWrapper, "pointerenter", () => {
         if (this.submenuCloseTimeout) {
@@ -515,7 +515,7 @@ class StartMenu {
 
     if (!startMenu || !startButton || !startMenuWrapper) return;
 
-    playSound("MenuPopup");
+    kernel.use('sound').play("MenuPopup");
 
     // Load pinned items before showing
     await this.renderPinnedItems();
@@ -584,7 +584,7 @@ class StartMenu {
                 label: 'OK',
                 action: () => {
                     const selectedOption = content.querySelector('input[name="shutdown-option"]:checked').value;
-                    playSound("SystemExit");
+                    kernel.use('sound').play("SystemExit");
 
                     if (selectedOption === 'shutdown') {
                         showShutdownScreen();

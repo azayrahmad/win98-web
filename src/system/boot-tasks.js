@@ -9,8 +9,7 @@ import {
 } from './boot-screen.js';
 import { initFileSystem } from './zenfs-init.js';
 import { createMainUI } from '../shell/ui.js';
-import { getItem, LOCAL_STORAGE_KEYS } from './local-storage.js';
-import { registerCustomApp } from './custom-app-manager.js';
+import { LOCAL_STORAGE_KEYS } from './local-storage.js';
 
 export class HardwareDetectionTask extends BootTask {
   constructor() { super("Detecting hardware..."); }
@@ -113,8 +112,10 @@ export class CustomAppsTask extends BootTask {
   async execute(kernel) {
     let logElement = startBootProcessStep(this.name);
     try {
-      const savedApps = getItem(LOCAL_STORAGE_KEYS.CUSTOM_APPS) || [];
-      savedApps.forEach(appInfo => registerCustomApp(appInfo));
+      const customApps = kernel.use('customApps');
+      const settings = kernel.use('settings');
+      const savedApps = settings.get(LOCAL_STORAGE_KEYS.CUSTOM_APPS) || [];
+      savedApps.forEach(appInfo => customApps.registerCustomApp(appInfo));
       finalizeBootProcessStep(logElement, "OK");
     } catch (e) {
       finalizeBootProcessStep(logElement, "FAILED", e);

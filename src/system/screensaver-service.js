@@ -1,28 +1,32 @@
-import { getItem, setItem, LOCAL_STORAGE_KEYS } from './local-storage.js';
+import { LOCAL_STORAGE_KEYS } from './local-storage.js';
 import { SCREENSAVERS } from '../config/screensavers.js';
 
-class Screensaver {
-  constructor() {
+/**
+ * ScreensaverService manages the OS screensaver lifecycle, including
+ * displaying the full screensaver and showing previews.
+ */
+export class ScreensaverService {
+  constructor(kernel) {
+    this.kernel = kernel;
     this.element = null;
     this.previewElement = null;
     this.active = false;
-    this.currentScreensaver = this.getCurrentScreensaver();
   }
 
+  get settings() { return this.kernel.use('settings'); }
+
   getCurrentScreensaver() {
-    return getItem(LOCAL_STORAGE_KEYS.SCREENSAVER) || "flowerbox";
+    return this.settings.get(LOCAL_STORAGE_KEYS.SCREENSAVER, "flowerbox");
   }
 
   setCurrentScreensaver(id) {
-    this.currentScreensaver = id;
-    setItem(LOCAL_STORAGE_KEYS.SCREENSAVER, id);
+    this.settings.set(LOCAL_STORAGE_KEYS.SCREENSAVER, id);
   }
 
   show() {
-    const screensaver = SCREENSAVERS[this.currentScreensaver];
-    if (!screensaver || !screensaver.path) {
-      return;
-    }
+    const currentId = this.getCurrentScreensaver();
+    const screensaver = SCREENSAVERS[currentId];
+    if (!screensaver || !screensaver.path) return;
 
     if (!this.element) {
       this.element = document.createElement("iframe");
@@ -37,15 +41,10 @@ class Screensaver {
 
       this.element.onload = () => {
         const iframeDoc = this.element.contentWindow.document;
-        iframeDoc.addEventListener("mousemove", () =>
-          window.System.resetInactivityTimer(),
-        );
-        iframeDoc.addEventListener("mousedown", () =>
-          window.System.resetInactivityTimer(),
-        );
-        iframeDoc.addEventListener("keydown", () =>
-          window.System.resetInactivityTimer(),
-        );
+        const resetTimer = () => window.System?.resetInactivityTimer?.();
+        iframeDoc.addEventListener("mousemove", resetTimer);
+        iframeDoc.addEventListener("mousedown", resetTimer);
+        iframeDoc.addEventListener("keydown", resetTimer);
       };
 
       document.body.appendChild(this.element);
@@ -66,9 +65,7 @@ class Screensaver {
     this.hidePreview();
 
     const screensaver = SCREENSAVERS[id];
-    if (!screensaver || !screensaver.path) {
-      return;
-    }
+    if (!screensaver || !screensaver.path) return;
 
     this.previewElement = document.createElement("iframe");
     this.previewElement.src = `${import.meta.env.BASE_URL}${screensaver.path}`;
@@ -98,5 +95,3 @@ class Screensaver {
     }
   }
 }
-
-export default new Screensaver();

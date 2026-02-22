@@ -13,7 +13,6 @@ import {
   getZenFSFileAsBlob,
 } from "../../system/zenfs-utils.js";
 import * as musicMetadata from "music-metadata-browser";
-import { getVolume, getMuted } from "../../system/sound-manager.js";
 
 let webampInstance = null;
 let webampContainer = null;
@@ -284,8 +283,8 @@ export class WebampApp extends BaseProcess {
 
               const updateVolume = () => {
                 if (!webampInstance) return;
-                const systemVolume = getVolume();
-                const systemMuted = getMuted();
+                const systemVolume = this.sound.getVolume();
+                const systemMuted = this.sound.getMuted();
                 // Webamp volume is 0-255
                 const webampVol = systemMuted
                   ? 0

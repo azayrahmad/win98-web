@@ -1,18 +1,11 @@
 import { mounts } from "@zenfs/core";
 import { ICONS } from "../../../config/icons.js";
-import {
-  requestBusyState,
-  releaseBusyState,
-} from "../../../system/busy-state-manager.js";
-import { RecycleBinManager } from "../file-operations/recycle-bin-manager.js";
+import { kernel } from "../../../system/kernel.js";
 import { PropertiesManager } from "../file-operations/properties-manager.js";
 import { RemovableDiskManager } from "../drives/removable-disk-manager.js";
 import { getParentPath, getPathName } from "../navigation/path-utils.js";
-import ClipboardManager from "../file-operations/clipboard-manager.js";
 import { ShellManager } from "../extensions/shell-manager.js";
 import { ShowDialogWindow } from "../../../shared/components/dialog-window.js";
-import { playSound } from "../../../system/sound-manager.js";
-import { launchApp } from "../../../system/app-manager.js";
 
 export class ContextMenuBuilder {
   constructor(app) {
@@ -39,8 +32,9 @@ export class ContextMenuBuilder {
       : null;
     const isRemovableDiskMounted =
       driveLetter && RemovableDiskManager.isMounted(driveLetter);
-    const isRecycledItem = RecycleBinManager.isRecycledItemPath(path);
-    const isRecycleBin = RecycleBinManager.isRecycleBinPath(path);
+    const recycleBin = kernel.use('recycleBin');
+    const isRecycledItem = recycleBin.isRecycledItemPath(path);
+    const isRecycleBin = recycleBin.isRecycleBinPath(path);
     const isGlobalRecycleBin =
       path === "/Recycle Bin" || path === "/Desktop/Recycle Bin";
 
@@ -75,11 +69,12 @@ export class ContextMenuBuilder {
               return;
             }
             const busyId = `properties-${Math.random()}`;
-            requestBusyState(busyId, this.app.win.element);
+            const busy = kernel.use('busy');
+            busy.requestBusy(busyId, this.app.win.element);
             try {
               await PropertiesManager.show(selectedPaths);
             } finally {
-              releaseBusyState(busyId, this.app.win.element);
+              busy.releaseBusy(busyId, this.app.win.element);
             }
           },
         },
@@ -141,7 +136,7 @@ export class ContextMenuBuilder {
         menuItems.push({
           label: "Empty Recycle Bin",
           action: () => this.app.fileOps.emptyRecycleBin(path),
-          enabled: () => RecycleBinManager.isFullSync(path),
+          enabled: () => recycleBin.isFullSync(path),
         });
         menuItems.push("MENU_DIVIDER");
       }
@@ -177,15 +172,17 @@ export class ContextMenuBuilder {
         {
           label: "Paste",
           action: () => this.app.fileOps.pasteItems(path),
-          enabled: () => !ClipboardManager.isEmpty() && type === "directory",
+          enabled: () => !kernel.use('clipboard').isEmpty() && type === "directory",
         },
         {
           label: "Paste Shortcut",
           action: () => this.app.fileOps.pasteShortcuts(path),
-          enabled: () =>
-            !ClipboardManager.isEmpty() &&
-            ClipboardManager.operation === "copy" &&
-            type === "directory",
+          enabled: () => {
+            const clipboard = kernel.use('clipboard');
+            return !clipboard.isEmpty() &&
+            clipboard.get().operation === "copy" &&
+            type === "directory";
+          },
         },
         {
           label: "Create Shortcut",
@@ -221,11 +218,12 @@ export class ContextMenuBuilder {
               return;
             }
             const busyId = `properties-${Math.random()}`;
-            requestBusyState(busyId, this.app.win.element);
+            const busy = kernel.use('busy');
+            busy.requestBusy(busyId, this.app.win.element);
             try {
               await PropertiesManager.show(selectedPaths);
             } finally {
-              releaseBusyState(busyId, this.app.win.element);
+              busy.releaseBusy(busyId, this.app.win.element);
             }
           },
         },
@@ -244,7 +242,7 @@ export class ContextMenuBuilder {
       menuItems.push({
         label: "Empty Recycle Bin",
         action: () => this.app.fileOps.emptyRecycleBin("/Recycle Bin"),
-        enabled: () => RecycleBinManager.isFullSync("/Recycle Bin"),
+        enabled: () => kernel.use('recycleBin').isFullSync("/Recycle Bin"),
       });
       menuItems.push("MENU_DIVIDER");
     }
@@ -289,18 +287,20 @@ export class ContextMenuBuilder {
         label: "Paste",
         action: () => this.app.fileOps.pasteItems(this.app.currentPath),
         enabled: () =>
-          !ClipboardManager.isEmpty() &&
+          !kernel.use('clipboard').isEmpty() &&
           (!isRoot || isVirtualDesktop) &&
           !isGlobalRecycleBin,
       },
       {
         label: "Paste Shortcut",
         action: () => this.app.fileOps.pasteShortcuts(this.app.currentPath),
-        enabled: () =>
-          !ClipboardManager.isEmpty() &&
-          ClipboardManager.operation === "copy" &&
+        enabled: () => {
+          const clipboard = kernel.use('clipboard');
+          return !clipboard.isEmpty() &&
+          clipboard.get().operation === "copy" &&
           (!isRoot || isVirtualDesktop) &&
-          !isGlobalRecycleBin,
+          !isGlobalRecycleBin;
+        },
       },
       "MENU_DIVIDER",
       {
@@ -331,11 +331,12 @@ export class ContextMenuBuilder {
             return;
           }
           const busyId = `properties-${Math.random()}`;
-          requestBusyState(busyId, this.app.win.element);
+          const busy = kernel.use('busy');
+          busy.requestBusy(busyId, this.app.win.element);
           try {
             await PropertiesManager.show([this.app.currentPath]);
           } finally {
-            releaseBusyState(busyId, this.app.win.element);
+            busy.releaseBusy(busyId, this.app.win.element);
           }
         },
       },

@@ -1,9 +1,5 @@
 import { WindowedApplication } from '../../system/application.js';
 import { soundSchemes } from '../../config/sound-schemes.js';
-import {
-  getSoundSchemeName,
-  setSoundScheme,
-} from '../../system/theme-manager.js';
 import { ICONS } from '../../config/icons.js';
 
 export class SoundSchemeExplorerApp extends WindowedApplication {
@@ -20,7 +16,7 @@ export class SoundSchemeExplorerApp extends WindowedApplication {
 
   constructor(options) {
     super(options);
-    this.initialSchemeName = getSoundSchemeName();
+    this.initialSchemeName = this.theme.getSoundSchemeName();
   }
 
   _createWindow() {
@@ -35,7 +31,7 @@ export class SoundSchemeExplorerApp extends WindowedApplication {
     this._onOpen(win);
 
     win.on("close", () => {
-      setSoundScheme(this.initialSchemeName);
+      this.theme.setSoundScheme(this.initialSchemeName);
     });
 
     this.win = win;
@@ -69,7 +65,7 @@ export class SoundSchemeExplorerApp extends WindowedApplication {
 
     this.select.addEventListener("change", () => {
       const newScheme = this.select.value;
-      setSoundScheme(newScheme);
+      this.theme.setSoundScheme(newScheme);
       this._updateSoundList(newScheme);
     });
 

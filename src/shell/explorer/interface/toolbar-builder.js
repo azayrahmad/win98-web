@@ -1,8 +1,7 @@
-import ClipboardManager from "../file-operations/clipboard-manager.js";
 import UndoManager from "../file-operations/undo-manager.js";
 import { getParentPath, getDisplayName } from "../navigation/path-utils.js";
 import { PropertiesManager } from "../file-operations/properties-manager.js";
-import { launchApp } from "../../../system/app-manager.js";
+import { kernel } from "../../../system/kernel.js";
 
 /**
  * ToolbarBuilder - Constructs toolbar items for ZenExplorer
@@ -205,7 +204,7 @@ export function getToolbarItems(app) {
       label: "Paste",
       iconName: "paste",
       action: () => app.fileOps.pasteItems(app.currentPath),
-      enabled: () => !ClipboardManager.isEmpty() && !isRoot(),
+      enabled: () => !kernel.use('clipboard').isEmpty() && !isRoot(),
     },
     "divider",
     {

@@ -2,15 +2,10 @@ import { fs, mount, umount, mounts } from "@zenfs/core";
 import { WebAccess } from "@zenfs/dom";
 import { Iso } from "@zenfs/archives";
 import { ShowDialogWindow } from '../../../shared/components/dialog-window.js';
-import {
-  requestBusyState,
-  releaseBusyState,
-} from '../../../system/busy-state-manager.js';
+import { kernel } from '../../../system/kernel.js';
 import { FloppyManager } from './floppy-manager.js';
 import { CDManager } from './cd-manager.js';
 import { RemovableDiskManager } from './removable-disk-manager.js';
-import { saveDiskHandle, removeDiskHandle } from '../../../system/removable-disk-persistence.js';
-import { DriveService } from '../../../system/drive-service.js';
 
 export class DriveManager {
   constructor(app) {
@@ -45,7 +40,8 @@ export class DriveManager {
       if (dialogWin) dialogWin.close();
 
       const busyRequesterId = "floppy-mount";
-      requestBusyState(busyRequesterId, this.app.win.element);
+      const busy = kernel.use('busy');
+      busy.requestBusy(busyRequesterId, this.app.win.element);
 
       try {
         const floppyFs = await WebAccess.create({ handle });
@@ -53,7 +49,7 @@ export class DriveManager {
         FloppyManager.setLabel(handle.name);
         document.dispatchEvent(new CustomEvent("floppy-change"));
       } finally {
-        releaseBusyState(busyRequesterId, this.app.win.element);
+        busy.releaseBusy(busyRequesterId, this.app.win.element);
       }
     } catch (err) {
       if (err.name !== "AbortError") {
@@ -67,11 +63,12 @@ export class DriveManager {
    */
   async ejectFloppy() {
     const busyId = "floppy-eject";
-    requestBusyState(busyId, this.app.win.element);
+    const busy = kernel.use('busy');
+    busy.requestBusy(busyId, this.app.win.element);
     try {
-      await DriveService.ejectDrive("A");
+      await kernel.use('drive').ejectDrive("A");
     } finally {
-      releaseBusyState(busyId, this.app.win.element);
+      busy.releaseBusy(busyId, this.app.win.element);
     }
   }
 
@@ -112,7 +109,8 @@ export class DriveManager {
       if (dialogWin) dialogWin.close();
 
       const busyRequesterId = "cd-mount";
-      requestBusyState(busyRequesterId, this.app.win.element);
+      const busy = kernel.use('busy');
+      busy.requestBusy(busyRequesterId, this.app.win.element);
 
       try {
         const file = await handle.getFile();
@@ -124,7 +122,7 @@ export class DriveManager {
         CDManager.setLabel(label);
         document.dispatchEvent(new CustomEvent("cd-change"));
       } finally {
-        releaseBusyState(busyRequesterId, this.app.win.element);
+        busy.releaseBusy(busyRequesterId, this.app.win.element);
       }
     } catch (err) {
       if (err.name !== "AbortError") {
@@ -138,11 +136,12 @@ export class DriveManager {
    */
   async ejectCD() {
     const busyId = "cd-eject";
-    requestBusyState(busyId, this.app.win.element);
+    const busy = kernel.use('busy');
+    busy.requestBusy(busyId, this.app.win.element);
     try {
-      await DriveService.ejectDrive("E");
+      await kernel.use('drive').ejectDrive("E");
     } finally {
-      releaseBusyState(busyId, this.app.win.element);
+      busy.releaseBusy(busyId, this.app.win.element);
     }
   }
 
@@ -160,7 +159,8 @@ export class DriveManager {
       const handle = await window.showDirectoryPicker();
 
       const busyRequesterId = `removable-mount-${letter}`;
-      requestBusyState(busyRequesterId, this.app.win.element);
+      const busy = kernel.use('busy');
+      busy.requestBusy(busyRequesterId, this.app.win.element);
 
       try {
         const mountPoint = `/${letter}:`;
@@ -172,10 +172,10 @@ export class DriveManager {
         const diskFs = await WebAccess.create({ handle });
         mount(mountPoint, diskFs);
         RemovableDiskManager.mount(letter, handle.name);
-        await saveDiskHandle(letter, handle);
+        await kernel.use('disks').saveDiskHandle(letter, handle);
         document.dispatchEvent(new CustomEvent("removable-disk-change"));
       } finally {
-        releaseBusyState(busyRequesterId, this.app.win.element);
+        busy.releaseBusy(busyRequesterId, this.app.win.element);
       }
     } catch (err) {
       if (err.name !== "AbortError") {
@@ -189,11 +189,12 @@ export class DriveManager {
    */
   async ejectRemovableDisk(letter) {
     const busyId = `removable-eject-${letter}`;
-    requestBusyState(busyId, this.app.win.element);
+    const busy = kernel.use('busy');
+    busy.requestBusy(busyId, this.app.win.element);
     try {
-      await DriveService.ejectDrive(letter);
+      await kernel.use('drive').ejectDrive(letter);
     } finally {
-      releaseBusyState(busyId, this.app.win.element);
+      busy.releaseBusy(busyId, this.app.win.element);
     }
   }
 }

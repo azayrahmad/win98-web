@@ -1,12 +1,11 @@
 import { ICONS, SHORTCUT_OVERLAY } from '../../../config/icons.js';
 import { getAssociation } from '../../../system/directory.js';
 import { getDisplayName, getPathName } from '../navigation/path-utils.js';
-import { RecycleBinManager } from '../file-operations/recycle-bin-manager.js';
 import { ShellManager } from '../extensions/shell-manager.js';
 import { fs } from "@zenfs/core";
 import { apps } from '../../../config/apps.js';
-import { getIconSchemeName } from '../../../system/theme-manager.js';
 import { iconSchemes } from '../../../config/icon-schemes.js';
+import { kernel } from '../../../system/kernel.js';
 
 /**
  * FileIconRenderer - Handles rendering of file/folder icons in ZenExplorer
@@ -19,7 +18,7 @@ import { iconSchemes } from '../../../config/icon-schemes.js';
  * @returns {Object} Icon object with 16 and 32 sizes
  */
 export function getThemedIconObj(specialType, isEmpty = true) {
-  const schemeName = getIconSchemeName();
+  const schemeName = kernel.use('theme').getIconSchemeName();
   const scheme = iconSchemes[schemeName] || iconSchemes.default;
 
   switch (specialType) {
@@ -173,21 +172,23 @@ export async function renderFileIcon(fileName, fullPath, isDir, options = {}) {
     iconObj = ICONS.folder;
   }
   // Special handling for Recycle Bin folder
-  else if (RecycleBinManager.isRecycleBinPath(fullPath)) {
+  else if (kernel.use('recycleBin').isRecycleBinPath(fullPath)) {
+    const recycleBin = kernel.use('recycleBin');
     const isEmpty =
       options.recycleBinEmpty !== undefined
         ? options.recycleBinEmpty
-        : await RecycleBinManager.isEmpty(fullPath);
+        : await recycleBin.isEmpty(fullPath);
     iconObj = getThemedIconObj("recycle", isEmpty);
   }
   // Special handling for items INSIDE Recycle Bin
-  else if (RecycleBinManager.isRecycledItemPath(fullPath)) {
+  else if (kernel.use('recycleBin').isRecycledItemPath(fullPath)) {
+    const recycleBin = kernel.use('recycleBin');
     const entry = options.stat?.isVirtual
       ? {
           originalName: options.stat.originalName,
           originalPath: options.stat.originalPath,
         }
-      : await RecycleBinManager.getRecycledItemInfo(fullPath);
+      : await recycleBin.getRecycledItemInfo(fullPath);
 
     if (entry) {
       iconObj = getIconObjForFile(entry.originalName, isDir);

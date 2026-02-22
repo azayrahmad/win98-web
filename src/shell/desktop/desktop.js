@@ -2,14 +2,9 @@
  * Win98DesktopManager - Handles desktop icons and desktop interactions using ZenExplorer logic
  */
 import { init as initTaskbar } from '../taskbar/taskbar.js';
-import { launchApp } from '../../system/app-manager.js';
 import {
-  getItem,
-  setItem,
-  removeItem,
   LOCAL_STORAGE_KEYS,
 } from '../../system/local-storage.js';
-import { getActiveTheme, applyTheme } from '../../system/theme-manager.js';
 import { getAssociation } from '../../system/directory.js';
 import { IconManager } from './icon-manager.js';
 import { isZenFSPath, getZenFSFileUrl } from '../../system/zenfs-utils.js';
@@ -22,9 +17,7 @@ import DragDropManager from '../../shell/explorer/file-operations/drag-drop-mana
 import LayoutManager from '../../shell/explorer/interface/layout-manager.js';
 import { sortFileInfos } from '../../shell/explorer/file-operations/sort-utils.js';
 import { joinPath } from '../../shell/explorer/navigation/path-utils.js';
-import ClipboardManager from '../../shell/explorer/file-operations/clipboard-manager.js';
-import screensaver from '../../system/screensaver-utils.js';
-import { getStartupApps } from '../../system/startup-manager.js';
+import { kernel } from '../../system/kernel.js';
 
 let desktopController;
 let isRefreshing = false;
@@ -53,7 +46,7 @@ class DesktopController {
     if (path === this.currentPath) {
       await refreshIcons();
     } else {
-      launchApp("explorer", path);
+      kernel.use('appManager').launchApp("explorer", path);
     }
   }
 
@@ -336,8 +329,9 @@ class DesktopController {
   }
 
   async onOpen(path) {
+    const appManager = kernel.use('appManager');
     const handled = await ShellManager.onOpen(path, {
-      navigateTo: (p) => launchApp("explorer", p),
+      navigateTo: (p) => appManager.launchApp("explorer", p),
     });
     if (handled) return;
 
@@ -348,17 +342,17 @@ class DesktopController {
         const data = JSON.parse(content);
         if (data.type === "shortcut") {
           if (data.appId) {
-            launchApp(data.appId, data.args);
+            appManager.launchApp(data.appId, data.args);
             return;
           } else if (data.targetPath) {
             const stats = await ShellManager.stat(data.targetPath);
             if (stats.isDirectory()) {
-              launchApp("explorer", data.targetPath);
+              appManager.launchApp("explorer", data.targetPath);
             } else {
               const targetName = data.targetPath.split("/").pop();
               const association = getAssociation(targetName);
               if (association.appId) {
-                launchApp(association.appId, ShellManager.getRealPath(data.targetPath));
+                appManager.launchApp(association.appId, ShellManager.getRealPath(data.targetPath));
               } else {
                 alert(`Cannot open file: ${targetName} (No association)`);
               }
@@ -373,11 +367,11 @@ class DesktopController {
 
     const stat = await ShellManager.stat(path);
     if (stat.isDirectory()) {
-      launchApp("explorer", path);
+      appManager.launchApp("explorer", path);
     } else {
       const association = getAssociation(path.split("/").pop());
       if (association.appId) {
-        launchApp(association.appId, ShellManager.getRealPath(path));
+        appManager.launchApp(association.appId, ShellManager.getRealPath(path));
       }
     }
   }
@@ -496,7 +490,7 @@ async function refreshIcons() {
 }
 
 function updateCutIcons() {
-  const { items, operation } = ClipboardManager.get();
+  const { items, operation } = kernel.use('clipboard').get();
   const cutPaths = operation === "cut" ? new Set(items) : new Set();
   const icons = document.querySelectorAll(".desktop .explorer-icon");
   icons.forEach((icon) => {
@@ -507,14 +501,16 @@ function updateCutIcons() {
 }
 
 function getWallpaperMode() {
-  return getItem(LOCAL_STORAGE_KEYS.WALLPAPER_MODE) || "tile";
+  return kernel.use('settings').get(LOCAL_STORAGE_KEYS.WALLPAPER_MODE) || "tile";
 }
 
 let currentWallpaperBlobUrl = null;
 
 async function applyWallpaper() {
-  const theme = getActiveTheme();
-  const wallpaper = getItem(LOCAL_STORAGE_KEYS.WALLPAPER) || theme.wallpaper;
+  const themeService = kernel.use('theme');
+  const theme = themeService.getActiveTheme();
+  const settings = kernel.use('settings');
+  const wallpaper = settings.get(LOCAL_STORAGE_KEYS.WALLPAPER) || theme.wallpaper;
   const desktop = document.querySelector(".desktop");
 
   if (currentWallpaperBlobUrl) {
@@ -556,7 +552,7 @@ async function applyWallpaper() {
 }
 
 function getMonitorType() {
-  return getItem(LOCAL_STORAGE_KEYS.MONITOR_TYPE) || "TFT";
+  return kernel.use('settings').get(LOCAL_STORAGE_KEYS.MONITOR_TYPE) || "TFT";
 }
 
 function applyMonitorType() {
@@ -570,7 +566,7 @@ function applyMonitorType() {
 
 export async function initDesktop(profile = null) {
   console.log("Initializing Desktop Manager...");
-  await applyTheme();
+  await kernel.use('theme').applyTheme();
   await applyWallpaper();
   applyMonitorType();
 
@@ -666,19 +662,20 @@ export async function initDesktop(profile = null) {
   initTaskbar();
 
   const launchStartupApps = async () => {
+    const appManager = kernel.use('appManager');
     if (profile) {
       if (profile.startup && profile.startup.length > 0) {
         profile.startup.forEach((app) => {
           const appId = typeof app === "string" ? app : app.appId;
           const data = typeof app === "object" ? app.data : null;
-          launchApp(appId, data);
+          appManager.launchApp(appId, data);
         });
       }
     } else {
-      const startupApps = await getStartupApps();
+      const startupApps = await kernel.use('startup').getStartupApps();
       if (startupApps && startupApps.length > 0) {
         startupApps.forEach((appId) => {
-          launchApp(appId);
+          appManager.launchApp(appId);
         });
       }
     }

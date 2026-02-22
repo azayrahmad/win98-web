@@ -2,13 +2,18 @@ import { fs, umount, mounts } from "@zenfs/core";
 import { RemovableDiskManager } from "../shell/explorer/drives/removable-disk-manager.js";
 import { FloppyManager } from "../shell/explorer/drives/floppy-manager.js";
 import { CDManager } from "../shell/explorer/drives/cd-manager.js";
-import { removeDiskHandle } from "./removable-disk-persistence.js";
 import { ShowDialogWindow } from "../shared/components/dialog-window.js";
 
 /**
- * DriveService - Centralized service for drive management and error handling
+ * DriveService manages storage devices, mounting/unmounting, and accessibility checks.
  */
-export const DriveService = {
+export class DriveService {
+  constructor(kernel) {
+    this.kernel = kernel;
+  }
+
+  get disks() { return this.kernel.use('disks'); }
+
   /**
    * Ejects a drive by letter
    * @param {string} letter
@@ -25,7 +30,6 @@ export const DriveService = {
       }
     }
 
-    // Clear managers
     if (upperLetter === "A") {
       FloppyManager.clear();
       document.dispatchEvent(new CustomEvent("floppy-change"));
@@ -34,11 +38,10 @@ export const DriveService = {
       document.dispatchEvent(new CustomEvent("cd-change"));
     } else {
       RemovableDiskManager.unmount(upperLetter);
-      await removeDiskHandle(upperLetter);
+      await this.disks.removeDiskHandle(upperLetter);
       document.dispatchEvent(new CustomEvent("removable-disk-change"));
     }
 
-    // Remove mount point directory from root FS
     try {
       if (fs.existsSync(mountPoint)) {
         await fs.promises.rmdir(mountPoint);
@@ -46,7 +49,7 @@ export const DriveService = {
     } catch (err) {
       console.warn(`Failed to remove mount point ${mountPoint}:`, err);
     }
-  },
+  }
 
   /**
    * Checks if a drive is still accessible
@@ -56,13 +59,12 @@ export const DriveService = {
   async isDriveAccessible(letter) {
     const mountPoint = `/${letter.toUpperCase()}:`;
     try {
-      // Attempt to read the root of the drive
       await fs.promises.readdir(mountPoint);
       return true;
     } catch (e) {
       return false;
     }
-  },
+  }
 
   /**
    * Notifies the user and ejects the drive
@@ -79,7 +81,7 @@ export const DriveService = {
     });
 
     await this.ejectDrive(upperLetter);
-  },
+  }
 
   /**
    * Handles a filesystem error, checking if it was caused by an inaccessible drive
@@ -92,18 +94,15 @@ export const DriveService = {
 
     const letter = driveMatch[1].toUpperCase();
 
-    // We only auto-eject removable drives (A:, E:, and others except C:)
     if (letter === "C") return;
 
-    // Check if it's currently mounted according to our managers
     const isMounted = letter === "A" || letter === "E" || RemovableDiskManager.isMounted(letter);
     if (!isMounted) return;
 
-    // Verify accessibility
     const accessible = await this.isDriveAccessible(letter);
     if (!accessible) {
       console.warn(`Drive ${letter}: is inaccessible. Triggering auto-eject.`);
       await this.notifyAndEject(letter);
     }
   }
-};
+}

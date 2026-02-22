@@ -1,4 +1,4 @@
-import { getThemes, getColorSchemes } from '../../system/theme-manager.js';
+import { kernel } from '../../system/kernel.js';
 
 const themeCssCache = {};
 
@@ -6,7 +6,7 @@ export async function fetchThemeCss(schemeId) {
   if (!schemeId) return null;
   if (themeCssCache[schemeId]) return themeCssCache[schemeId];
 
-  const schemes = getColorSchemes();
+  const schemes = kernel.use('theme').getColorSchemes();
   const scheme = schemes[schemeId];
 
   if (scheme && scheme.loader) {
@@ -88,8 +88,9 @@ function applyCssVariables(container, variables) {
 }
 
 export async function applyThemeToPreview(schemeId, previewContainer) {
-  const schemes = getColorSchemes();
-  const themes = getThemes();
+  const themeService = kernel.use('theme');
+  const schemes = themeService.getColorSchemes();
+  const themes = themeService.getThemes();
   const scheme = schemes[schemeId];
   const theme = themes[schemeId]; // For custom themes
 

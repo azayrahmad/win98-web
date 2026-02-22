@@ -1,11 +1,7 @@
 import splashBg from "../assets/img/splash.png";
-import { initDesktop } from "../shell/desktop/desktop.js";
 import { getItem, LOCAL_STORAGE_KEYS } from "./local-storage.js";
 import { registerCustomApp } from "./custom-app-manager.js";
-import { taskbar } from "../shell/taskbar/taskbar.js";
 import { ShowDialogWindow } from "../shared/components/dialog-window.js";
-import { playSound } from "./sound-manager.js";
-import { setTheme, getCurrentTheme, setColorScheme } from "./theme-manager.js";
 import { profiles } from "../config/profiles.js";
 import {
   hideBootScreen,
@@ -33,8 +29,13 @@ import { RecycleBinService } from "./recycle-bin-service.js";
 import { AssetService } from "./asset-service.js";
 import { ClipboardService } from "./clipboard-service.js";
 import { DiskService } from "./disk-service.js";
+import { DriveService } from "./drive-service.js";
 import { ShellService } from "./shell-service.js";
 import { FileService } from "./file-service.js";
+import { SpeechService } from "./speech-service.js";
+import { StartupService } from "./startup-service.js";
+import { CustomAppService } from "./custom-app-service.js";
+import { ScreensaverService } from "./screensaver-service.js";
 import { BootManager } from "./boot-manager.js";
 import * as Tasks from "./boot-tasks.js";
 
@@ -54,8 +55,13 @@ export async function initializeOS() {
   kernel.registerService("assets", new AssetService());
   kernel.registerService("clipboard", new ClipboardService());
   kernel.registerService("disks", new DiskService());
+  kernel.registerService("drive", new DriveService(kernel));
   kernel.registerService("shell", new ShellService());
   kernel.registerService("file", new FileService());
+  kernel.registerService("speech", new SpeechService());
+  kernel.registerService("startup", new StartupService(kernel));
+  kernel.registerService("customApps", new CustomAppService(kernel));
+  kernel.registerService("screensaver", new ScreensaverService(kernel));
 
   // For backward compatibility and global access
   window.System = kernel.use("windowManager");
@@ -73,8 +79,8 @@ export async function initializeOS() {
   if (profileName && !ignoredProfiles.includes(profileName)) {
     if (profiles[profileName]) {
       window.activeProfile = profiles[profileName];
-      await setTheme(window.activeProfile.theme);
-      await setColorScheme(window.activeProfile.colorScheme);
+      await kernel.use('theme').setTheme(window.activeProfile.theme);
+      await kernel.use('theme').setColorScheme(window.activeProfile.colorScheme);
     } else {
       window.location.href =
         (import.meta.env.BASE_URL || "/win98-web/") + "404.html";
@@ -179,11 +185,11 @@ export async function initializeOS() {
     });
 
     window.ShowDialogWindow = ShowDialogWindow;
-    window.playSound = playSound;
-    window.setTheme = setTheme;
+    window.playSound = (event) => kernel.use('sound').play(event);
+    window.setTheme = (theme) => kernel.use('theme').setTheme(theme);
     window.fs = fs;
     window.mounts = mounts;
-    window.RecycleBinManager = RecycleBinManager;
+    window.RecycleBinManager = kernel.use('recycleBin');
     await kernel.boot();
     console.log("azOS initialized");
 
@@ -191,15 +197,16 @@ export async function initializeOS() {
 
     function resetInactivityTimer() {
       clearTimeout(inactivityTimer);
-      if (screensaver.active) {
-        screensaver.hide();
+      const screensaverService = kernel.use('screensaver');
+      if (screensaverService.active) {
+        screensaverService.hide();
       }
 
       const timeoutDuration =
-        getItem(LOCAL_STORAGE_KEYS.SCREENSAVER_TIMEOUT) || 5 * 60 * 1000;
+        kernel.use('settings').get(LOCAL_STORAGE_KEYS.SCREENSAVER_TIMEOUT) || 5 * 60 * 1000;
 
       inactivityTimer = setTimeout(() => {
-        screensaver.show();
+        screensaverService.show();
       }, timeoutDuration);
     }
 

@@ -2,29 +2,12 @@ import { WindowedApplication } from '../../system/application.js';
 import { ICONS } from '../../config/icons.js';
 import { iconSchemes } from '../../config/icon-schemes.js';
 import {
-  getThemes,
-  setTheme,
-  saveCustomTheme,
-  deleteCustomTheme,
-  getCurrentTheme,
-  loadThemeParser,
-  getColorSchemeId,
-  getActiveTheme,
-  getIconSchemeName,
-  getColorSchemes,
-} from '../../system/theme-manager.js';
-import {
   fetchThemeCss,
   parseCssVariables,
   applyThemeToPreview,
   applyPropertiesToPreview,
 } from '../../shell/display-properties/theme-preview.js';
 import { LOCAL_STORAGE_KEYS } from '../../system/local-storage.js';
-import {
-  requestBusyState,
-  releaseBusyState,
-} from '../../system/busy-state-manager.js';
-import screensaverManager from '../../system/screensaver-utils.js';
 import previewHtml from "./DesktopThemesPreview.html?raw";
 import "./desktop-themes.css";
 
@@ -134,9 +117,9 @@ export class DesktopThemesApp extends WindowedApplication {
     this.screenSaverButton.textContent = "Screen Saver";
     this.screenSaverButton.disabled = true;
     this.screenSaverButton.addEventListener("click", () => {
-      const selectedTheme = getThemes()[this.themeSelector.value];
+      const selectedTheme = this.theme.getThemes()[this.themeSelector.value];
       if (selectedTheme?.screensaver) {
-        screensaverManager.showPreview(selectedTheme.screensaver);
+        this.kernel.use('screensaver').showPreview(selectedTheme.screensaver);
       }
     });
     previewsFieldset.appendChild(this.screenSaverButton);
@@ -195,14 +178,14 @@ export class DesktopThemesApp extends WindowedApplication {
     `;
     rightPanel.appendChild(settingsFieldset);
 
-    const themes = getThemes();
-    const colorSchemes = getColorSchemes();
-    const activeTheme = getActiveTheme();
-    const currentColorSchemeId = getColorSchemeId() || activeTheme.id;
+    const themes = this.theme.getThemes();
+    const colorSchemes = this.theme.getColorSchemes();
+    const activeTheme = this.theme.getActiveTheme();
+    const currentColorSchemeId = this.theme.getColorSchemeId() || activeTheme.id;
     const currentColorScheme = colorSchemes[currentColorSchemeId];
     const currentColorSchemeTheme = themes[currentColorSchemeId] || activeTheme;
     const currentWallpaper =
-      this.kernel.use('settings').get(LOCAL_STORAGE_KEYS.WALLPAPER) || activeTheme.wallpaper;
+      this.settings.get(LOCAL_STORAGE_KEYS.WALLPAPER) || activeTheme.wallpaper;
 
     let currentColors = {};
     if (currentColorSchemeTheme.isCustom && currentColorSchemeTheme.colors) {
@@ -221,7 +204,7 @@ export class DesktopThemesApp extends WindowedApplication {
       }
     }
 
-    const currentIconScheme = getIconSchemeName();
+    const currentIconScheme = this.theme.getIconSchemeName();
 
     this.customThemeProperties = {
       ...currentColors,
@@ -255,7 +238,7 @@ export class DesktopThemesApp extends WindowedApplication {
       if (this.themeSelector.value === "current-settings") {
         this.applyCustomTheme();
       } else {
-        setTheme(this.themeSelector.value);
+        this.theme.setTheme(this.themeSelector.value);
       }
     };
 
@@ -276,9 +259,9 @@ export class DesktopThemesApp extends WindowedApplication {
   }
 
   async applyCustomTheme() {
-    const themes = getThemes();
+    const themes = this.theme.getThemes();
     const baseTheme = themes["default"];
-    await loadThemeParser();
+    await this.theme.loadThemeParser();
     const cssContent = window.makeThemeCSSFile(this.customThemeProperties);
 
     const existingStyle = document.getElementById("custom-theme-styles");
@@ -301,7 +284,7 @@ export class DesktopThemesApp extends WindowedApplication {
       wallpaper: wallpaper,
     };
 
-    setTheme("custom", customTheme);
+    this.theme.setTheme("custom", customTheme);
   }
 
   handleCustomThemeLoad() {
@@ -327,7 +310,7 @@ export class DesktopThemesApp extends WindowedApplication {
     reader.onload = async (e) => {
       const themeContent = e.target.result;
       try {
-        await loadThemeParser();
+        await this.theme.loadThemeParser();
         const colors = window.getColorsFromThemeFile(themeContent);
         const wallpaper = window.getWallpaperFromThemeFile(themeContent);
         if (colors) {
@@ -451,7 +434,7 @@ export class DesktopThemesApp extends WindowedApplication {
   }
 
   saveTheme(name) {
-    const themes = getThemes();
+    const themes = this.theme.getThemes();
     let finalName = name;
     let counter = 2;
     while (Object.values(themes).some((theme) => theme.name === finalName)) {
@@ -470,7 +453,7 @@ export class DesktopThemesApp extends WindowedApplication {
       isCustom: true,
     };
 
-    saveCustomTheme(newThemeId, newTheme);
+    this.theme.saveCustomTheme(newThemeId, newTheme);
 
     // We don't call populateThemes directly anymore, the event listener handles it.
     // The event listener will call populateThemes, which will then restore the selection.
@@ -479,17 +462,17 @@ export class DesktopThemesApp extends WindowedApplication {
 
   handleDeleteTheme() {
     const selectedThemeId = this.themeSelector.value;
-    const selectedTheme = getThemes()[selectedThemeId];
+    const selectedTheme = this.theme.getThemes()[selectedThemeId];
 
     if (selectedTheme?.isCustom) {
-      this.kernel.use('ui').showDialog({
+      this.ui.showDialog({
         title: "Delete Scheme",
         text: `Are you sure you want to delete "${selectedTheme.name}"?`,
         buttons: [
           {
             label: "Yes",
             action: () => {
-              deleteCustomTheme(selectedThemeId);
+              this.theme.deleteCustomTheme(selectedThemeId);
               this.themeSelector.value = "default";
             },
           },
@@ -501,10 +484,10 @@ export class DesktopThemesApp extends WindowedApplication {
 
   async handleThemeSelection() {
     const selectionId = `theme-selection-${Date.now()}`;
-    requestBusyState(selectionId, this.win.$content[0]);
+    this.busy.requestBusy(selectionId, this.win.$content[0]);
     try {
       const selectedValue = this.themeSelector.value;
-      const selectedTheme = getThemes()[selectedValue];
+      const selectedTheme = this.theme.getThemes()[selectedValue];
 
       if (selectedValue === "load-custom") {
         this.handleCustomThemeLoad();
@@ -527,7 +510,7 @@ export class DesktopThemesApp extends WindowedApplication {
         this.previewLabel.textContent = `Preview of '${selectedTheme.name}'`;
       }
     } finally {
-      releaseBusyState(selectionId, this.win.$content[0]);
+      this.busy.releaseBusy(selectionId, this.win.$content[0]);
     }
   }
 
@@ -556,7 +539,7 @@ export class DesktopThemesApp extends WindowedApplication {
 
     this.addTemporaryThemeOption();
 
-    const themes = getThemes();
+    const themes = this.theme.getThemes();
     const sortedThemes = Object.entries(themes).sort(([, a], [, b]) =>
       a.name.localeCompare(b.name),
     );
@@ -585,7 +568,7 @@ export class DesktopThemesApp extends WindowedApplication {
     ) {
       this.themeSelector.value = lastSelected;
     } else {
-      this.themeSelector.value = getCurrentTheme();
+      this.themeSelector.value = this.theme.getActiveThemeId();
     }
     await this.handleThemeSelection();
   }
@@ -611,7 +594,7 @@ export class DesktopThemesApp extends WindowedApplication {
   }
 
   async previewTheme(themeId) {
-    const theme = getThemes()[themeId];
+    const theme = this.theme.getThemes()[themeId];
     if (!theme) return;
 
     this.updatePreviewIcons(theme.iconScheme);

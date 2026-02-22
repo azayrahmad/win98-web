@@ -1,8 +1,5 @@
 import { mounts } from "@zenfs/core";
-import {
-  requestBusyState,
-  releaseBusyState,
-} from '../../../system/busy-state-manager.js';
+import { kernel } from '../../../system/kernel.js';
 import { NavigationHistory } from './navigation-history.js';
 import {
   getParentPath,
@@ -19,7 +16,8 @@ export class NavigationController {
     if (!path) return;
 
     const busyId = `nav-${Math.random()}`;
-    requestBusyState(busyId, this.app.win.element);
+    const busy = kernel.use('busy');
+    busy.requestBusy(busyId, this.app.win.element);
 
     try {
       if (path === "My Computer") {
@@ -89,7 +87,7 @@ export class NavigationController {
     } catch (err) {
       console.error("Navigation failed", err);
     } finally {
-      releaseBusyState(busyId, this.app.win.element);
+      busy.releaseBusy(busyId, this.app.win.element);
     }
   }
 

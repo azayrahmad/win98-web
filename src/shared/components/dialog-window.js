@@ -1,4 +1,4 @@
-import { playSound } from "../../system/sound-manager.js";
+import { kernel } from "../../system/kernel.js";
 
 /**
  * @typedef {object} DialogButton
@@ -151,7 +151,7 @@ function ShowDialogWindow(options) {
     }
 
     modalOverlay.onclick = () => {
-      playSound("Default");
+      kernel.use('sound').play("Default");
     };
 
     // Use a high z-index, but relative to the window manager's current z-index
@@ -170,7 +170,7 @@ function ShowDialogWindow(options) {
 
   // Play sound
   if (soundEvent) {
-    playSound(soundEvent);
+    kernel.use('sound').play(soundEvent);
   }
 
   // Auto-height adjustment

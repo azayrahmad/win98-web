@@ -9,7 +9,6 @@ import { findBestDropTarget } from '../../apps/solitaire/solitaire-helper.js';
 import "./solitaire.css";
 import "./options.css";
 import "./solitaire-shared.css";
-import { preloadImage } from '../../system/asset-preloader.js';
 import solitaireSprite from "./assets/solitaire.png";
 
 const animatedCardBacks = {
@@ -30,9 +29,9 @@ export class SolitaireApp extends WindowedApplication {
   };
 
   async _createWindow() {
-    await preloadImage(solitaireSprite);
+    await this.assets.preloadImage(solitaireSprite);
 
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.ui.createWindow({
       title: this.config.title,
       outerWidth: this.config.width,
       outerHeight: this.config.height,

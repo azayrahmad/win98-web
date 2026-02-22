@@ -7,8 +7,6 @@ import {
 import { themes } from '../config/themes.js';
 import { colorSchemes } from '../config/color-schemes.js';
 import { applyCursorTheme } from './cursor-manager.js';
-import { preloadThemeAssets } from './asset-preloader.js';
-import screensaverManager from './screensaver-utils.js';
 
 /**
  * ThemeService manages OS-wide visual themes, including colors, cursors,
@@ -220,10 +218,10 @@ export class ThemeService {
       }
 
       if (newTheme.screensaver) {
-        screensaverManager.setCurrentScreensaver(newTheme.screensaver);
+        this.kernel.use('screensaver').setCurrentScreensaver(newTheme.screensaver);
       }
 
-      await preloadThemeAssets(themeKey);
+      await this.kernel.use('assets').preloadThemeAssets(themeKey);
       await this.applyTheme();
 
       document.dispatchEvent(new CustomEvent("wallpaper-changed"));

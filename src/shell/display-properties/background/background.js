@@ -1,4 +1,5 @@
-import { setItem, LOCAL_STORAGE_KEYS } from '../../../system/local-storage.js';
+import { LOCAL_STORAGE_KEYS } from '../../../system/local-storage.js';
+import { kernel } from '../../../system/kernel.js';
 import { ShowFilePicker } from '../../../shared/utils/file-picker.js';
 import { getZenFSFileAsBlob, isZenFSPath, getZenFSFileUrl } from '../../../system/zenfs-utils.js';
 import { fs } from "@zenfs/core";
@@ -180,12 +181,13 @@ export const backgroundTab = {
     });
   },
   applyChanges(app) {
+    const settings = kernel.use('settings');
     if (app.selectedWallpaper === "none") {
-      setItem(LOCAL_STORAGE_KEYS.WALLPAPER, null);
+      settings.set(LOCAL_STORAGE_KEYS.WALLPAPER, null);
     } else {
-      setItem(LOCAL_STORAGE_KEYS.WALLPAPER, app.selectedWallpaper);
+      settings.set(LOCAL_STORAGE_KEYS.WALLPAPER, app.selectedWallpaper);
     }
-    setItem(LOCAL_STORAGE_KEYS.WALLPAPER_MODE, app.selectedWallpaperMode);
+    settings.set(LOCAL_STORAGE_KEYS.WALLPAPER_MODE, app.selectedWallpaperMode);
     document.dispatchEvent(new CustomEvent("wallpaper-changed"));
   },
 };

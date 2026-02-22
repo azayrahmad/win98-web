@@ -1,9 +1,4 @@
-import {
-  getVolume,
-  setVolume,
-  getMuted,
-  setMuted,
-} from "../../system/sound-manager.js";
+import { kernel } from "../../system/kernel.js";
 import { createTaskbarButton, removeTaskbarButton } from "./taskbar.js";
 import { ICONS } from "../../config/icons.js";
 
@@ -122,8 +117,9 @@ class VolumeControl {
     container.style.alignItems = "center";
     container.tabIndex = -1; // Make it focusable
 
-    const currentVolume = getVolume();
-    const isMuted = getMuted();
+    const soundService = kernel.use('sound');
+    const currentVolume = soundService.getVolume();
+    const isMuted = soundService.getMuted();
 
     // Use standard 98.css structure as much as possible
     container.innerHTML = `
@@ -144,12 +140,12 @@ class VolumeControl {
 
     const slider = container.querySelector("#volume-slider");
     slider.addEventListener("input", (e) => {
-      setVolume(e.target.value / 100);
+      soundService.setVolume(e.target.value / 100);
     });
 
     const muteCheckbox = container.querySelector("#mute-checkbox");
     muteCheckbox.addEventListener("change", (e) => {
-      setMuted(e.target.checked);
+      soundService.setMuted(e.target.checked);
     });
   }
 

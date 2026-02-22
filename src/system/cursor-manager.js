@@ -1,6 +1,6 @@
 import { convertAniBinaryToCSS } from "ani-cursor";
 import { cursors, getCursorThemes } from '../config/cursors.js';
-import { getCursorSchemeId } from './theme-manager.js';
+import { kernel } from './kernel.js';
 
 const styleMap = new Map();
 
@@ -100,7 +100,7 @@ export function clearWaitCursor(element = document.body) {
 }
 
 export function applyCursorTheme() {
-  const themeId = getCursorSchemeId();
+  const themeId = kernel.use('theme').getCursorSchemeId();
   const root = document.documentElement;
   let themeConfig = getCursorThemes(themeId);
   if (!themeConfig) themeConfig = getCursorThemes("default");

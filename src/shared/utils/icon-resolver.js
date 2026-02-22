@@ -1,6 +1,6 @@
-import { getIconSchemeName } from '../../system/theme-manager.js';
 import { iconSchemes } from '../../config/icon-schemes.js';
 import { ICONS } from '../../config/icons.js';
+import { kernel } from '../../system/kernel.js';
 
 /**
  * Retrieves the icon for a given identifier, considering the current icon scheme.
@@ -10,7 +10,7 @@ import { ICONS } from '../../config/icons.js';
  * @returns {object} The icon object with 16 and 32 pixel versions, or null if not found.
  */
 export function getIcon(iconIdentifier) {
-  const iconSchemeName = getIconSchemeName() || "default";
+  const iconSchemeName = kernel.use('theme').getIconSchemeName() || "default";
   const scheme = iconSchemes[iconSchemeName] || iconSchemes["default"];
 
   return (

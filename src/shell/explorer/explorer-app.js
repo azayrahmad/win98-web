@@ -18,7 +18,6 @@ import { DirectoryView } from './interface/directory-view.js';
 import { DriveManager } from './drives/drive-manager.js';
 import { ContextMenuBuilder } from './interface/context-menu-builder.js';
 import { KeyboardHandler } from './interface/keyboard-handler.js';
-import { RecycleBinManager } from './file-operations/recycle-bin-manager.js';
 import { PropertiesManager } from './file-operations/properties-manager.js';
 import DragDropManager from './file-operations/drag-drop-manager.js';
 import LayoutManager from './interface/layout-manager.js';
@@ -229,7 +228,7 @@ export class ZenExplorerApp extends WindowedApplication {
             let iconObj = vItem.icon;
             if (!iconObj) {
               if (vItem.name === "My Computer") iconObj = getThemedIconObj("computer");
-              else if (vItem.name === "Recycle Bin") iconObj = getThemedIconObj("recycle", await RecycleBinManager.isEmpty("/Recycle Bin"));
+            else if (vItem.name === "Recycle Bin") iconObj = getThemedIconObj("recycle", await this.recycleBin.isEmpty("/Recycle Bin"));
               else if (vItem.name === "Network Neighborhood") iconObj = getThemedIconObj("network");
             }
             if (!iconObj) iconObj = ICONS.folder;
@@ -444,7 +443,7 @@ export class ZenExplorerApp extends WindowedApplication {
         const path = icon.getAttribute("data-path");
         const type = icon.getAttribute("data-type");
 
-        if (RecycleBinManager.isRecycledItemPath(path)) {
+        if (this.recycleBin.isRecycledItemPath(path)) {
           PropertiesManager.show([path]);
           return;
         }
@@ -645,7 +644,7 @@ export class ZenExplorerApp extends WindowedApplication {
     const fileInfos = [];
     for (const file of files) {
       if (file === ".zen_layout.json") continue;
-      if (RecycleBinManager.isRecycleBinPath(this.currentPath) && file === ".metadata.json") continue;
+      if (this.recycleBin.isRecycleBinPath(this.currentPath) && file === ".metadata.json") continue;
 
       const fullPath = joinPath(this.currentPath, file);
       try {

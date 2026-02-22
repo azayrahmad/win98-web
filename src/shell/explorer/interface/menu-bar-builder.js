@@ -1,17 +1,11 @@
 import { ShowDialogWindow } from "../../../shared/components/dialog-window.js";
 import { mounts } from "@zenfs/core";
-import {
-  requestBusyState,
-  releaseBusyState,
-} from "../../../system/busy-state-manager.js";
+import { kernel } from "../../../system/kernel.js";
 import { getDisplayName, getParentPath } from "../navigation/path-utils.js";
-import ClipboardManager from "../file-operations/clipboard-manager.js";
 import { PropertiesManager } from "../file-operations/properties-manager.js";
 import UndoManager from "../file-operations/undo-manager.js";
 import { RemovableDiskManager } from "../drives/removable-disk-manager.js";
-import { RecycleBinManager } from "../file-operations/recycle-bin-manager.js";
 import { FAVORITES_PATH } from "../../start-menu/start-menu-utils.js";
-import { launchApp } from "../../../system/app-manager.js";
 
 export class MenuBarBuilder {
   constructor(app) {
@@ -57,7 +51,7 @@ export class MenuBarBuilder {
       (p) => getParentPath(p) === "/",
     );
     const isRoot = this.app.currentPath === "/";
-    const isRecycleBin = RecycleBinManager.isRecycleBinPath(
+    const isRecycleBin = kernel.use('recycleBin').isRecycleBinPath(
       this.app.currentPath,
     );
 
@@ -89,16 +83,18 @@ export class MenuBarBuilder {
         label: "&Paste",
         shortcutLabel: "Ctrl+V",
         action: () => this.app.fileOps.pasteItems(this.app.currentPath),
-        enabled: () => !ClipboardManager.isEmpty() && !isRoot && !isRecycleBin,
+        enabled: () => !kernel.use('clipboard').isEmpty() && !isRoot && !isRecycleBin,
       },
       {
         label: "Paste &Shortcut",
         action: () => this.app.fileOps.pasteShortcuts(this.app.currentPath),
-        enabled: () =>
-          !ClipboardManager.isEmpty() &&
-          ClipboardManager.operation === "copy" &&
+        enabled: () => {
+          const clipboard = kernel.use('clipboard');
+          return !clipboard.isEmpty() &&
+          clipboard.get().operation === "copy" &&
           !isRoot &&
-          !isRecycleBin,
+          !isRecycleBin;
+        },
       },
     ];
   }
@@ -112,11 +108,12 @@ export class MenuBarBuilder {
       (p) => getParentPath(p) === "/",
     );
     const isRoot = this.app.currentPath === "/";
-    const isRecycleBin = RecycleBinManager.isRecycleBinPath(
+    const recycleBin = kernel.use('recycleBin');
+    const isRecycleBin = recycleBin.isRecycleBinPath(
       this.app.currentPath,
     );
     const anyRecycledItem = selectedPaths.some((p) =>
-      RecycleBinManager.isRecycledItemPath(p),
+      recycleBin.isRecycledItemPath(p),
     );
 
     const items = [];
@@ -132,7 +129,7 @@ export class MenuBarBuilder {
       items.push({
         label: "Empty Recycle &Bin",
         action: () => this.app.fileOps.emptyRecycleBin(),
-        enabled: () => RecycleBinManager.isFullSync(this.app.currentPath),
+        enabled: () => recycleBin.isFullSync(this.app.currentPath),
       });
     }
 
@@ -270,11 +267,12 @@ export class MenuBarBuilder {
           }
 
           const busyId = `properties-${Math.random()}`;
-          requestBusyState(busyId, this.app.win.element);
+          const busy = kernel.use('busy');
+          busy.requestBusy(busyId, this.app.win.element);
           try {
             await PropertiesManager.show(targets);
           } finally {
-            releaseBusyState(busyId, this.app.win.element);
+            busy.releaseBusy(busyId, this.app.win.element);
           }
         },
       },
@@ -367,12 +365,12 @@ export class MenuBarBuilder {
     return [
       {
         label: "New &Retro Window",
-        action: () => window.System.launchApp("explorer", "azay.rahmad"),
+        action: () => kernel.use('appManager').launchApp("explorer", "azay.rahmad"),
       },
       {
         label: "New &Live Window",
         action: () =>
-          window.System.launchApp("explorer", {
+          kernel.use('appManager').launchApp("explorer", {
             path: "azay.rahmad",
             retroMode: false,
           }),

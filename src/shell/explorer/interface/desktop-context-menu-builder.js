@@ -1,33 +1,18 @@
 import { ContextMenuBuilder } from "./context-menu-builder.js";
 import {
-  getThemes,
-  getCurrentTheme,
-  setTheme,
-} from "../../../system/theme-manager.js";
-import {
-  setColorMode,
-  getCurrentColorMode,
-  getColorModes,
-} from "../../../system/color-mode-manager.js";
-import screensaver from "../../../system/screensaver-utils.js";
-import {
-  getAvailableResolutions,
-  setResolution,
-  getCurrentResolutionId,
-} from "../../../system/screen-manager.js";
-import {
-  getItem,
-  setItem,
-  removeItem,
   LOCAL_STORAGE_KEYS,
 } from "../../../system/local-storage.js";
-import { launchApp } from "../../../system/app-manager.js";
-import ClipboardManager from "../file-operations/clipboard-manager.js";
+import { kernel } from "../../../system/kernel.js";
 import { launchDisplayPropertiesApp } from "../../display-properties/index.js";
 
 export class DesktopContextMenuBuilder extends ContextMenuBuilder {
   buildBackgroundMenu(e) {
-    const themes = getThemes();
+    const themeService = kernel.use('theme');
+    const settings = kernel.use('settings');
+    const displayService = kernel.use('display');
+    const screensaver = kernel.use('screensaver');
+    const clipboard = kernel.use('clipboard');
+    const themes = themeService.getThemes();
 
     const setWallpaper = () => {
       const input = document.createElement("input");
@@ -39,7 +24,7 @@ export class DesktopContextMenuBuilder extends ContextMenuBuilder {
           const reader = new FileReader();
           reader.onload = (readerEvent) => {
             const dataUrl = readerEvent.target.result;
-            setItem(LOCAL_STORAGE_KEYS.WALLPAPER, dataUrl);
+            settings.set(LOCAL_STORAGE_KEYS.WALLPAPER, dataUrl);
             document.dispatchEvent(new CustomEvent("wallpaper-changed"));
           };
           reader.readAsDataURL(file);
@@ -49,21 +34,21 @@ export class DesktopContextMenuBuilder extends ContextMenuBuilder {
     };
 
     const removeWallpaper = () => {
-      removeItem(LOCAL_STORAGE_KEYS.WALLPAPER);
+      settings.remove(LOCAL_STORAGE_KEYS.WALLPAPER);
       document.dispatchEvent(new CustomEvent("wallpaper-changed"));
     };
 
     const getWallpaperMode = () =>
-      getItem(LOCAL_STORAGE_KEYS.WALLPAPER_MODE) || "tile";
+      settings.get(LOCAL_STORAGE_KEYS.WALLPAPER_MODE) || "tile";
     const setWallpaperMode = (mode) => {
-      setItem(LOCAL_STORAGE_KEYS.WALLPAPER_MODE, mode);
+      settings.set(LOCAL_STORAGE_KEYS.WALLPAPER_MODE, mode);
       document.dispatchEvent(new CustomEvent("wallpaper-changed"));
     };
 
     const getMonitorType = () =>
-      getItem(LOCAL_STORAGE_KEYS.MONITOR_TYPE) || "TFT";
+      settings.get(LOCAL_STORAGE_KEYS.MONITOR_TYPE) || "TFT";
     const setMonitorType = (type) => {
-      setItem(LOCAL_STORAGE_KEYS.MONITOR_TYPE, type);
+      settings.set(LOCAL_STORAGE_KEYS.MONITOR_TYPE, type);
       if (type === "CRT") {
         document.body.classList.add("scanlines");
       } else {
@@ -93,13 +78,13 @@ export class DesktopContextMenuBuilder extends ContextMenuBuilder {
       {
         label: "Paste",
         action: () => this.app.fileOps.pasteItems(this.app.currentPath),
-        enabled: () => !ClipboardManager.isEmpty(),
+        enabled: () => !clipboard.isEmpty(),
       },
       {
         label: "Paste Shortcut",
         action: () => this.app.fileOps.pasteShortcuts(this.app.currentPath),
         enabled: () =>
-          !ClipboardManager.isEmpty() && ClipboardManager.operation === "copy",
+          !clipboard.isEmpty() && clipboard.get().operation === "copy",
       },
       "MENU_DIVIDER",
       {
@@ -144,12 +129,12 @@ export class DesktopContextMenuBuilder extends ContextMenuBuilder {
         label: "Color Mode",
         submenu: [
           {
-            radioItems: Object.entries(getColorModes()).map(([id, mode]) => ({
+            radioItems: Object.entries(displayService.getColorModes()).map(([id, mode]) => ({
               label: mode.name,
               value: id,
             })),
-            getValue: () => getCurrentColorMode(),
-            setValue: (value) => setColorMode(value),
+            getValue: () => displayService.getCurrentColorMode(),
+            setValue: (value) => displayService.setColorMode(value),
             ariaLabel: "Color Mode",
           },
         ],
@@ -163,9 +148,9 @@ export class DesktopContextMenuBuilder extends ContextMenuBuilder {
               label: theme.name,
               value: theme.id,
             })),
-            getValue: () => getCurrentTheme(),
+            getValue: () => themeService.getActiveThemeId(),
             setValue: (value) => {
-              setTheme(value);
+              themeService.setTheme(value);
             },
             ariaLabel: "Desktop Theme",
           },
@@ -190,12 +175,12 @@ export class DesktopContextMenuBuilder extends ContextMenuBuilder {
         label: "Screen Resolution",
         submenu: [
           {
-            radioItems: getAvailableResolutions().map((res) => ({
+            radioItems: displayService.getAvailableResolutions().map((res) => ({
               label: res === "fit" ? "Fit Screen" : res,
               value: res,
             })),
-            getValue: () => getCurrentResolutionId(),
-            setValue: (value) => setResolution(value),
+            getValue: () => displayService.getCurrentResolutionId(),
+            setValue: (value) => displayService.setResolution(value),
             ariaLabel: "Screen Resolution",
           },
         ],
@@ -228,9 +213,9 @@ export class DesktopContextMenuBuilder extends ContextMenuBuilder {
                   { label: "1 hour", value: 3600000 },
                 ],
                 getValue: () =>
-                  getItem(LOCAL_STORAGE_KEYS.SCREENSAVER_TIMEOUT) || 300000,
+                  settings.get(LOCAL_STORAGE_KEYS.SCREENSAVER_TIMEOUT) || 300000,
                 setValue: (value) => {
-                  setItem(LOCAL_STORAGE_KEYS.SCREENSAVER_TIMEOUT, value);
+                  settings.set(LOCAL_STORAGE_KEYS.SCREENSAVER_TIMEOUT, value);
                 },
                 ariaLabel: "Screen Saver Wait Time",
               },

@@ -4,7 +4,6 @@ import mediaPlayerHTML from "./media-player.html?raw";
 import mediaPlayerIcon from "./assets/mediaplayer.png";
 import { ICONS } from '../../config/icons.js';
 import { isZenFSPath, getZenFSFileUrl } from '../../system/zenfs-utils.js';
-import { getVolume, getMuted, setVolume } from '../../system/sound-manager.js';
 
 export class MediaPlayerApp extends WindowedApplication {
   static config = {
@@ -257,8 +256,8 @@ export class MediaPlayerApp extends WindowedApplication {
     });
 
     const updateVolume = () => {
-      const systemVolume = getVolume();
-      const systemMuted = getMuted();
+      const systemVolume = this.sound.getVolume();
+      const systemMuted = this.sound.getMuted();
       this.mediaElement.volume = systemVolume;
       this.mediaElement.muted = systemMuted;
       this.volumeSlider.value = systemVolume * 100;
@@ -274,7 +273,7 @@ export class MediaPlayerApp extends WindowedApplication {
       // Also update system volume? The user said "override all volume controls"
       // Usually, changing app volume doesn't change system volume, but system volume overrides app volume.
       // But in this simple implementation, let's keep them in sync if the user wants "override".
-      setVolume(newVolume);
+      this.sound.setVolume(newVolume);
     });
 
     this.mediaElement.addEventListener("play", () => {

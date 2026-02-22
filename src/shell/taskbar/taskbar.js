@@ -8,8 +8,7 @@ import { ICONS } from "../../config/icons.js";
 import StartMenu from "../start-menu/start-menu.js";
 import { refreshPrograms } from "../start-menu/start-menu-utils.js";
 import { showClippyContextMenu } from "../../apps/clippy/clippy.js";
-import { launchApp } from "../../system/app-manager.js";
-import { getMuted } from "../../system/sound-manager.js";
+import { kernel } from "../../system/kernel.js";
 
 // Constants for better maintainability
 const SELECTORS = {
@@ -188,7 +187,7 @@ class Taskbar {
     });
 
     // Initial icon state
-    this.updateVolumeIcon(getMuted());
+    this.updateVolumeIcon(kernel.use('sound').getMuted());
   }
 
   updateVolumeIcon(isMuted) {
@@ -211,7 +210,7 @@ class Taskbar {
         {
           label: "Task Manager",
           action: () => {
-            launchApp("task-manager");
+            kernel.use('appManager').launchApp("task-manager");
           },
         },
       ];
@@ -448,35 +447,32 @@ class Taskbar {
     }
 
     try {
-      if (typeof System !== "undefined") {
-        const $win = $(win);
-        if ($win.is(":visible")) {
-          // If window is visible, either minimize or focus based on current state
-          const isActive = $win.hasClass("focused");
+      const windowManager = kernel.use('windowManager');
+      const $win = $(win);
+      if ($win.is(":visible")) {
+        // If window is visible, either minimize or focus based on current state
+        const isActive = $win.hasClass("focused");
 
-          if (isActive) {
-            // Window is focused, so minimize it
-            System.minimizeWindow(win);
-            this.updateTaskbarButton(windowId, false, true);
-          } else {
-            // Window is not focused, so bring it to front and focus it
-            $win.trigger("refocus-window");
-            win.style.zIndex = System.incrementZIndex();
-            System.updateTitleBarClasses(win);
-            this.updateTaskbarButton(windowId, true, false);
-          }
+        if (isActive) {
+          // Window is focused, so minimize it
+          windowManager.minimizeWindow(win);
+          this.updateTaskbarButton(windowId, false, true);
         } else {
-          // Window is hidden/minimized, restore it and focus
-          win.style.zIndex = System.incrementZIndex();
-          System.restoreWindow(win);
-          // Focus the window after restoration
-          setTimeout(() => {
-            $win.trigger("refocus-window");
-            this.updateTaskbarButton(windowId, true, false);
-          }, 0);
+          // Window is not focused, so bring it to front and focus it
+          $win.trigger("refocus-window");
+          win.style.zIndex = windowManager.incrementZIndex();
+          windowManager.updateTitleBarClasses(win);
+          this.updateTaskbarButton(windowId, true, false);
         }
       } else {
-        console.warn("System not available");
+        // Window is hidden/minimized, restore it and focus
+        win.style.zIndex = windowManager.incrementZIndex();
+        windowManager.restoreWindow(win);
+        // Focus the window after restoration
+        setTimeout(() => {
+          $win.trigger("refocus-window");
+          this.updateTaskbarButton(windowId, true, false);
+        }, 0);
       }
     } catch (error) {
       console.error("Failed to handle taskbar button click:", error);
@@ -493,20 +489,17 @@ class Taskbar {
     const allMinimized = Array.from(windows).every((win) => win.isMinimized);
 
     try {
-      if (typeof System !== "undefined") {
-        if (allMinimized) {
-          // Restore all windows
-          windows.forEach((win) => {
-            System.restoreWindow(win);
-          });
-        } else {
-          // Minimize all windows
-          windows.forEach((win) => {
-            System.minimizeWindow(win, true);
-          });
-        }
+      const windowManager = kernel.use('windowManager');
+      if (allMinimized) {
+        // Restore all windows
+        windows.forEach((win) => {
+          windowManager.restoreWindow(win);
+        });
       } else {
-        console.warn("System not available");
+        // Minimize all windows
+        windows.forEach((win) => {
+          windowManager.minimizeWindow(win, true);
+        });
       }
     } catch (error) {
       console.error("Failed to toggle desktop:", error);

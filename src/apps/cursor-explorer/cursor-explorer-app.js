@@ -2,10 +2,6 @@ import { WindowedApplication } from '../../system/application.js';
 import { cursors } from '../../config/cursors.js';
 import { convertAniBinaryToCSS } from "ani-cursor";
 import { ICONS } from '../../config/icons.js';
-import {
-  getCursorSchemeId,
-  setCursorScheme,
-} from '../../system/theme-manager.js';
 
 export class CursorExplorerApp extends WindowedApplication {
   static config = {
@@ -21,7 +17,7 @@ export class CursorExplorerApp extends WindowedApplication {
 
   constructor(options) {
     super(options);
-    this.initialSchemeId = getCursorSchemeId();
+    this.initialSchemeId = this.theme.getCursorSchemeId();
   }
 
   _createWindow() {
@@ -39,7 +35,7 @@ export class CursorExplorerApp extends WindowedApplication {
     this._createUI(win.$content[0]);
 
     win.on("close", () => {
-      setCursorScheme(this.initialSchemeId);
+      this.theme.setCursorScheme(this.initialSchemeId);
     });
 
     this.win = win;
@@ -78,7 +74,7 @@ export class CursorExplorerApp extends WindowedApplication {
 
     select.addEventListener("change", (event) => {
       const newScheme = event.target.value;
-      setCursorScheme(newScheme);
+      this.theme.setCursorScheme(newScheme);
       this._populateCursorList(listContainer, newScheme);
     });
 

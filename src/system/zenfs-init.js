@@ -9,16 +9,11 @@ import {
 } from "../shell/start-menu/start-menu-utils.js";
 import { migrateShortcuts } from "./migrate-shortcuts.js";
 import startMenuConfig from "../config/start-menu.js";
-import { getStartupApps } from "./startup-manager.js";
 import { apps } from "../config/apps.js";
 import { existsAsync } from "./zenfs-utils.js";
 import { wallpapers } from "../config/wallpapers.js";
-import {
-  getAllDiskHandles,
-  removeDiskHandle,
-} from "./removable-disk-persistence.js";
 import { RemovableDiskManager } from "../shell/explorer/drives/removable-disk-manager.js";
-import { DriveService } from "./drive-service.js";
+import { kernel } from "./kernel.js";
 
 let isInitialized = false;
 
@@ -227,7 +222,7 @@ export async function initFileSystem(onProgress) {
       await refreshPrograms();
 
       // Migrate startup apps from localStorage to ZenFS
-      const startupApps = await getStartupApps();
+      const startupApps = await kernel.use('startup').getStartupApps();
       if (startupApps.length > 0) {
         const startupPath = `${START_MENU_PATH}/StartUp`;
         if (!(await existsAsync(startupPath))) {
@@ -272,7 +267,8 @@ export async function initFileSystem(onProgress) {
 
     if (onProgress) onProgress("Restoring removable disks...");
     try {
-      const savedHandles = await getAllDiskHandles();
+      const diskService = kernel.use('disks');
+      const savedHandles = await diskService.getAllDiskHandles();
       for (const [letter, handle] of Object.entries(savedHandles)) {
         const mountPoint = `/${letter}:`;
         try {
@@ -302,7 +298,7 @@ export async function initFileSystem(onProgress) {
             }
           } catch (rmdirErr) {}
 
-          await removeDiskHandle(letter);
+          await diskService.removeDiskHandle(letter);
           RemovableDiskManager.unmount(letter);
         }
       }
