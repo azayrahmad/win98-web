@@ -9,39 +9,53 @@ import { setTheme, getCurrentTheme, setColorScheme } from "./theme-manager.js";
 import { profiles } from "../config/profiles.js";
 import {
   hideBootScreen,
-  startBootProcessStep,
-  finalizeBootProcessStep,
   promptToContinue,
   showSetupScreen,
   prepareBootScreen,
   getTerminal,
   writeBootError,
+  startBootProcessStep,
 } from "./boot-screen.js";
-import { preloadThemeAssets } from "./asset-preloader.js";
 import { launchApp } from "./app-manager.js";
-import { createMainUI } from "../shell/ui.js";
-import { initColorModeManager } from "./color-mode-manager.js";
 import screensaver from "./screensaver-utils.js";
-import { initScreenManager } from "./screen-manager.js";
 import { DOSShell } from "./dos-shell.js";
 import { fs, mounts } from "@zenfs/core";
-import { initFileSystem } from "./zenfs-init.js";
-import { existsAsync } from "./zenfs-utils.js";
-import { RecycleBinManager } from "../shell/explorer/file-operations/recycle-bin-manager.js";
 import { appManager } from "./app-manager.js";
 import { WindowManager } from "./window-manager.js";
 import { kernel } from "./kernel.js";
 import { UIService } from "./ui-service.js";
 import { SettingsService } from "./settings-service.js";
+import { SoundService } from "./sound-service.js";
+import { ThemeService } from "./theme-service.js";
+import { BusyService } from "./busy-service.js";
+import { DisplayService } from "./display-service.js";
+import { RecycleBinService } from "./recycle-bin-service.js";
+import { AssetService } from "./asset-service.js";
+import { ClipboardService } from "./clipboard-service.js";
+import { DiskService } from "./disk-service.js";
+import { ShellService } from "./shell-service.js";
+import { FileService } from "./file-service.js";
+import { BootManager } from "./boot-manager.js";
+import * as Tasks from "./boot-tasks.js";
 
 export async function initializeOS() {
   const isMSDOSMode = window.location.hash === "#msdos";
 
   // Initialize Kernel and System Services
-  kernel.registerService("windowManager", new WindowManager());
+  kernel.registerService("windowManager", new WindowManager(kernel));
   kernel.registerService("appManager", appManager);
   kernel.registerService("ui", new UIService());
   kernel.registerService("settings", new SettingsService());
+  kernel.registerService("busy", new BusyService());
+  kernel.registerService("theme", new ThemeService(kernel));
+  kernel.registerService("sound", new SoundService(kernel));
+  kernel.registerService("display", new DisplayService());
+  kernel.registerService("recycleBin", new RecycleBinService());
+  kernel.registerService("assets", new AssetService());
+  kernel.registerService("clipboard", new ClipboardService());
+  kernel.registerService("disks", new DiskService());
+  kernel.registerService("shell", new ShellService());
+  kernel.registerService("file", new FileService());
 
   // For backward compatibility and global access
   window.System = kernel.use("windowManager");
@@ -109,51 +123,9 @@ export async function initializeOS() {
   window.addEventListener("unhandledrejection", bootRejectionHandler);
 
   try {
-    let splashScreenVisible = false;
-    let bootProcessFinished = false;
-    let splashScreenTimer = null;
-
     const splashScreen = document.getElementById("splash-screen");
     if (splashScreen) {
       splashScreen.style.backgroundImage = `url(${splashBg})`;
-    }
-
-    function showSplashScreen() {
-      if (isMSDOSMode) return;
-      if (splashScreen) {
-        splashScreen.style.display = "block";
-        splashScreenVisible = true;
-        splashScreenTimer = setTimeout(async () => {
-          if (bootProcessFinished) {
-            await hideBootAndSplash();
-          } else {
-            hideSplashScreenOnly();
-          }
-        }, 2000);
-      }
-    }
-
-    function hideSplashScreenOnly() {
-      if (splashScreen) {
-        splashScreen.style.display = "none";
-      }
-      splashScreenVisible = false;
-    }
-
-    async function hideBootAndSplash() {
-      hideSplashScreenOnly();
-      hideBootScreen();
-      document.body.classList.remove("booting");
-      document.getElementById("screen").classList.remove("boot-mode");
-      playSound("WindowsLogon");
-      document.dispatchEvent(new CustomEvent("desktop-ready-to-launch-apps"));
-    }
-
-    async function handleBootCompletion() {
-      bootProcessFinished = true;
-      if (!splashScreenVisible) {
-        await hideBootAndSplash();
-      }
     }
 
     await executeBootStep(async () => {
@@ -161,200 +133,28 @@ export async function initializeOS() {
       document.getElementById("screen").classList.add("boot-mode");
       document.getElementById("initial-boot-message").style.display = "none";
       document.getElementById("boot-screen-content").style.display = "flex";
-
       await prepareBootScreen();
     });
 
-    function loadCustomApps() {
-      const savedApps = getItem(LOCAL_STORAGE_KEYS.CUSTOM_APPS) || [];
-      savedApps.forEach((appInfo) => {
-        registerCustomApp(appInfo);
-      });
-    }
-
-    await executeBootStep(async () => {
-      let logElement = startBootProcessStep("Detecting mouse...");
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        const hasMouse = window.matchMedia("(any-pointer: fine)").matches;
-        finalizeBootProcessStep(logElement, hasMouse ? "OK" : "FAILED");
-      } catch (e) {
-        finalizeBootProcessStep(logElement, "FAILED", e);
-      }
-    });
-
-    await executeBootStep(async () => {
-      let logElement = startBootProcessStep("Detecting touch support...");
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        const hasTouch =
-          window.matchMedia("(any-pointer: coarse)").matches ||
-          navigator.maxTouchPoints > 0;
-        finalizeBootProcessStep(logElement, hasTouch ? "OK" : "FAILED");
-      } catch (e) {
-        finalizeBootProcessStep(logElement, "FAILED", e);
-      }
-    });
-
-    await executeBootStep(async () => {
-      let logElement = startBootProcessStep("Connecting to network...");
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        finalizeBootProcessStep(logElement, navigator.onLine ? "OK" : "FAILED");
-      } catch (e) {
-        finalizeBootProcessStep(logElement, "FAILED", e);
-      }
-    });
-
-    await executeBootStep(async () => {
-      const baseMsg = "Initializing file system...";
-      let logElement = startBootProcessStep(baseMsg);
-      try {
-        await initFileSystem((subStep) => {
-          if (logElement && logElement.firstChild) {
-            logElement.firstChild.nodeValue = `${baseMsg} ${subStep}`;
-          }
-        });
-        if (logElement && logElement.firstChild) {
-          logElement.firstChild.nodeValue = baseMsg;
-        }
-        finalizeBootProcessStep(logElement, "OK");
-      } catch (e) {
-        finalizeBootProcessStep(logElement, "FAILED", e);
-      }
-    });
-
-    await executeBootStep(async () => {
-      let logElement = startBootProcessStep("Initializing Recycle Bin...");
-      try {
-        await RecycleBinManager.init();
-        finalizeBootProcessStep(logElement, "OK");
-      } catch (e) {
-        finalizeBootProcessStep(logElement, "FAILED", e);
-      }
-    });
-
-    const createAssetLogCallbacks = (logElement, baseMessage) => {
-      const onAssetLogStart = (name) => {
-        if (logElement && logElement.firstChild) {
-          logElement.firstChild.nodeValue = `${baseMessage} ${name}...`;
-        }
-        return logElement;
-      };
-
-      const onAssetLogFinish = (logEl, status) => {
-        if (status === "FAILED") {
-          if (logElement && logElement.firstChild) {
-            logElement.firstChild.nodeValue += " (FAILED)";
-          }
-        }
-      };
-
-      return { onAssetStart: onAssetLogStart, onAssetFinish: onAssetLogFinish };
-    };
-
-    await executeBootStep(async () => {
-      const baseMsg = "Preloading default theme assets...";
-      let logElement = startBootProcessStep(baseMsg);
-      const { onAssetStart, onAssetFinish } = createAssetLogCallbacks(
-        logElement,
-        baseMsg,
-      );
-
-      try {
-        await preloadThemeAssets("default", onAssetStart, onAssetFinish);
-
-        if (logElement && logElement.firstChild) {
-          logElement.firstChild.nodeValue = baseMsg;
-        }
-        finalizeBootProcessStep(logElement, "OK");
-      } catch (e) {
-        finalizeBootProcessStep(logElement, "FAILED", e);
-      }
-    });
-
-    await executeBootStep(async () => {
-      const currentTheme = getCurrentTheme();
-      if (currentTheme !== "default") {
-        const baseMsg = `Preloading ${currentTheme} theme assets...`;
-        let logElement = startBootProcessStep(baseMsg);
-        const { onAssetStart, onAssetFinish } = createAssetLogCallbacks(
-          logElement,
-          baseMsg,
-        );
-
-        try {
-          await preloadThemeAssets(currentTheme, onAssetStart, onAssetFinish);
-
-          if (logElement && logElement.firstChild) {
-            logElement.firstChild.nodeValue = baseMsg;
-          }
-          finalizeBootProcessStep(logElement, "OK");
-        } catch (e) {
-          finalizeBootProcessStep(logElement, "FAILED", e);
-        }
-      }
-    });
-
-    await executeBootStep(async () => {
-      let logElement = startBootProcessStep("Loading custom applications...");
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        loadCustomApps();
-        finalizeBootProcessStep(logElement, "OK");
-      } catch (e) {
-        finalizeBootProcessStep(logElement, "FAILED", e);
-      }
-    });
+    const bootManager = new BootManager(kernel);
+    bootManager.addTask(new Tasks.HardwareDetectionTask());
+    bootManager.addTask(new Tasks.FileSystemInitTask());
+    bootManager.addTask(new Tasks.RecycleBinInitTask());
+    bootManager.addTask(new Tasks.AssetPreloadTask());
+    bootManager.addTask(new Tasks.CustomAppsTask());
 
     await executeBootStep(async () => {
       await promptToContinue();
     });
 
     if (!isMSDOSMode) {
-      await executeBootStep(async () => {
-        let logElement = startBootProcessStep("Creating main UI...");
-        try {
-          showSplashScreen();
-          await new Promise((resolve) => setTimeout(resolve, 50));
-          createMainUI();
-          initColorModeManager(document.body);
-          finalizeBootProcessStep(logElement, "OK");
-        } catch (e) {
-          finalizeBootProcessStep(logElement, "FAILED", e);
-        }
-      });
+      bootManager.addTask(new Tasks.MainUIInitTask());
+      bootManager.addTask(new Tasks.ShellLaunchTask());
     }
 
-    if (!isMSDOSMode) {
-      await executeBootStep(async () => {
-        let logElement = startBootProcessStep("Initializing taskbar...");
-        try {
-          await new Promise((resolve) => setTimeout(resolve, 50));
-          taskbar.init();
-          finalizeBootProcessStep(logElement, "OK");
-        } catch (e) {
-          finalizeBootProcessStep(logElement, "FAILED", e);
-        }
-      });
+    bootManager.addTask(new Tasks.FinalizeBootTask());
 
-      await executeBootStep(async () => {
-        let logElement = startBootProcessStep("Setting up desktop...");
-        try {
-          await new Promise((resolve) => setTimeout(resolve, 50));
-          await initDesktop(window.activeProfile);
-          document.dispatchEvent(new CustomEvent("desktop-refresh"));
-          finalizeBootProcessStep(logElement, "OK");
-        } catch (e) {
-          finalizeBootProcessStep(logElement, "FAILED", e);
-        }
-      });
-    }
-
-    await executeBootStep(async () => {
-      startBootProcessStep("azOS Ready!");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    });
+    await executeBootStep(() => bootManager.run());
 
     window.removeEventListener("keydown", handleKeyDown);
 
@@ -371,7 +171,12 @@ export async function initializeOS() {
       return;
     }
 
-    await handleBootCompletion();
+    import("./boot-screen.js").then(m => {
+        m.setBootProcessFinished(true);
+        m.hideBootAndSplash().then(() => {
+            kernel.use('sound').play("WindowsLogon");
+        });
+    });
 
     window.ShowDialogWindow = ShowDialogWindow;
     window.playSound = playSound;
@@ -405,7 +210,6 @@ export async function initializeOS() {
     window.addEventListener("keydown", resetInactivityTimer);
 
     resetInactivityTimer();
-    initScreenManager();
   } catch (error) {
     if (error.message !== "Setup interrupted") {
       console.error("An error occurred during boot:", error);

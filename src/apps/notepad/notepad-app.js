@@ -1,5 +1,4 @@
 import { WindowedApplication } from '../../system/application.js';
-import { fs } from "@zenfs/core";
 import './notepad.css';
 import './notepad-editor.css';
 import { languages } from '../../config/languages.js';
@@ -207,7 +206,7 @@ export class NotepadApp extends WindowedApplication {
             const isZenFSPath = data.startsWith('/') && !data.startsWith('http');
             if (isZenFSPath) {
                 try {
-                    const text = await fs.promises.readFile(data, 'utf8');
+                    const text = await this.file.readText(data);
                     this.zenfsPath = data;
                     this.fileName = data.split("/").pop();
                     this.editor.setValue(text);
@@ -720,7 +719,7 @@ export class NotepadApp extends WindowedApplication {
 
         if (path) {
             try {
-                const text = await fs.promises.readFile(path, 'utf8');
+                const text = await this.file.readText(path);
                 this.zenfsPath = path;
                 this.fileName = path.split("/").pop();
                 this.editor.setValue(text);
@@ -750,7 +749,7 @@ export class NotepadApp extends WindowedApplication {
     async saveFile() {
         if (this.zenfsPath) {
             try {
-                await fs.promises.writeFile(this.zenfsPath, this.editor.getValue());
+                await this.file.writeText(this.zenfsPath, this.editor.getValue());
                 this.isDirty = false;
                 this.updateTitle();
                 this.editor.statusText.textContent = 'File saved.';
@@ -783,7 +782,7 @@ export class NotepadApp extends WindowedApplication {
 
         if (path) {
             try {
-                await fs.promises.writeFile(path, this.editor.getValue());
+                await this.file.writeText(path, this.editor.getValue());
                 this.zenfsPath = path;
                 this.fileName = path.split("/").pop();
                 this.isDirty = false;

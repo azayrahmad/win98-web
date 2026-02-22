@@ -1,7 +1,6 @@
-import { taskbar } from '../shell/taskbar/taskbar.js';
-
 export class WindowManager {
-  constructor() {
+  constructor(kernel) {
+    this.kernel = kernel;
     this._zIndex = 1000;
     this.minimizedWindows = new Map();
   }
@@ -29,7 +28,7 @@ export class WindowManager {
 
     // Update taskbar button if needed
     if (!skipTaskbarUpdate) {
-      taskbar.updateTaskbarButton(win.id, false, true);
+      this.kernel.use('shell').updateTaskbarButton(win.id, false, true);
     }
   }
 
@@ -49,7 +48,7 @@ export class WindowManager {
     }
 
     // Update taskbar button
-    taskbar.updateTaskbarButton(win.id, true, false);
+    this.kernel.use('shell').updateTaskbarButton(win.id, true, false);
   }
 
   updateTitleBarClasses(win) {

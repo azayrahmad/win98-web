@@ -1,5 +1,6 @@
 // src/config/apps.js
 import { ZenExplorerApp } from '../shell/explorer/explorer-app.js';
+import { ShellProcess } from '../shell/shell-process.js';
 import { kernel } from '../system/kernel.js';
 import { getIcon } from '../shared/utils/icon-resolver.js';
 import {
@@ -249,6 +250,11 @@ const systemApps = [
 if (ZenExplorerApp.config) {
   appClasses[ZenExplorerApp.config.id] = ZenExplorerApp;
   staticConfigs.push({ ...ZenExplorerApp.config, appClass: ZenExplorerApp });
+}
+
+if (ShellProcess.config) {
+  appClasses[ShellProcess.config.id] = ShellProcess;
+  staticConfigs.push({ ...ShellProcess.config, appClass: ShellProcess });
 }
 
 export const apps = [...systemApps, ...staticConfigs];

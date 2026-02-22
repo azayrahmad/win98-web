@@ -284,6 +284,45 @@ export function writeBootError(message) {
     }
 }
 
+let splashScreenVisible = false;
+let bootProcessFinished = false;
+
+export function setBootProcessFinished(val) {
+    bootProcessFinished = val;
+}
+
+export function showSplashScreen() {
+    const splashScreen = document.getElementById("splash-screen");
+    if (splashScreen) {
+        splashScreen.style.display = "block";
+        splashScreenVisible = true;
+        setTimeout(async () => {
+            if (bootProcessFinished) {
+                await hideBootAndSplash();
+            } else {
+                hideSplashScreenOnly();
+            }
+        }, 2000);
+    }
+}
+
+export function hideSplashScreenOnly() {
+    const splashScreen = document.getElementById("splash-screen");
+    if (splashScreen) {
+        splashScreen.style.display = "none";
+    }
+    splashScreenVisible = false;
+}
+
+export async function hideBootAndSplash() {
+    hideSplashScreenOnly();
+    hideBootScreen();
+    document.body.classList.remove("booting");
+    document.getElementById("screen").classList.remove("boot-mode");
+    // playSound("WindowsLogon"); // This needs to be handled via service
+    document.dispatchEvent(new CustomEvent("desktop-ready-to-launch-apps"));
+}
+
 export {
     hideBootScreen,
     startBootProcessStep,

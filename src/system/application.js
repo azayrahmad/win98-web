@@ -1,5 +1,4 @@
 import { ShowDialogWindow } from '../shared/components/dialog-window.js';
-import { createTaskbarButton, createTrayIcon } from '../shell/taskbar/taskbar.js';
 import { BaseProcess } from './base-process.js';
 
 const openWindows = new Map();
@@ -45,7 +44,7 @@ export class WindowedApplication extends BaseProcess {
     }
 
     if (this.hasTray) {
-      createTrayIcon(this);
+      this.kernel.use('shell').createTrayIcon(this);
     }
 
     await this._onLaunch(filePath);
@@ -111,7 +110,7 @@ export class WindowedApplication extends BaseProcess {
     });
 
     if (this.hasTaskbarButton) {
-      const taskbarButton = createTaskbarButton(
+      const taskbarButton = this.kernel.use('shell').createTaskbarButton(
         instanceKey,
         this.icon,
         this.title,

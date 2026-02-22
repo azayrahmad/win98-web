@@ -58,4 +58,17 @@ export class BaseProcess {
   exit() {
     this.kernel.use('appManager').closeApp(this.instanceKey);
   }
+
+  // --- Convenience Getters for Services ---
+  get ui() { return this.kernel.use('ui'); }
+  get settings() { return this.kernel.use('settings'); }
+  get theme() { return this.kernel.use('theme'); }
+  get sound() { return this.kernel.use('sound'); }
+  get busy() { return this.kernel.use('busy'); }
+  get display() { return this.kernel.use('display'); }
+  get assets() { return this.kernel.use('assets'); }
+  get recycleBin() { return this.kernel.use('recycleBin'); }
+  get clipboard() { return this.kernel.use('clipboard'); }
+  get disks() { return this.kernel.use('disks'); }
+  get file() { return this.kernel.use('file'); }
 }
