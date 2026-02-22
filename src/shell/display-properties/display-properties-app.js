@@ -32,7 +32,7 @@ class DisplayPropertiesApp extends WindowedApplication {
   }
 
   _createWindow() {
-    return this.kernel.use('ui').createWindow({
+    return this.services.ui.createWindow({
       title: "Display Properties",
       outerWidth: this.width,
       outerHeight: this.height,
@@ -53,7 +53,7 @@ class DisplayPropertiesApp extends WindowedApplication {
     win.$content.find("#appearance").html(appearanceHtml);
 
     // Set initial state from settings
-    const settings = this.kernel.use('settings');
+    const settings = this.services.settings;
     this.selectedWallpaper = settings.get(LOCAL_STORAGE_KEYS.WALLPAPER);
     this.selectedWallpaperMode =
       settings.get(LOCAL_STORAGE_KEYS.WALLPAPER_MODE, "stretch");

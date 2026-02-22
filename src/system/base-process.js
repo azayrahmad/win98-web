@@ -6,8 +6,9 @@
 import { kernel } from './kernel.js';
 
 export class BaseProcess {
-  constructor(config) {
-    this.kernel = kernel; // Could also be injected via constructor if we wanted full DI
+  constructor(config, services = {}) {
+    this.kernel = services.kernel || kernel;
+    this.services = services;
     this.config = config;
     this.id = config.id;
     this.title = config.title;
@@ -56,6 +57,7 @@ export class BaseProcess {
    * Signal to the system that the process wants to exit.
    */
   exit() {
-    this.kernel.use('appManager').closeApp(this.instanceKey);
+    const processManager = this.services.processManager || this.kernel.use('processManager');
+    processManager.terminate(this.instanceKey);
   }
 }

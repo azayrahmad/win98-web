@@ -28,26 +28,46 @@ import { fs, mounts } from "@zenfs/core";
 import { initFileSystem } from "./zenfs-init.js";
 import { existsAsync } from "./zenfs-utils.js";
 import { RecycleBinManager } from "../shell/explorer/file-operations/recycle-bin-manager.js";
-import { appManager } from "./app-manager.js";
+import { ProcessManager } from "./process-manager.js";
 import { WindowManager } from "./window-manager.js";
 import { kernel } from "./kernel.js";
 import { UIService } from "./ui-service.js";
 import { SettingsService } from "./settings-service.js";
+import { EventBus } from "./event-bus.js";
+import { OSWindow } from "./gui/window.js";
+import { MenuBar } from "./gui/menu-bar.js";
+import { MenuPopup } from "./gui/menu-popup.js";
+import { ContextMenu } from "./gui/context-menu.js";
+import { Toolbar } from "./gui/toolbar.js";
+import * as guiUtils from "../shared/utils/gui-utils.js";
 
 export async function initializeOS() {
   const isMSDOSMode = window.location.hash === "#msdos";
 
   // Initialize Kernel and System Services
-  kernel.registerService("windowManager", new WindowManager());
-  kernel.registerService("appManager", appManager);
+  const events = new EventBus();
+  kernel.registerService("events", events);
+  kernel.registerService("windowManager", new WindowManager(events));
+
+  const processManager = new ProcessManager(events);
+  kernel.registerService("processManager", processManager);
+  kernel.registerService("appManager", processManager); // Alias for compatibility
+
   kernel.registerService("ui", new UIService());
   kernel.registerService("settings", new SettingsService());
 
   // For backward compatibility and global access
   window.System = kernel.use("windowManager");
   window.System.kernel = kernel;
-  window.System.launchApp = launchApp;
-  window.System.appManager = appManager;
+  window.System.launchApp = (appId, data) => processManager.launch(appId, data);
+  window.System.appManager = processManager;
+  window.$Window = (options) => new OSWindow(options);
+  window.OSWindow = OSWindow;
+  window.MenuBar = MenuBar;
+  window.MenuPopup = MenuPopup;
+  window.ContextMenu = ContextMenu;
+  window.Toolbar = Toolbar;
+  window.os_gui_utils = guiUtils;
 
   const path = window.location.pathname;
   const profileName = path.startsWith("/win98-web/")

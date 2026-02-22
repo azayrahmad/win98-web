@@ -82,8 +82,8 @@ export class ZenExplorerApp extends WindowedApplication {
     isSingleton: false,
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     this.currentPath = "/";
     this.viewMode = "large";
     this.fileOps = new FileOperations(this);
@@ -180,7 +180,7 @@ export class ZenExplorerApp extends WindowedApplication {
     // await initFileSystem();
 
     // 2. Setup Window
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.title,
       outerWidth: this.width,
       outerHeight: this.height,
@@ -482,7 +482,7 @@ export class ZenExplorerApp extends WindowedApplication {
         const data = JSON.parse(content);
         if (data.type === "shortcut") {
           if (data.appId) {
-            this.kernel.use('appManager').launchApp(data.appId, data.args);
+            this.services.processManager.launchApp(data.appId, data.args);
             return;
           } else if (data.targetPath) {
             const stats = await ShellManager.stat(data.targetPath);
@@ -492,7 +492,7 @@ export class ZenExplorerApp extends WindowedApplication {
               const targetName = data.targetPath.split("/").pop();
               const association = getAssociation(targetName);
               if (association.appId) {
-                this.kernel.use('appManager').launchApp(association.appId, ShellManager.getRealPath(data.targetPath));
+                this.services.processManager.launchApp(association.appId, ShellManager.getRealPath(data.targetPath));
               } else {
                 alert(`Cannot open file: ${targetName} (No association)`);
               }
@@ -507,7 +507,7 @@ export class ZenExplorerApp extends WindowedApplication {
 
     const association = getAssociation(name);
     if (association.appId) {
-      this.kernel.use('appManager').launchApp(association.appId, ShellManager.getRealPath(fullPath));
+      this.services.processManager.launchApp(association.appId, ShellManager.getRealPath(fullPath));
     } else {
       alert(`Cannot open file: ${name} (No association)`);
     }

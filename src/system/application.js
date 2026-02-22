@@ -9,8 +9,8 @@ export const openApps = new Map();
  * WindowedApplication extends BaseProcess with windowing and shell integration.
  */
 export class WindowedApplication extends BaseProcess {
-  constructor(config) {
-    super(config);
+  constructor(config, services = {}) {
+    super(config, services);
     if (this.constructor === WindowedApplication) {
       throw new TypeError(
         'Abstract class "WindowedApplication" cannot be instantiated directly.',

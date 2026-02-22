@@ -20,7 +20,7 @@ export class MinesweeperApp extends WindowedApplication {
   };
 
   _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.title,
       icons: this.icon,
       width: this.width,
@@ -66,7 +66,7 @@ export class MinesweeperApp extends WindowedApplication {
             check: () => this.use98Style,
             toggle: () => {
               this.use98Style = !this.use98Style;
-              this.kernel.use('settings').set(STYLE_KEY, this.use98Style);
+              this.services.settings.set(STYLE_KEY, this.use98Style);
               this.win.$content
                 .find(".minesweeper-app")
                 .toggleClass("style-98", this.use98Style);
@@ -104,7 +104,7 @@ export class MinesweeperApp extends WindowedApplication {
     this.difficulty = "beginner";
     this.isGameStarted = false;
 
-    const settings = this.kernel.use('settings');
+    const settings = this.services.settings;
     this.use98Style = settings.get(STYLE_KEY, true);
 
     this.highScores = settings.get(HIGH_SCORES_KEY);
@@ -179,7 +179,7 @@ export class MinesweeperApp extends WindowedApplication {
     const contentElement = document.createElement("div");
     contentElement.innerHTML = dialogContent;
 
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Custom Field",
       content: contentElement,
       buttons: [
@@ -232,7 +232,7 @@ export class MinesweeperApp extends WindowedApplication {
     const contentElement = document.createElement("div");
     contentElement.innerHTML = createScoresContent(this.highScores);
 
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Best Times",
       content: contentElement,
       buttons: [
@@ -244,7 +244,7 @@ export class MinesweeperApp extends WindowedApplication {
               intermediate: { time: 999, name: "Anonymous" },
               expert: { time: 999, name: "Anonymous" },
             };
-            this.kernel.use('settings').set(HIGH_SCORES_KEY, this.highScores);
+            this.services.settings.set(HIGH_SCORES_KEY, this.highScores);
             contentElement.innerHTML = createScoresContent(this.highScores);
           },
         },
@@ -258,7 +258,7 @@ export class MinesweeperApp extends WindowedApplication {
   }
 
   showAboutDialog() {
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "About Minesweeper",
       text: "Minesweeper clone for azOS.",
     });
@@ -417,7 +417,7 @@ export class MinesweeperApp extends WindowedApplication {
           <input type="text" id="highscore-name" value="Anonymous" style="margin-top: 5px; width: 95%"/>
         `;
 
-        this.kernel.use('ui').showDialog({
+        this.services.ui.showDialog({
           title: "Congratulations",
           content: content,
           modal: true,
@@ -431,7 +431,7 @@ export class MinesweeperApp extends WindowedApplication {
                   time: this.timer,
                   name: nameInput.value || "Anonymous",
                 };
-                this.kernel.use('settings').set(HIGH_SCORES_KEY, this.highScores);
+                this.services.settings.set(HIGH_SCORES_KEY, this.highScores);
                 win.close();
                 this.showHighScores();
               },

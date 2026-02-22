@@ -1,4 +1,5 @@
 import { WindowedApplication } from "../../system/application.js";
+import { OSWindow } from "../../system/gui/window.js";
 import "./taskmanager.css";
 import { ICONS } from "../../config/icons.js";
 
@@ -15,7 +16,7 @@ export class TaskManagerApp extends WindowedApplication {
   };
 
   async _onLaunch() {
-    this.win.element.style.zIndex = $Window.Z_INDEX++; // Bring to front on launch
+    this.win.element.style.zIndex = OSWindow.Z_INDEX++; // Bring to front on launch
     this._updateTaskList();
     this._setupEventDelegation();
 
@@ -31,7 +32,7 @@ export class TaskManagerApp extends WindowedApplication {
       .data("instanceKey");
     const tableBody = $("<tbody></tbody>");
 
-    const appManager = this.kernel.use('appManager');
+    const appManager = this.services.processManager;
     const runningApps = appManager.getRunningApps();
 
     for (const [instanceKey, appInstance] of Object.entries(runningApps)) {
@@ -72,21 +73,21 @@ export class TaskManagerApp extends WindowedApplication {
       const selectedItem = content.find(".task-list tr.highlighted");
       if (selectedItem.length) {
         const instanceKey = selectedItem.data("instanceKey");
-        this.kernel.use('appManager').closeApp(instanceKey);
+        this.services.processManager.terminate(instanceKey);
       }
     });
 
     content.on("click", ".switch-to-btn", () => {
-      this.kernel.use('ui').showComingSoon("Switch To");
+      this.services.ui.showComingSoon("Switch To");
     });
 
     content.on("click", ".new-task-btn", () => {
-      this.kernel.use('ui').showComingSoon("Create New Task");
+      this.services.ui.showComingSoon("Create New Task");
     });
   }
 
   _createWindow() {
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: "Close Program",
       icons: this.icon,
       width: 300,

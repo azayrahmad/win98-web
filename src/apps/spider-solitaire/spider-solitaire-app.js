@@ -21,11 +21,11 @@ export class SpiderSolitaireApp extends WindowedApplication {
   };
 
   async _createWindow() {
-    const settings = this.kernel.use('settings');
+    const settings = this.services.settings;
     this.statistics = new Statistics(settings);
     this.use98Style = settings.get(STYLE_KEY, true);
 
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: this.config.title,
       outerWidth: this.config.width,
       outerHeight: this.config.height,
@@ -145,7 +145,7 @@ export class SpiderSolitaireApp extends WindowedApplication {
       </fieldset>
     `;
 
-    const dialog = this.kernel.use('ui').showDialog({
+    const dialog = this.services.ui.showDialog({
       title: "Spider Statistics",
       content: content,
       buttons: [
@@ -205,7 +205,7 @@ export class SpiderSolitaireApp extends WindowedApplication {
       </div>
     `;
 
-    const dialog = this.kernel.use('ui').showDialog({
+    const dialog = this.services.ui.showDialog({
       title: "Spider Options",
       content: content,
       buttons: [
@@ -236,7 +236,7 @@ export class SpiderSolitaireApp extends WindowedApplication {
 
   _showNewGameDialog() {
     if (this.game) {
-      this.kernel.use('ui').showDialog({
+      this.services.ui.showDialog({
         title: "New Game",
         text: "Are you sure you want to start a new game?",
         buttons: [
@@ -274,7 +274,7 @@ export class SpiderSolitaireApp extends WindowedApplication {
             </div>
         `;
 
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "New Game",
       content: content,
       buttons: [
@@ -372,7 +372,7 @@ export class SpiderSolitaireApp extends WindowedApplication {
             check: () => this.use98Style,
             toggle: () => {
               this.use98Style = !this.use98Style;
-              this.kernel.use('settings').set(STYLE_KEY, this.use98Style);
+              this.services.settings.set(STYLE_KEY, this.use98Style);
               this.container.classList.toggle("style-98", this.use98Style);
               this.render();
             },
@@ -729,7 +729,7 @@ export class SpiderSolitaireApp extends WindowedApplication {
         this.container.style.pointerEvents = "auto";
       }
     } else if (result.reason === "EMPTY_PILE") {
-      this.kernel.use('ui').showDialog({
+      this.services.ui.showDialog({
         title: "Invalid Move",
         text: "You cannot deal from the stock while a tableau pile is empty.",
         buttons: [{ label: "OK" }],
@@ -951,7 +951,7 @@ export class SpiderSolitaireApp extends WindowedApplication {
 
   async showWinDialog() {
     this.statistics.recordWin();
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "Game Over",
       text: "Congratulations, you won!\nDo you want to start another game?",
       buttons: [
@@ -1020,9 +1020,9 @@ export class SpiderSolitaireApp extends WindowedApplication {
   }
 
   _saveGame() {
-    const savedGame = this.kernel.use('settings').get(SAVE_KEY);
+    const savedGame = this.services.settings.get(SAVE_KEY);
     if (savedGame && this.options.promptOnSave) {
-      this.kernel.use('ui').showDialog({
+      this.services.ui.showDialog({
         title: "Save Game",
         text: "A saved game already exists. Are you sure you want to replace your previously saved game with your current game?",
         buttons: [
@@ -1042,12 +1042,12 @@ export class SpiderSolitaireApp extends WindowedApplication {
   _performSave(isSilent = false) {
     try {
       const gameState = this.game.toJSON();
-      this.kernel.use('settings').set(SAVE_KEY, gameState);
+      this.services.settings.set(SAVE_KEY, gameState);
     } catch (error) {
       console.error("Failed to save game:", error);
       if (!isSilent) {
         window.playSound("Warning");
-        this.kernel.use('ui').showDialog({
+        this.services.ui.showDialog({
           title: "Error",
           text: "Unable to save game.",
           buttons: [{ label: "OK" }],
@@ -1059,7 +1059,7 @@ export class SpiderSolitaireApp extends WindowedApplication {
 
   _openGame() {
     if (this.options.promptOnOpen) {
-      this.kernel.use('ui').showDialog({
+      this.services.ui.showDialog({
         title: "Open Game",
         text: "Are you sure you want to discard the game you are currently playing, and load your previously saved game?",
         buttons: [
@@ -1093,10 +1093,10 @@ export class SpiderSolitaireApp extends WindowedApplication {
   _performOpen(isSilent = false) {
     this._handlePotentialLoss();
     try {
-      const savedGame = this.kernel.use('settings').get(SAVE_KEY);
+      const savedGame = this.services.settings.get(SAVE_KEY);
       if (!savedGame) {
         if (!isSilent) {
-          this.kernel.use('ui').showDialog({
+          this.services.ui.showDialog({
             title: "Error",
             text: "Unable to load game. No saved game found.",
             buttons: [{ label: "OK" }],
@@ -1112,7 +1112,7 @@ export class SpiderSolitaireApp extends WindowedApplication {
     } catch (error) {
       console.error("Failed to load game:", error);
       if (!isSilent) {
-        this.kernel.use('ui').showDialog({
+        this.services.ui.showDialog({
           title: "Error",
           text: "Unable to load game.",
           buttons: [{ label: "OK" }],

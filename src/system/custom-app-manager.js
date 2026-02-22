@@ -33,7 +33,7 @@ export function registerCustomApp(appInfo) {
             }
 
             _createWindow() {
-                const win = this.kernel.use('ui').createWindow({
+                const win = this.services.ui.createWindow({
                     title: this.title,
                     outerWidth: this.width,
                     outerHeight: this.height,
@@ -55,7 +55,7 @@ export function registerCustomApp(appInfo) {
         }
 
         _createWindow() {
-            const win = this.kernel.use('ui').createWindow({
+            const win = this.services.ui.createWindow({
                 title: this.title,
                 outerWidth: this.width || 400,
                 outerHeight: this.height || 300,
@@ -83,8 +83,12 @@ export function registerCustomApp(appInfo) {
             'MENU_DIVIDER',
             {
                 label: 'Delete',
-                action: () => {
-                    kernel.use('ui').showDialog({
+                action: (win) => {
+                    // Note: This 'win' is the window where the context menu was triggered,
+                    // but custom apps are currently desktop shortcuts.
+                    // For now, keep using kernel.use if we don't have a better way,
+                    // or better: use window.System which is the kernel anyway.
+                    window.System.kernel.use('ui').showDialog({
                         title: 'Delete App',
                         text: `Are you sure you want to delete the app "${appInfo.title}"?`,
                         modal: true,

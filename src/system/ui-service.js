@@ -1,5 +1,6 @@
 import { ShowDialogWindow } from '../shared/components/dialog-window.js';
 import { ShowFilePicker } from '../shared/utils/file-picker.js';
+import { OSWindow } from './gui/window.js';
 
 /**
  * UIService provides a decoupled way for applications to interact with the UI.
@@ -21,9 +22,8 @@ export class UIService {
    * @returns {object} The $Window instance
    */
   createWindow(options) {
-    // Currently returns a $Window instance.
-    // In a "pure" implementation, this might return a wrapper or interface.
-    return new $Window(options);
+    // Returns an OSWindow instance (which is currently a decorated jQuery object for compatibility).
+    return new OSWindow(options);
   }
 
   /**

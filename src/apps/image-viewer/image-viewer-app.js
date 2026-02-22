@@ -42,7 +42,7 @@ export class ImageViewerApp extends WindowedApplication {
     const title = fileName ? `${fileName} - Image Viewer` : "Image Viewer";
     this.file = file;
 
-    const win = this.kernel.use('ui').createWindow({
+    const win = this.services.ui.createWindow({
       title: title,
       outerWidth: this.width || 400,
       outerHeight: this.height || 300,
@@ -247,7 +247,7 @@ export class ImageViewerApp extends WindowedApplication {
   }
 
   async openFile() {
-    const path = await this.kernel.use('ui').showFilePicker({
+    const path = await this.services.ui.showFilePicker({
       title: "Open Image",
       mode: "open",
       fileTypes: [
@@ -307,7 +307,7 @@ export class ImageViewerApp extends WindowedApplication {
       suggestedName = `resized-${suggestedName}`;
     }
 
-    const path = await this.kernel.use('ui').showFilePicker({
+    const path = await this.services.ui.showFilePicker({
       title: "Save Image As",
       mode: "save",
       suggestedName,
@@ -446,7 +446,7 @@ export class ImageViewerApp extends WindowedApplication {
             </div>
         `;
 
-    const dialog = this.kernel.use('ui').showDialog({
+    const dialog = this.services.ui.showDialog({
       title: "Resize Image",
       text: dialogContent,
       modal: true,
@@ -591,7 +591,7 @@ export class ImageViewerApp extends WindowedApplication {
 
         const dialogContent = `<div class="icon-selection-container">${radioItems}</div>`;
 
-        const dialog = this.kernel.use('ui').showDialog({
+        const dialog = this.services.ui.showDialog({
           title: "Extract Icon",
           text: dialogContent,
           modal: true,
@@ -617,7 +617,7 @@ export class ImageViewerApp extends WindowedApplication {
         });
       } catch (error) {
         console.error("Failed to parse ICO file:", error);
-        this.kernel.use('ui').showDialog({
+        this.services.ui.showDialog({
           title: "Error",
           text: "Could not parse the ICO file. It might be corrupted or in an unsupported format.",
           modal: true,
@@ -626,7 +626,7 @@ export class ImageViewerApp extends WindowedApplication {
       }
     };
     reader.onerror = () => {
-      this.kernel.use('ui').showDialog({
+      this.services.ui.showDialog({
         title: "Error",
         text: "Failed to read the ICO file.",
         modal: true,
@@ -658,7 +658,7 @@ export class ImageViewerApp extends WindowedApplication {
         : originalName;
     const suggestedName = `${nameWithoutExt}-${icon.width}.png`;
 
-    const path = await this.kernel.use('ui').showFilePicker({
+    const path = await this.services.ui.showFilePicker({
       title: "Extract Icon",
       mode: "save",
       suggestedName,

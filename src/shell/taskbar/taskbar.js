@@ -10,6 +10,7 @@ import { refreshPrograms } from "../start-menu/start-menu-utils.js";
 import { showClippyContextMenu } from "../../apps/clippy/clippy.js";
 import { launchApp } from "../../system/app-manager.js";
 import { getMuted } from "../../system/sound-manager.js";
+import { kernel } from "../../system/kernel.js";
 
 // Constants for better maintainability
 const SELECTORS = {
@@ -52,11 +53,13 @@ class Taskbar {
 
     try {
       console.log("Initializing Taskbar...");
+      this.eventBus = kernel.use('events');
       this.renderTaskbar();
       this.startMenu.init(); // Initialize start menu
       this.bindEvents();
       this.initializeClock();
       this.setupExistingTaskbarButtons();
+      this._subscribeToEvents();
       this.isInitialized = true;
     } catch (error) {
       console.error("Failed to initialize Taskbar:", error);
@@ -157,6 +160,18 @@ class Taskbar {
           </div>
         </section>
       </div>`;
+  }
+
+  _subscribeToEvents() {
+    this.eventBus.on('window:minimize', ({ id }) => {
+      this.updateTaskbarButton(id, false, true);
+    });
+    this.eventBus.on('window:restore', ({ id }) => {
+      this.updateTaskbarButton(id, true, false);
+    });
+    this.eventBus.on('app:launched', ({ appId }) => {
+        // Handle if needed
+    });
   }
 
   /**

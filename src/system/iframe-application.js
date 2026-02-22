@@ -1,8 +1,8 @@
 import { WindowedApplication } from './application.js';
 
 export class IFrameApplication extends WindowedApplication {
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
   }
 
   _setupIframeForInactivity(iframe) {

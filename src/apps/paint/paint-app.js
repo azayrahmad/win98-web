@@ -16,8 +16,8 @@ export class PaintApp extends WindowedApplication {
         isSingleton: true,
     };
 
-    constructor(config) {
-        super(config);
+    constructor(config, services) {
+        super(config, services);
         this.initialized = false;
     }
 
@@ -38,7 +38,7 @@ export class PaintApp extends WindowedApplication {
         window.systemHooks = window.systemHooks || {};
 
         window.systemHooks.showOpenFileDialog = async ({ formats }) => {
-            const path = await this.kernel.use('ui').showFilePicker({
+            const path = await this.services.ui.showFilePicker({
                 title: "Open",
                 mode: "open",
                 fileTypes: this._mapFormats(formats)
@@ -51,7 +51,7 @@ export class PaintApp extends WindowedApplication {
         };
 
         window.systemHooks.showSaveFileDialog = async ({ formats, defaultFileName, getBlob, savedCallbackUnreliable }) => {
-            const path = await this.kernel.use('ui').showFilePicker({
+            const path = await this.services.ui.showFilePicker({
                 title: "Save As",
                 mode: "save",
                 fileTypes: this._mapFormats(formats),
@@ -150,7 +150,7 @@ export class PaintApp extends WindowedApplication {
     }
 
     _createWindow() {
-        const win = this.kernel.use('ui').createWindow({
+        const win = this.services.ui.createWindow({
             id: this.id,
             title: this.title,
             outerWidth: this.width,
@@ -277,7 +277,7 @@ export class PaintApp extends WindowedApplication {
         const { write_image_file, update_title, update_from_saved_file } = await import('./src/functions.js');
 
         const doSet = (path) => {
-            const settings = this.kernel.use('settings');
+            const settings = this.services.settings;
             settings.set(LOCAL_STORAGE_KEYS.WALLPAPER, path);
             settings.set(LOCAL_STORAGE_KEYS.WALLPAPER_MODE, mode);
             document.dispatchEvent(new CustomEvent("wallpaper-changed"));

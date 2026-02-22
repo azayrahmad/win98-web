@@ -1,7 +1,8 @@
-import { taskbar } from '../shell/taskbar/taskbar.js';
+import { kernel } from './kernel.js';
 
 export class WindowManager {
-  constructor() {
+  constructor(eventBus) {
+    this.eventBus = eventBus || kernel.use('events');
     this._zIndex = 1000;
     this.minimizedWindows = new Map();
   }
@@ -27,9 +28,9 @@ export class WindowManager {
       win.isMinimized = true;
     }
 
-    // Update taskbar button if needed
+    // Notify system about window minimization
     if (!skipTaskbarUpdate) {
-      taskbar.updateTaskbarButton(win.id, false, true);
+      this.eventBus.emit('window:minimize', { id: win.id, win });
     }
   }
 
@@ -48,8 +49,8 @@ export class WindowManager {
       win.isMinimized = false;
     }
 
-    // Update taskbar button
-    taskbar.updateTaskbarButton(win.id, true, false);
+    // Notify system about window restoration
+    this.eventBus.emit('window:restore', { id: win.id, win });
   }
 
   updateTitleBarClasses(win) {

@@ -19,8 +19,8 @@ export class CalculatorApp extends WindowedApplication {
     resizable: false,
   };
 
-  constructor(config) {
-    super(config);
+  constructor(config, services) {
+    super(config, services);
     this.win = null;
     this.logic = new CalculatorLogic();
     this.mode = "standard"; // 'standard' or 'scientific'
@@ -30,7 +30,7 @@ export class CalculatorApp extends WindowedApplication {
   }
 
   _createWindow() {
-    this.win = this.kernel.use('ui').createWindow({
+    this.win = this.services.ui.createWindow({
       id: this.id,
       title: this.title,
       resizable: false, // Window is not resizable
@@ -482,7 +482,7 @@ export class CalculatorApp extends WindowedApplication {
   }
 
   _showAboutDialog() {
-    this.kernel.use('ui').showDialog({
+    this.services.ui.showDialog({
       title: "About Calculator",
       text: "A Windows 98 style calculator.",
       buttons: [{ label: "OK", isDefault: true }],
@@ -525,7 +525,7 @@ export class CalculatorApp extends WindowedApplication {
       return;
     }
 
-    this.statisticsWindow = this.kernel.use('ui').createWindow({
+    this.statisticsWindow = this.services.ui.createWindow({
       title: "Statistics Box",
       outerWidth: 200,
       outerHeight: 250,

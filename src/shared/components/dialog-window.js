@@ -1,4 +1,5 @@
 import { playSound } from "../../system/sound-manager.js";
+import { OSWindow } from "../../system/gui/window.js";
 
 /**
  * @typedef {object} DialogButton
@@ -60,7 +61,7 @@ function ShowDialogWindow(options) {
     winOptions.icons = { any: icon };
   }
 
-  const win = new $Window(winOptions);
+  const win = new OSWindow(winOptions);
 
   // General OS rule: cancel full screen if there's a dialog window
   if (document.fullscreenElement) {
@@ -156,9 +157,9 @@ function ShowDialogWindow(options) {
 
     // Use a high z-index, but relative to the window manager's current z-index
     // This should be just below the dialog window itself.
-    win.css("z-index", $Window.Z_INDEX + 1);
-    modalOverlay.style.zIndex = $Window.Z_INDEX;
-    $Window.Z_INDEX += 2; // Increment for both overlay and window
+    win.css("z-index", OSWindow.Z_INDEX + 1);
+    modalOverlay.style.zIndex = OSWindow.Z_INDEX;
+    OSWindow.Z_INDEX += 2; // Increment for both overlay and window
 
     screen.appendChild(modalOverlay);
     win.onClosed(() => {
