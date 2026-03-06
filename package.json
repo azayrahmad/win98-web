@@ -25,6 +25,7 @@
     "@zenfs/emscripten": "^1.0.5",
     "ani-cursor": "^0.0.5",
     "html2canvas": "^1.4.1",
+    "music-metadata-browser": "^2.5.11",
     "os-gui": "^0.7.3"
   }
 }
