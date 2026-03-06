@@ -151,25 +151,33 @@ export function showClippyContextMenu(event, app) {
   new window.ContextMenu(menuItems, event);
 }
 
+let isLaunching = false;
 export async function launchClippyApp(app, agentName = currentAgentName) {
+  if (isLaunching) return;
+  isLaunching = true;
+
   if (app) {
     window.clippyAppInstance = app;
   }
   const appInstance = app || window.clippyAppInstance;
 
-  if (window.clippyAgent) {
-    // Gracefully hide and remove the current agent before loading a new one
-    window.clippyAgent.hide(false, () => {
-        window.clippyAgent.dispose();
-        $(".clippy, .clippy-balloon").remove();
-    });
-  } else {
-    $(".clippy, .clippy-balloon").remove();
-  }
-
   // Ensure the menu is removed if it exists
   const existingMenus = document.querySelectorAll(".menu-popup");
   existingMenus.forEach((menu) => menu.remove());
+
+  const oldAgent = window.clippyAgent;
+  if (oldAgent) {
+    await new Promise((resolve) => {
+      oldAgent.hide(false, () => {
+        oldAgent.dispose();
+        $(".clippy, .clippy-balloon").remove();
+        resolve();
+      });
+    });
+    window.clippyAgent = null;
+  } else {
+    $(".clippy, .clippy-balloon").remove();
+  }
 
   try {
       const agent = await loadAgent(agentName);
@@ -238,6 +246,8 @@ export async function launchClippyApp(app, agentName = currentAgentName) {
       });
   } catch (error) {
       console.error("Failed to load clippy agent:", error);
+  } finally {
+      isLaunching = false;
   }
 }
 
