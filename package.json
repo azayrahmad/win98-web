@@ -24,6 +24,7 @@
     "@zenfs/dom": "^1.2.7",
     "@zenfs/emscripten": "^1.0.5",
     "ani-cursor": "^0.0.5",
+    "clippyjs": "^0.1.0",
     "html2canvas": "^1.4.1",
     "os-gui": "^0.7.3"
   }

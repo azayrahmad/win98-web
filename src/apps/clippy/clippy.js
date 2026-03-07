@@ -8,14 +8,32 @@ import {
   releaseBusyState,
 } from '../../system/busy-state-manager.js';
 import { appManager } from '../../system/app-manager.js';
+import { AGENT_NAMES } from '../../config/agents.js';
+import { loadAgent } from './clippy-service.js';
 
 window.clippyAppInstance = null;
 let currentAgentName =
   getItem(LOCAL_STORAGE_KEYS.CLIPPY_AGENT_NAME) || "Clippy";
 
+const activeBusyStates = new Set();
+
 function setCurrentAgentName(name) {
   currentAgentName = name;
   setItem(LOCAL_STORAGE_KEYS.CLIPPY_AGENT_NAME, name);
+}
+
+function clearAllBusyStates() {
+    const agent = window.clippyAgent;
+    if (!agent) return;
+
+    const clippyEl = agent._el;
+    const balloonEl = agent._balloon._balloon;
+
+    activeBusyStates.forEach(speakId => {
+        releaseBusyState(speakId, clippyEl);
+        releaseBusyState(speakId, balloonEl);
+    });
+    activeBusyStates.clear();
 }
 
 function showClippyInputBalloon() {
@@ -33,6 +51,10 @@ async function askClippy(agent, question) {
   if (!question || question.trim().length === 0) return;
 
   const ttsEnabled = agent.isTTSEnabled();
+  const clippyEl = agent._el;
+  const balloonEl = agent._balloon._balloon;
+  const speakId = `speak-${Date.now()}`;
+
   agent.speakAndAnimate("Let me think about it...", "Thinking", {
     useTTS: ttsEnabled,
   });
@@ -44,12 +66,22 @@ async function askClippy(agent, question) {
     );
     const data = await response.json();
 
-    for (const fragment of data) {
-      const cleanAnswer = fragment.answer.replace(/\*\*/g, "");
-      await agent.speakAndAnimate(cleanAnswer, fragment.animation, {
-        useTTS: ttsEnabled,
-      });
+    requestBusyState(speakId, clippyEl);
+    requestBusyState(speakId, balloonEl);
+    activeBusyStates.add(speakId);
+
+    // Streaming implementation using speakStream
+    async function* answerStream() {
+        for (const fragment of data) {
+            const cleanAnswer = fragment.answer.replace(/\*\*/g, "");
+            yield cleanAnswer + " ";
+        }
     }
+
+    await agent.speakStream(answerStream(), {
+        tts: ttsEnabled
+    });
+
   } catch (error) {
     agent.speakAndAnimate(
       "Sorry, I couldn't get an answer for that at this time!",
@@ -57,10 +89,12 @@ async function askClippy(agent, question) {
       { useTTS: ttsEnabled },
     );
     console.error("API Error:", error);
+  } finally {
+      releaseBusyState(speakId, clippyEl);
+      releaseBusyState(speakId, balloonEl);
+      activeBusyStates.delete(speakId);
   }
 }
-
-import { AGENT_NAMES } from '../../config/agents.js';
 
 export function getClippyMenuItems(app) {
   const appInstance = app || window.clippyAppInstance;
@@ -126,7 +160,8 @@ export function getClippyMenuItems(app) {
           {
             useTTS: ttsEnabled,
             callback: () => {
-              agent.play(agent.getGoodbyeAnimation(), 5000, () => {
+              const goodbyeAnim = agent.getGoodbyeAnimation();
+              agent.play(goodbyeAnim, 5000, () => {
                 if (appInstance) {
                   appManager.closeApp(appInstance.id);
                 }
@@ -144,104 +179,107 @@ export function showClippyContextMenu(event, app) {
   new window.ContextMenu(menuItems, event);
 }
 
-export function launchClippyApp(app, agentName = currentAgentName) {
+let isLaunching = false;
+export async function launchClippyApp(app, agentName = currentAgentName) {
+  if (isLaunching) return;
+  isLaunching = true;
+
   if (app) {
     window.clippyAppInstance = app;
   }
   const appInstance = app || window.clippyAppInstance;
 
-  if (window.clippyAgent) {
-    // Gracefully hide and remove the current agent before loading a new one
-    window.clippyAgent.hide(() => {
-      $(".clippy, .clippy-balloon").remove();
-    });
-  } else {
-    $(".clippy, .clippy-balloon").remove();
-  }
-
   // Ensure the menu is removed if it exists
   const existingMenus = document.querySelectorAll(".menu-popup");
   existingMenus.forEach((menu) => menu.remove());
 
-  clippy.load(agentName, function (agent) {
-    window.clippyAgent = agent;
-    agent._el[0].setAttribute('data-testid', 'clippy-agent');
-
-    const ttsUserPref = getItem(LOCAL_STORAGE_KEYS.CLIPPY_TTS_ENABLED) ?? true;
-    agent.setTTSEnabled(ttsUserPref);
-
-    agent.show();
-
-    let contextMenuOpened = false;
-
-    const ttsEnabled = agent.isTTSEnabled();
-    if (ttsEnabled) {
-      const setDefaultVoice = () => {
-        agent.setRecommendedVoice();
-      };
-      if (window.speechSynthesis.getVoices().length) {
-        setDefaultVoice();
-      } else {
-        window.speechSynthesis.addEventListener(
-          "voiceschanged",
-          setDefaultVoice,
-          { once: true },
-        );
-      }
-    }
-
-    agent.isSpeaking = false; // Initial state
-
-    // Wrap the original speakAndAnimate function
-    const originalSpeakAndAnimate = agent.speakAndAnimate;
-    agent.speakAndAnimate = function (text, animation, options) {
-      agent.isSpeaking = true;
-
-      const clippyEl = agent._el[0];
-      const balloonEl = agent._balloon._balloon[0];
-      const speakId = `speak-${Date.now()}`;
-      requestBusyState(speakId, clippyEl);
-      requestBusyState(speakId, balloonEl);
-
-      const originalCallback = options?.callback;
-      const newOptions = {
-        ...options,
-        callback: () => {
-          if (originalCallback) {
-            originalCallback();
-          }
-          agent.isSpeaking = false;
-          releaseBusyState(speakId, clippyEl);
-          releaseBusyState(speakId, balloonEl);
-        },
-      };
-      return originalSpeakAndAnimate.call(this, text, animation, newOptions);
-    };
-
-    agent.speakAndAnimate(
-      "Hey, there. Want quick answers to your questions? Just click me.",
-      "Explain",
-      { useTTS: ttsEnabled },
-    );
-
-    agent._el.on("click", (e) => {
-      if (contextMenuOpened) {
-        contextMenuOpened = false;
-        return;
-      }
-      if (agent.isSpeaking) return;
-      // Also check if a context menu is open
-      if (document.querySelector(".menu-popup")) return;
-      showClippyInputBalloon();
+  const oldAgent = window.clippyAgent;
+  if (oldAgent) {
+    clearAllBusyStates();
+    await new Promise((resolve) => {
+      oldAgent.hide(false, () => {
+        oldAgent.dispose();
+        $(".clippy, .clippy-balloon").remove();
+        resolve();
+      });
     });
+    window.clippyAgent = null;
+  } else {
+    $(".clippy, .clippy-balloon").remove();
+  }
 
-    agent._el.on("contextmenu", function (e) {
-      if (agent.isSpeaking) return;
-      e.preventDefault();
-      contextMenuOpened = true;
-      showClippyContextMenu(e, appInstance);
-    });
-  });
+  try {
+      const agent = await loadAgent(agentName);
+      window.clippyAgent = agent;
+      agent._el.setAttribute('data-testid', 'clippy-agent');
+
+      const ttsUserPref = getItem(LOCAL_STORAGE_KEYS.CLIPPY_TTS_ENABLED) ?? true;
+      agent.setTTSEnabled(ttsUserPref);
+
+      agent.show();
+
+      let contextMenuOpened = false;
+
+      const ttsEnabled = agent.isTTSEnabled();
+
+      agent.isSpeaking = false; // Initial state
+
+      // Wrap the original speakAndAnimate function
+      const originalSpeakAndAnimate = agent.speakAndAnimate;
+      agent.speakAndAnimate = function (text, animation, options) {
+        agent.isSpeaking = true;
+
+        const clippyEl = agent._el;
+        const balloonEl = agent._balloon._balloon;
+        const speakId = `speak-${Date.now()}`;
+        requestBusyState(speakId, clippyEl);
+        requestBusyState(speakId, balloonEl);
+        activeBusyStates.add(speakId);
+
+        const originalCallback = options?.callback;
+        const newOptions = {
+          ...options,
+          callback: () => {
+            if (originalCallback) {
+              originalCallback();
+            }
+            agent.isSpeaking = false;
+            releaseBusyState(speakId, clippyEl);
+            releaseBusyState(speakId, balloonEl);
+            activeBusyStates.delete(speakId);
+          },
+        };
+        return originalSpeakAndAnimate.call(this, text, animation, newOptions);
+      };
+
+      agent.speakAndAnimate(
+        "Hey, there. Want quick answers to your questions? Just click me.",
+        "Explain",
+        { useTTS: ttsEnabled },
+      );
+
+      $(agent._el).on("click", (e) => {
+        if (contextMenuOpened) {
+          contextMenuOpened = false;
+          return;
+        }
+        if (agent.isSpeaking) return;
+        // Also check if a context menu is open
+        if (document.querySelector(".menu-popup")) return;
+        showClippyInputBalloon();
+      });
+
+      $(agent._el).on("contextmenu", function (e) {
+        if (agent.isSpeaking) return;
+        e.preventDefault();
+        contextMenuOpened = true;
+        showClippyContextMenu(e, appInstance);
+      });
+  } catch (error) {
+      console.error("Failed to load clippy agent:", error);
+  } finally {
+      isLaunching = false;
+  }
 }
 
 function startTutorial(agent) {
@@ -249,14 +287,8 @@ function startTutorial(agent) {
 
   agent.stop();
   const ttsEnabled = agent.isTTSEnabled();
-  const initialPos = agent._el.offset();
-
-  const getElementTopLeft = (selector) => {
-    const el = document.querySelector(selector);
-    if (!el) return null;
-    const rect = el.getBoundingClientRect();
-    return { x: rect.left, y: rect.top };
-  };
+  const $el = $(agent._el);
+  const initialPos = $el.offset();
 
   const getElementCenter = (selector) => {
     const el = document.querySelector(selector);
@@ -266,11 +298,14 @@ function startTutorial(agent) {
   };
 
   const playGesture = (x, y, callback) => {
-    const direction = agent._getDirection(x, y);
-    const gestureAnim = "Gesture" + direction;
-    const lookAnim = "Look" + direction;
-    const animation = agent.hasAnimation(gestureAnim) ? gestureAnim : lookAnim;
-    agent.play(animation, 3000, callback);
+    agent.gestureAt(x, y);
+    // Gesture animations in clippyjs are just animations that are queued.
+    // They don't have a direct callback but we can queue one.
+    agent.delay(3000);
+    agent._addToQueue((complete) => {
+        if (callback) callback();
+        complete();
+    });
   };
 
   const toggleIconHighlight = (iconEl, highlight) => {
@@ -301,7 +336,7 @@ function startTutorial(agent) {
   // 2. Start Menu
   if (startButton) {
     sequence.push((done) =>
-      agent._el.animate(
+      $el.animate(
         { top: startButton.y - 80, left: startButton.x + 80 },
         1500,
         done,
@@ -342,7 +377,7 @@ function startTutorial(agent) {
 
   // 3. Desktop Icons
   sequence.push((done) =>
-    agent._el.animate(
+    $el.animate(
       { top: iconsArea.y, left: iconsArea.x + 100 },
       1500,
       done,
@@ -357,210 +392,49 @@ function startTutorial(agent) {
     ),
   );
 
-  const internetExplorerIcon = getElementTopLeft(
-    '.desktop-icon[data-app-id="internet-explorer"]',
-  );
-  const webampIcon = getElementTopLeft('.desktop-icon[data-app-id="webamp"]');
-  const pinballIcon = getElementTopLeft('.desktop-icon[data-app-id="pinball"]');
-  const briefcaseIcon = getElementTopLeft(
-    '.desktop-icon[data-app-id="my-briefcase"]',
-  );
-  const coffeeIcon = getElementTopLeft(
-    '.desktop-icon[data-app-id="buy-me-a-coffee"]',
-  );
-  const readmeIcon = getElementTopLeft(
-    '.desktop-icon[data-app-id="file-readme"]',
-  );
+  const appsToTour = [
+    { id: "internet-explorer", text: "Surf the web like it's 1999. Open any URL and Internet Explorer will load the page as it was in 1999. Really." },
+    { id: "webamp", text: "Got some mp3 files? Play it with Winamp! Customize the skin as well!" },
+    { id: "pinball", text: "Try playing a round of the classic Space Cadet Pinball game." },
+    { id: "my-briefcase", text: "Drag files from your device to an open My Briefcase window to use it in Windows 98." },
+    { id: "buy-me-a-coffee", text: "If you have some to spare, consider supporting this project to keep it alive and well." },
+    { id: "file-readme", text: "For more information about the project, read the README.md file here." }
+  ];
 
-  // 4. Internet Explorer
-  if (internetExplorerIcon) {
-    const iconEl = document.querySelector(
-      '.desktop-icon[data-app-id="internet-explorer"]',
-    );
-    sequence.push((done) =>
-      agent._el.animate(
-        { top: internetExplorerIcon.y, left: internetExplorerIcon.x + 80 },
-        1500,
-        done,
-      ),
-    );
-    sequence.push((done) => {
-      toggleIconHighlight(iconEl, true);
-      playGesture(internetExplorerIcon.x, internetExplorerIcon.y, () => {
-        setTimeout(done, 500);
-      });
-    });
-    sequence.push((done) =>
-      agent.speakAndAnimate(
-        "Surf the web like it's 1999. Open any URL and Internet Explorer will load the page as it was in 1999. Really.",
-        "Explain",
-        { useTTS: ttsEnabled, callback: done },
-      ),
-    );
-    sequence.push((done) => {
-      toggleIconHighlight(iconEl, false);
-      done();
-    });
-  }
-
-  // 5. Winamp
-  if (webampIcon) {
-    const iconEl = document.querySelector(
-      '.desktop-icon[data-app-id="webamp"]',
-    );
-    sequence.push((done) =>
-      agent._el.animate(
-        { top: webampIcon.y, left: webampIcon.x + 80 },
-        1500,
-        done,
-      ),
-    );
-    sequence.push((done) => {
-      toggleIconHighlight(iconEl, true);
-      playGesture(webampIcon.x, webampIcon.y, () => {
-        setTimeout(done, 500);
-      });
-    });
-    sequence.push((done) =>
-      agent.speakAndAnimate(
-        "Got some mp3 files? Play it with Winamp! Customize the skin as well!",
-        "Explain",
-        { useTTS: ttsEnabled, callback: done },
-      ),
-    );
-    sequence.push((done) => {
-      toggleIconHighlight(iconEl, false);
-      done();
-    });
-  }
-
-  // 6. Pinball
-  if (pinballIcon) {
-    const iconEl = document.querySelector(
-      '.desktop-icon[data-app-id="pinball"]',
-    );
-    sequence.push((done) =>
-      agent._el.animate(
-        { top: pinballIcon.y, left: pinballIcon.x + 80 },
-        1500,
-        done,
-      ),
-    );
-    sequence.push((done) => {
-      toggleIconHighlight(iconEl, true);
-      playGesture(pinballIcon.x, pinballIcon.y, () => {
-        setTimeout(done, 500);
-      });
-    });
-    sequence.push((done) =>
-      agent.speakAndAnimate(
-        "Try playing a round of the classic Space Cadet Pinball game.",
-        "Explain",
-        { useTTS: ttsEnabled, callback: done },
-      ),
-    );
-    sequence.push((done) => {
-      toggleIconHighlight(iconEl, false);
-      done();
-    });
-  }
-
-  // 7. My Briefcase
-  if (briefcaseIcon) {
-    const iconEl = document.querySelector(
-      '.desktop-icon[data-app-id="my-briefcase"]',
-    );
-    sequence.push((done) =>
-      agent._el.animate(
-        { top: briefcaseIcon.y, left: briefcaseIcon.x + 80 },
-        1500,
-        done,
-      ),
-    );
-    sequence.push((done) => {
-      toggleIconHighlight(iconEl, true);
-      playGesture(briefcaseIcon.x, briefcaseIcon.y, () => {
-        setTimeout(done, 500);
-      });
-    });
-    sequence.push((done) =>
-      agent.speakAndAnimate(
-        "Drag files from your device to an open My Briefcase window to use it in Windows 98.",
-        "Explain",
-        { useTTS: ttsEnabled, callback: done },
-      ),
-    );
-    sequence.push((done) => {
-      toggleIconHighlight(iconEl, false);
-      done();
-    });
-  }
-
-  // 8. Buy me a coffee
-  if (coffeeIcon) {
-    const iconEl = document.querySelector(
-      '.desktop-icon[data-app-id="buy-me-a-coffee"]',
-    );
-    sequence.push((done) =>
-      agent._el.animate(
-        { top: coffeeIcon.y, left: coffeeIcon.x + 80 },
-        1500,
-        done,
-      ),
-    );
-    sequence.push((done) => {
-      toggleIconHighlight(iconEl, true);
-      playGesture(coffeeIcon.x, coffeeIcon.y, () => {
-        setTimeout(done, 500);
-      });
-    });
-    sequence.push((done) =>
-      agent.speakAndAnimate(
-        "If you have some to spare, consider supporting this project to keep it alive and well.",
-        "Explain",
-        { useTTS: ttsEnabled, callback: done },
-      ),
-    );
-    sequence.push((done) => {
-      toggleIconHighlight(iconEl, false);
-      done();
-    });
-  }
-
-  // 9. Readme.md
-  if (readmeIcon) {
-    const iconEl = document.querySelector(
-      '.desktop-icon[data-app-id="file-readme"]',
-    );
-    sequence.push((done) =>
-      agent._el.animate(
-        { top: readmeIcon.y, left: readmeIcon.x + 80 },
-        1500,
-        done,
-      ),
-    );
-    sequence.push((done) => {
-      toggleIconHighlight(iconEl, true);
-      playGesture(readmeIcon.x, readmeIcon.y, () => {
-        setTimeout(done, 500);
-      });
-    });
-    sequence.push((done) =>
-      agent.speakAndAnimate(
-        "For more information about the project, read the README.md file here.",
-        "Explain",
-        { useTTS: ttsEnabled, callback: done },
-      ),
-    );
-    sequence.push((done) => {
-      toggleIconHighlight(iconEl, false);
-      done();
-    });
-  }
+  appsToTour.forEach(app => {
+      const iconEl = document.querySelector(`.desktop-icon[data-app-id="${app.id}"]`);
+      if (iconEl) {
+          const rect = iconEl.getBoundingClientRect();
+          sequence.push((done) =>
+            $el.animate(
+              { top: rect.top, left: rect.left + 80 },
+              1500,
+              done,
+            ),
+          );
+          sequence.push((done) => {
+            toggleIconHighlight(iconEl, true);
+            playGesture(rect.left, rect.top, () => {
+              setTimeout(done, 500);
+            });
+          });
+          sequence.push((done) =>
+            agent.speakAndAnimate(
+              app.text,
+              "Explain",
+              { useTTS: ttsEnabled, callback: done },
+            ),
+          );
+          sequence.push((done) => {
+            toggleIconHighlight(iconEl, false);
+            done();
+          });
+      }
+  });
 
   // 10. Return home
   sequence.push((done) =>
-    agent._el.animate(
+    $el.animate(
       { top: initialPos.top, left: initialPos.left },
       2000,
       done,

@@ -38,8 +38,10 @@ export class ClippyApp extends Application {
     _cleanup() {
         const agent = window.clippyAgent;
         if (agent) {
-            agent.hide();
-            $(".clippy, .clippy-balloon").remove();
+            agent.hide(false, () => {
+                agent.dispose();
+                $(".clippy, .clippy-balloon").remove();
+            });
             $(".os-menu").remove();
             const trayIcon = document.querySelector("#tray-icon-clippy");
             if (trayIcon) {
