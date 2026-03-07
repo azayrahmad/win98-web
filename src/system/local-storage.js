@@ -33,6 +33,7 @@ export const LOCAL_STORAGE_KEYS = {
   MUTED: 'muted',
   SOLITAIRE_SHOW_STATUS_BAR: "solitaireShowStatusBar",
   SOLITAIRE_KEEP_SCORE: "solitaireKeepScore",
+  CLIPPY_BACKEND: 'clippyBackend',
 };
 
 export function getItem(key) {
