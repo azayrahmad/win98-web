@@ -15,9 +15,25 @@ window.clippyAppInstance = null;
 let currentAgentName =
   getItem(LOCAL_STORAGE_KEYS.CLIPPY_AGENT_NAME) || "Clippy";
 
+const activeBusyStates = new Set();
+
 function setCurrentAgentName(name) {
   currentAgentName = name;
   setItem(LOCAL_STORAGE_KEYS.CLIPPY_AGENT_NAME, name);
+}
+
+function clearAllBusyStates() {
+    const agent = window.clippyAgent;
+    if (!agent) return;
+
+    const clippyEl = agent._el;
+    const balloonEl = agent._balloon._balloon;
+
+    activeBusyStates.forEach(speakId => {
+        releaseBusyState(speakId, clippyEl);
+        releaseBusyState(speakId, balloonEl);
+    });
+    activeBusyStates.clear();
 }
 
 function showClippyInputBalloon() {
@@ -35,6 +51,10 @@ async function askClippy(agent, question) {
   if (!question || question.trim().length === 0) return;
 
   const ttsEnabled = agent.isTTSEnabled();
+  const clippyEl = agent._el;
+  const balloonEl = agent._balloon._balloon;
+  const speakId = `speak-${Date.now()}`;
+
   agent.speakAndAnimate("Let me think about it...", "Thinking", {
     useTTS: ttsEnabled,
   });
@@ -45,6 +65,10 @@ async function askClippy(agent, question) {
       `https://resume-chat-api-nine.vercel.app/api/clippy-helper?query=${encodedQuestion}`,
     );
     const data = await response.json();
+
+    requestBusyState(speakId, clippyEl);
+    requestBusyState(speakId, balloonEl);
+    activeBusyStates.add(speakId);
 
     // Streaming implementation using speakStream
     async function* answerStream() {
@@ -65,6 +89,10 @@ async function askClippy(agent, question) {
       { useTTS: ttsEnabled },
     );
     console.error("API Error:", error);
+  } finally {
+      releaseBusyState(speakId, clippyEl);
+      releaseBusyState(speakId, balloonEl);
+      activeBusyStates.delete(speakId);
   }
 }
 
@@ -167,6 +195,7 @@ export async function launchClippyApp(app, agentName = currentAgentName) {
 
   const oldAgent = window.clippyAgent;
   if (oldAgent) {
+    clearAllBusyStates();
     await new Promise((resolve) => {
       oldAgent.hide(false, () => {
         oldAgent.dispose();
@@ -205,6 +234,7 @@ export async function launchClippyApp(app, agentName = currentAgentName) {
         const speakId = `speak-${Date.now()}`;
         requestBusyState(speakId, clippyEl);
         requestBusyState(speakId, balloonEl);
+        activeBusyStates.add(speakId);
 
         const originalCallback = options?.callback;
         const newOptions = {
@@ -216,6 +246,7 @@ export async function launchClippyApp(app, agentName = currentAgentName) {
             agent.isSpeaking = false;
             releaseBusyState(speakId, clippyEl);
             releaseBusyState(speakId, balloonEl);
+            activeBusyStates.delete(speakId);
           },
         };
         return originalSpeakAndAnimate.call(this, text, animation, newOptions);

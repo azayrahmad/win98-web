@@ -6,8 +6,6 @@ import * as agents from 'clippyjs/agents';
  * modified to work with the new clippyjs library.
  */
 export function extendAgent(agent) {
-    // Already has animations(), hasAnimation(), animate(), speak(), show(), hide(), stop(), pause(), resume()
-
     /**
      * Get the appropriate goodbye animation name
      */
@@ -15,11 +13,16 @@ export function extendAgent(agent) {
         return this.hasAnimation("Goodbye") ? "Goodbye" : this.hasAnimation("GoodBye") ? "GoodBye" : "Hide";
     };
 
+    agent.exitAnimation = function() {
+        this._animator.exitAnimation();
+    };
+
     /**
      * Speak text while simultaneously playing an animation
      */
     agent.speakAndAnimate = function (text, animation, options = {}) {
         const { callback, hold } = options;
+        const animationTimeout = options.animationTimeout || 8000;
 
         if (!this.hasAnimation(animation)) {
             this.speak(text, hold);
@@ -40,17 +43,34 @@ export function extendAgent(agent) {
                 }
             };
 
-            this._balloon.speak(() => {
-                speechCompleted = true;
-                checkCompletion();
-            }, text, hold);
+            // Force animation completion after timeout
+            let animSafetyTimeout = setTimeout(() => {
+                if (!animationCompleted) {
+                    this.exitAnimation();
+                    // Second timeout to force it if exit branch hangs
+                    setTimeout(() => {
+                        if (!animationCompleted) {
+                            animationCompleted = true;
+                            checkCompletion();
+                        }
+                    }, 1000);
+                }
+            }, animationTimeout);
 
             this._playInternal(animation, (name, state) => {
                 if (state === 0) { // Animator.States.EXITED
+                    clearTimeout(animSafetyTimeout);
                     animationCompleted = true;
                     checkCompletion();
                 }
             });
+
+            this._balloon.speak(() => {
+                speechCompleted = true;
+                // For looping animations, we need to explicitly exit them when speech is done
+                this.exitAnimation();
+                checkCompletion();
+            }, text, hold);
         }, this);
     };
 
@@ -66,6 +86,9 @@ export function extendAgent(agent) {
         let inputBalloonTimeout = null;
 
         this.stop();
+        // clippyjs's stop() triggers a 2-second hide timeout in the balloon.
+        // We must pause it to keep the balloon open for our custom UI.
+        this._balloon.pause();
 
         const balloonContent = `
             <div class="clippy-input">
@@ -145,20 +168,29 @@ export function extendAgent(agent) {
                 contentEl.style.width = 'auto';
                 contentEl.textContent = '';
 
+                // Play an animation during streaming
+                if (this.hasAnimation("Explain")) {
+                    this._playInternal("Explain");
+                }
+
                 let fullText = '';
-
-                // If TTS is enabled, we'll collect the text and speak it at the end
-                // because clippyjs doesn't support streaming TTS easily yet.
-                // Or we can speak sentences as they come.
-
-                for await (const chunk of asyncIterable) {
-                    fullText += chunk;
-                    contentEl.textContent = fullText;
-                    this._balloon.reposition();
+                try {
+                    for await (const chunk of asyncIterable) {
+                        fullText += chunk;
+                        contentEl.textContent = fullText;
+                        this._balloon.reposition();
+                    }
+                } catch (e) {
+                    console.error("Stream error:", e);
                 }
 
                 if (useTTS) {
-                   window.speechSynthesis.speak(new SpeechSynthesisUtterance(fullText));
+                   const utterance = new SpeechSynthesisUtterance(fullText);
+                   window.speechSynthesis.speak(utterance);
+                }
+
+                if (this.hasAnimation("Explain")) {
+                    this.exitAnimation();
                 }
 
                 if (!hold) {
@@ -194,11 +226,7 @@ export function extendAgent(agent) {
         const self = this;
         this._balloon.speak = function(complete, text, hold) {
             if (options.useTTS) {
-                // Simple TTS implementation
                 const utterance = new SpeechSynthesisUtterance(text);
-                utterance.onend = () => {
-                   // Visual words already completed or will complete
-                };
                 window.speechSynthesis.speak(utterance);
             }
             originalSpeak.call(this, complete, text, hold);
@@ -209,7 +237,7 @@ export function extendAgent(agent) {
     };
 
     agent.setRecommendedVoice = function() {
-        // Not implemented for now, Web Speech API defaults work fine
+        // Not implemented for now
     };
 }
 
