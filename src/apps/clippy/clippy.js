@@ -49,8 +49,21 @@ async function askClippy(agent, question) {
            // so we just wait for it to be ready.
         });
       }
-      const answer = await webLLMService.ask(question.trim());
-      await agent.speakAndAnimate(answer, "Explain", { useTTS: ttsEnabled });
+      const response = await webLLMService.ask(question.trim());
+      let data;
+      try {
+        data = JSON.parse(response);
+        if (!Array.isArray(data)) data = [{ answer: response, animation: "Explain" }];
+      } catch (e) {
+        data = [{ answer: response, animation: "Explain" }];
+      }
+
+      for (const fragment of data) {
+        const cleanAnswer = fragment.answer.replace(/\*\*/g, "");
+        await agent.speakAndAnimate(cleanAnswer, fragment.animation || "Explain", {
+          useTTS: ttsEnabled,
+        });
+      }
       return;
     } catch (error) {
       console.error("Local LLM Error:", error);
