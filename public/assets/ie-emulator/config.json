@@ -1,0 +1,205 @@
+[
+  {
+    "id": "nm2-mac",
+    "name": "NCSA Mosaic 2",
+    "os": "macos",
+    "emu": "bas",
+    "icon": "mosaic.png",
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/bas-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/bas-2/images/hd-ie-m.img$GZ",
+      "emuBrowserId": "br-nm2"
+    }
+  },
+  {
+    "id": "nm3-mac",
+    "name": "NCSA Mosaic 3",
+    "os": "macos",
+    "emu": "bas",
+    "icon": "mosaic.png",
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/bas-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/bas-2/images/hd-ns.img$GZ",
+      "emuBrowserId": "br-nm3"
+    }
+  },
+  {
+    "id": "ml-mac",
+    "name": "MacLynx 2",
+    "os": "macos",
+    "emu": "bas",
+    "icon": "maclynx.png",
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/bas-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/bas-2/images/hd-ns.img$GZ",
+      "emuBrowserId": "br-ml2"
+    }
+  },
+  {
+    "id": "ns3-mac",
+    "name": "Navigator 3",
+    "os": "macos",
+    "emu": "bas",
+    "icon": "ns3.png",
+    "features": ["shockwave 3", "java 1.0"],
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/bas-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/bas-2/images/hd-ns.img$GZ",
+      "emuBrowserId": "br-ns3"
+    }
+  },
+  {
+    "id": "ns4-mac",
+    "name": "Navigator 4",
+    "os": "macos",
+    "emu": "bas",
+    "icon": "ns4.png",
+    "features": ["shockwave 3"],
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/bas-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/bas-2/images/hd-ns.img$GZ",
+      "emuBrowserId": "br-ns4"
+    }
+  },
+  {
+    "id": "ie4-mac",
+    "name": "IE 4",
+    "os": "macos",
+    "emu": "bas",
+    "icon": "ie4-mac.png",
+    "features": ["shockwave 3", "java 1.0"],
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/bas-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/bas-2/images/hd-ie-m.img$GZ",
+      "emuBrowserId": "br-ie4"
+    }
+  },
+  {
+    "id": "ie5-full-boot",
+    "name": "(Slow Full Boot) IE5 + Netscape 4",
+    "os": "win98",
+    "emu": "v86",
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/v86-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/v86-2/images/ie5-ns4.img",
+      "imageSize": 419430400
+    },
+    "hidden": true
+  },
+  {
+    "id": "ns4-win",
+    "name": "Navigator 4",
+    "os": "win98",
+    "emu": "v86",
+    "icon": "ns4.png",
+    "features": ["flash 8", "java 1.1.5"],
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/v86-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/v86-2/images/ie5-ns4.img",
+      "imageSize": 419430400,
+      "stateUrl": "$IMAGE_PREFIX/v86-2/state/ns4.bin$GZ",
+      "clientMAC": [0, 34, 21, 16, 17, 18],
+      "clientIP": [10, 0, 2, 100]
+    }
+  },
+  {
+    "id": "ie6-full-boot",
+    "name": "(Slow Full Boot) IE6",
+    "os": "win98",
+    "emu": "v86",
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/v86-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/v86-2/images/ie6.img",
+      "imageSize": 419430400
+    },
+    "hidden": true
+  },
+  {
+    "id": "ie5",
+    "name": "IE 5",
+    "os": "win98",
+    "emu": "v86",
+    "icon": "ie5.png",
+    "features": ["flash 9", "java 5.0"],
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/v86-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/v86-2/images/ie5-ns4.img",
+      "imageSize": 419430400,
+      "stateUrl": "$IMAGE_PREFIX/v86-2/state/ie5.bin$GZ",
+      "clientMAC": [0, 34, 21, 16, 17, 18],
+      "clientIP": [10, 0, 2, 100]
+    }
+  },
+  {
+    "id": "ie6",
+    "name": "IE 6",
+    "os": "win98",
+    "emu": "v86",
+    "icon": "ie6.png",
+    "features": ["flash 9", "java 5.0"],
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/v86-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/v86-2/images/ie6.img",
+      "imageSize": 419430400,
+      "stateUrl": "$IMAGE_PREFIX/v86-2/state/ie6.bin$GZ",
+      "clientMAC": [0, 34, 21, 16, 17, 18],
+      "clientIP": [10, 0, 2, 100]
+    }
+  },
+  {
+    "id": "tc-full-boot",
+    "name": "(Slow Full Boot) TinyCore Image",
+    "os": "linux",
+    "emu": "v86",
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/v86-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/v86-2/images/tclinux.img",
+      "imageSize": 209715200,
+      "acpi": true
+    },
+    "hidden": true
+  },
+  {
+    "id": "ff10",
+    "name": "Firefox 10",
+    "os": "linux",
+    "emu": "v86",
+    "icon": "firefox.png",
+    "features": ["flash 32"],
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/v86-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/v86-2/images/tclinux.img",
+      "imageSize": 209715200,
+      "stateUrl": "$IMAGE_PREFIX/v86-2/state/ff10.bin$GZ",
+      "clientMAC": [0, 34, 21, 16, 17, 18],
+      "clientIP": [10, 0, 2, 100],
+      "acpi": true
+    }
+  },
+  {
+    "id": "op12",
+    "name": "Opera 12",
+    "os": "linux",
+    "emu": "v86",
+    "icon": "opera.png",
+    "features": ["flash 32"],
+    "opts": {
+      "biosPath": "$IMAGE_PREFIX/v86-2/bios/",
+      "imageUrl": "$IMAGE_PREFIX/v86-2/images/tclinux.img",
+      "imageSize": 209715200,
+      "stateUrl": "$IMAGE_PREFIX/v86-2/state/op12.bin$GZ",
+      "clientMAC": [0, 34, 21, 16, 17, 18],
+      "clientIP": [10, 0, 2, 100],
+      "acpi": true
+    }
+  },
+  {
+    "id": "ruffle",
+    "name": "Ruffle (Flash)",
+    "os": "native",
+    "emu": "native",
+    "icon": "ruffle.png",
+    "features": ["flash"],
+    "opts": {"injectScripts": ["dist/ruffle.js"]}
+  }
+]

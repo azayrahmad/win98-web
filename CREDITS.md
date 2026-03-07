@@ -63,3 +63,8 @@ This project is made possible by the following amazing open-source libraries and
 ## Asset Sources
 - Graphical elements, icons, and sounds are derived from classic Windows operating systems for historical recreation and compatibility.
 - All rights to original Windows artwork, icons, cursors, and media belong to Microsoft Corporation.
+
+## OldWebToday
+- **Source**: [oldweb-today/oldweb-today](https://github.com/oldweb-today/oldweb-today)
+- **License**: AGPL-3.0
+- **Use**: x86 emulation and virtual networking for Internet Explorer retro mode.

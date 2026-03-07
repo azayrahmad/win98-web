@@ -34,6 +34,7 @@ import { DesktopExtension } from './extensions/desktop-extension.js';
 import { RecycleBinExtension } from './extensions/recycle-bin-extension.js';
 import { NetworkNeighborhoodExtension } from './extensions/network-neighborhood-extension.js';
 import { InternetExplorerExtension } from './extensions/internet-explorer-extension.js';
+import { InternetExplorerEmulator } from '../../apps/internet-explorer/ie-emulator.js';
 import { isZenFSPath, getZenFSFileUrl } from '../../system/zenfs-utils.js';
 import { getMenuFromZenFS, FAVORITES_PATH } from '../start-menu/start-menu-utils.js';
 import "./explorer.css";
@@ -98,6 +99,7 @@ export class ZenExplorerApp extends Application {
     this.retroMode = true;
     this.blobUrl = null;
     this.isInWebMode = false;
+    this.ieEmulator = null;
     this._favoritesCache = null;
     this._favoritesLoading = false;
   }
@@ -604,15 +606,26 @@ export class ZenExplorerApp extends Application {
 
   async _updateMode() {
     const isWeb = this.isInWebMode;
-    const wasWeb = this.iframe.style.display === "block";
+    const wasWeb = !!this.ieEmulator;
 
     if (isWeb) {
-      this.iframe.style.display = "block";
+      this.iframe.style.display = "none"; // Using emulator instead of iframe
       this.iconContainer.style.display = "none";
       this.sidebar.element.style.display = "none";
       this.content.classList.remove("with-sidebar");
       if (this.logo) this.logo.classList.remove("animate-only-busy");
+
+      if (!this.ieEmulator) {
+        this.ieEmulator = new InternetExplorerEmulator(this.content);
+        await this.ieEmulator.init(this.currentPath);
+      } else {
+        this.ieEmulator.navigateTo(this.currentPath);
+      }
     } else {
+      if (this.ieEmulator) {
+        this.ieEmulator.destroy();
+        this.ieEmulator = null;
+      }
       this.iframe.style.display = "none";
       this.iconContainer.style.display = "";
       this.sidebar.element.style.display = "";
