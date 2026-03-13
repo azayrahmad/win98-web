@@ -284,6 +284,15 @@ export function writeBootError(message) {
     }
 }
 
+/**
+ * Writes a message to the boot screen.
+ */
+export function writeBootMessage(message) {
+    if (terminal) {
+        terminal.write(`\r\n${message}\r\n`);
+    }
+}
+
 export {
     hideBootScreen,
     startBootProcessStep,
