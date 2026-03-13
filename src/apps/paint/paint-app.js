@@ -361,16 +361,18 @@ export class PaintApp extends Application {
     }
 
     async _loadDependencies() {
+        const baseUrl = window.BASE_URL || import.meta.env.BASE_URL || "/win98-web/";
+        const cleanBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
         const libs = [
-            '/win98-web/apps/paint/lib/pako-2.0.3.min.js',
-            '/win98-web/apps/paint/lib/UPNG.js',
-            '/win98-web/apps/paint/lib/UTIF.js',
-            '/win98-web/apps/paint/lib/bmp.js',
-            '/win98-web/apps/paint/lib/FileSaver.js',
-            '/win98-web/apps/paint/lib/font-detective.js',
-            '/win98-web/apps/paint/lib/libtess.min.js',
-            '/win98-web/apps/paint/lib/imagetracer_v1.2.5.js',
-        ];
+            `${cleanBase}apps/paint/lib/pako-2.0.3.min.js`,
+            `${cleanBase}apps/paint/lib/UPNG.js`,
+            `${cleanBase}apps/paint/lib/UTIF.js`,
+            `${cleanBase}apps/paint/lib/bmp.js`,
+            `${cleanBase}apps/paint/lib/FileSaver.js`,
+            `${cleanBase}apps/paint/lib/font-detective.js`,
+            `${cleanBase}apps/paint/lib/libtess.min.js`,
+            `${cleanBase}apps/paint/lib/imagetracer_v1.2.5.js`,
+        ].map(path => path.replace(/([^:])\/\//g, '$1/'));
 
         for (const lib of libs) {
             await this._loadScript(lib);
@@ -388,6 +390,8 @@ export class PaintApp extends Application {
     }
 
     _injectHTML() {
+        const baseUrl = window.BASE_URL || import.meta.env.BASE_URL || "/win98-web/";
+        const cleanBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
         // Remove existing fragments if any (to avoid duplicate IDs)
         this.win.$content.find('#about-paint, #news, #jspaint-svg-filters').remove();
 
@@ -397,7 +401,7 @@ export class PaintApp extends Application {
         aboutPaint.style.display = 'none';
         aboutPaint.innerHTML = `
             <div id="about-paint-header">
-                <img src="/win98-web/apps/paint/images/icons/128x128.png" width="128" height="128" id="about-paint-icon" alt="" />
+                <img src="${cleanBase}apps/paint/images/icons/128x128.png" width="128" height="128" id="about-paint-icon" alt="" />
                 <div id="about-paint-beside-icon">
                     <h1 id="jspaint-project-name">JS Paint</h1>
                     <div id="jspaint-version">Version 1.0.0+</div>

@@ -25,6 +25,7 @@ import { createMainUI } from "../shell/ui.js";
 import { initColorModeManager } from "./color-mode-manager.js";
 import screensaver from "./screensaver-utils.js";
 import { initScreenManager } from "./screen-manager.js";
+import { initElectronIntegration } from "./electron-integration.js";
 import { DOSShell } from "./dos-shell.js";
 import { fs, mounts } from "@zenfs/core";
 import { initFileSystem } from "./zenfs-init.js";
@@ -40,9 +41,19 @@ export async function initializeOS() {
   window.System = new WindowManager();
 
   const path = window.location.pathname;
-  const profileName = path.startsWith("/win98-web/")
-    ? path.substring("/win98-web/".length).split("/")[0]
-    : "";
+  const baseUrl = import.meta.env.BASE_URL;
+  let profileName = "";
+
+  // Try to detect profile from path
+  // If we are on web, baseUrl is /win98-web/
+  // If we are in electron, baseUrl is ./ or / depending on how it's loaded
+
+  if (baseUrl && baseUrl !== "/" && baseUrl !== "./" && path.startsWith(baseUrl)) {
+    profileName = path.substring(baseUrl.length).split("/")[0];
+  } else if (path.includes("/win98-web/")) {
+    const index = path.indexOf("/win98-web/");
+    profileName = path.substring(index + "/win98-web/".length).split("/")[0];
+  }
 
   window.activeProfile = null;
   const ignoredProfiles = ["", "index.html", "404.html"];
@@ -53,7 +64,7 @@ export async function initializeOS() {
       await setColorScheme(window.activeProfile.colorScheme);
     } else {
       window.location.href =
-        (import.meta.env.BASE_URL || "/win98-web/") + "404.html";
+        (import.meta.env.BASE_URL || "./") + "404.html";
       return;
     }
   }
@@ -415,6 +426,7 @@ export async function initializeOS() {
 
     resetInactivityTimer();
     initScreenManager();
+    initElectronIntegration();
   } catch (error) {
     if (error.message !== "Setup interrupted") {
       console.error("An error occurred during boot:", error);

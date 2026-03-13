@@ -5,11 +5,11 @@ export default defineConfig({
   outputDir: 'test-results',
   webServer: {
     command: 'bun run dev',
-    url: 'http://localhost:5173/win98-web/',
+    url: 'http://localhost:5173/',
     reuseExistingServer: !process.env.CI,
   },
   use: {
-    baseURL: 'http://localhost:5173/win98-web/',
+    baseURL: 'http://localhost:5173/',
     screenshot: 'only-on-failure',
   },
 });

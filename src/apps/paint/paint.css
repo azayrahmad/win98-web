@@ -4,10 +4,10 @@
 
 /* Fix for paths that were relative to styles/ */
 .help-window .toolbar button .icon {
-	background-image: url("/win98-web/apps/paint/images/help-viewer-toolbar-icons-grayscale.png");
+	background-image: url("../apps/paint/images/help-viewer-toolbar-icons-grayscale.png");
 }
 .help-window .toolbar button:not([disabled]):hover .icon {
-	background-image: url("/win98-web/apps/paint/images/help-viewer-toolbar-icons.png");
+	background-image: url("../apps/paint/images/help-viewer-toolbar-icons.png");
 }
 
 .paint-container {
