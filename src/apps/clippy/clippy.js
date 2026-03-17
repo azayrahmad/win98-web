@@ -8,6 +8,7 @@ import {
   releaseBusyState,
 } from '../../system/busy-state-manager.js';
 import { appManager } from '../../system/app-manager.js';
+import { webLLMService } from './webllm-service.js';
 
 window.clippyAppInstance = null;
 let currentAgentName =
@@ -33,9 +34,42 @@ async function askClippy(agent, question) {
   if (!question || question.trim().length === 0) return;
 
   const ttsEnabled = agent.isTTSEnabled();
+  const backend = getItem(LOCAL_STORAGE_KEYS.CLIPPY_BACKEND) || "cloud";
+
   agent.speakAndAnimate("Let me think about it...", "Thinking", {
     useTTS: ttsEnabled,
   });
+
+  if (backend === "local") {
+    try {
+      if (!webLLMService.engine) {
+        agent.speakAndAnimate("Hold on, I need to load my local brain first...", "Processing", { useTTS: ttsEnabled });
+        await webLLMService.init((report) => {
+           // We can't really show detailed progress here without blocking,
+           // so we just wait for it to be ready.
+        });
+      }
+      const response = await webLLMService.ask(question.trim());
+      let data;
+      try {
+        data = JSON.parse(response);
+        if (!Array.isArray(data)) data = [{ answer: response, animation: "Explain" }];
+      } catch (e) {
+        data = [{ answer: response, animation: "Explain" }];
+      }
+
+      for (const fragment of data) {
+        const cleanAnswer = fragment.answer.replace(/\*\*/g, "");
+        await agent.speakAndAnimate(cleanAnswer, fragment.animation || "Explain", {
+          useTTS: ttsEnabled,
+        });
+      }
+      return;
+    } catch (error) {
+      console.error("Local LLM Error:", error);
+      agent.speakAndAnimate("My local brain is fuzzy... falling back to the cloud!", "Confused", { useTTS: ttsEnabled });
+    }
+  }
 
   try {
     const encodedQuestion = encodeURIComponent(question.trim());
@@ -62,6 +96,56 @@ async function askClippy(agent, question) {
 
 import { AGENT_NAMES } from '../../config/agents.js';
 
+async function showBackendChoice(agent) {
+  const isWebGPU = await webLLMService.isWebGPUSupported();
+
+  const title = isWebGPU
+    ? "Would you like me to use my Local brain (WebGPU) or Cloud service (Vercel)?"
+    : "Your browser doesn't support WebGPU for my local brain. Use Cloud service?";
+
+  agent.ask({
+    title: title,
+    askButtonText: isWebGPU ? "Local" : "Cloud",
+    cancelButtonText: isWebGPU ? "Cloud" : "Cancel",
+    placeholder: isWebGPU ? "Type 'local' or 'cloud'..." : "Cloud is recommended.",
+    onAsk: (val) => {
+        const choice = val.toLowerCase().includes('cloud') ? 'cloud' : 'local';
+        setBackend(agent, choice);
+    },
+    onCancel: () => {
+        setBackend(agent, 'cloud');
+    }
+  });
+}
+
+async function setBackend(agent, mode) {
+    if (mode === 'local') {
+        const isWebGPU = await webLLMService.isWebGPUSupported();
+        if (!isWebGPU) {
+            agent.speakAndAnimate("Sorry, your browser doesn't support WebGPU. I'll have to use the Cloud!", "Sad");
+            setItem(LOCAL_STORAGE_KEYS.CLIPPY_BACKEND, 'cloud');
+            return;
+        }
+
+        agent.speakAndAnimate("I'm preparing to download my brain (~700MB). This might take a while...", "Processing");
+        try {
+            await webLLMService.init((report) => {
+                const percent = Math.floor((report.progress || 0) * 100);
+                agent._balloon.showHtml(`<b>Downloading: ${percent}%</b><br>${report.text}`, true);
+            });
+            agent.speakAndAnimate("I'm all set! My brain is now local.", "Congratulate");
+            setItem(LOCAL_STORAGE_KEYS.CLIPPY_BACKEND, 'local');
+        } catch (e) {
+            agent.speakAndAnimate("Something went wrong with the download. Let's stick to the Cloud for now.", "Sad");
+            setItem(LOCAL_STORAGE_KEYS.CLIPPY_BACKEND, 'cloud');
+        }
+    } else {
+        setItem(LOCAL_STORAGE_KEYS.CLIPPY_BACKEND, 'cloud');
+        webLLMService.unload();
+        agent.speakAndAnimate("Switched to Cloud service.", "Explain");
+    }
+}
+
 export function getClippyMenuItems(app) {
   const appInstance = app || window.clippyAppInstance;
   const agent = window.clippyAgent;
@@ -70,6 +154,7 @@ export function getClippyMenuItems(app) {
   }
 
   const ttsEnabled = agent.isTTSEnabled();
+  const currentBackend = getItem(LOCAL_STORAGE_KEYS.CLIPPY_BACKEND) || "cloud";
 
   return [
     {
@@ -114,6 +199,24 @@ export function getClippyMenuItems(app) {
             }
           },
         },
+        "MENU_DIVIDER",
+        {
+            label: "Backend",
+            submenu: [
+                {
+                    radioItems: [
+                        { label: "Cloud (Vercel)", value: "cloud" },
+                        { label: "Local (WebGPU)", value: "local" },
+                    ],
+                    getValue: () => currentBackend,
+                    setValue: (value) => {
+                        if (currentBackend !== value) {
+                            setBackend(agent, value);
+                        }
+                    }
+                }
+            ]
+        }
       ],
     },
     "MENU_DIVIDER",
@@ -218,11 +321,16 @@ export function launchClippyApp(app, agentName = currentAgentName) {
       return originalSpeakAndAnimate.call(this, text, animation, newOptions);
     };
 
-    agent.speakAndAnimate(
-      "Hey, there. Want quick answers to your questions? Just click me.",
-      "Explain",
-      { useTTS: ttsEnabled },
-    );
+    const backend = getItem(LOCAL_STORAGE_KEYS.CLIPPY_BACKEND);
+    if (!backend) {
+        showBackendChoice(agent);
+    } else {
+        agent.speakAndAnimate(
+            "Hey, there. Want quick answers to your questions? Just click me.",
+            "Explain",
+            { useTTS: ttsEnabled },
+        );
+    }
 
     agent._el.on("click", (e) => {
       if (contextMenuOpened) {
