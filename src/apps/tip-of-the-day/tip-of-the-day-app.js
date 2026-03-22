@@ -1,8 +1,4 @@
 import { Application } from '../../system/application.js';
-import { tipOfTheDayContent } from './tip-of-the-day.js';
-import { apps } from '../../config/apps.js';
-import { launchApp, appManager } from '../../system/app-manager.js';
-import { getStartupApps, addStartupApp, removeStartupApp } from '../../system/startup-manager.js';
 import { ICONS } from '../../config/icons.js';
 
 export class TipOfTheDayApp extends Application {
@@ -32,6 +28,7 @@ export class TipOfTheDayApp extends Application {
     }
 
     async _onLaunch() {
+        const { launchApp, appManager } = await import('../../system/app-manager.js');
         // Delegate to the Assistant (Clippy) to show a tip
         await launchApp("clippy", { showTip: true });
 
