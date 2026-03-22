@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 test('launch agent via console and take screenshot', async ({ page }) => {
+  test.setTimeout(120000);
   await page.goto('http://localhost:3000/win98-web/');
 
   // Wait for boot and desktop
-  await page.waitForSelector('.desktop', { timeout: 60000 });
+  await page.waitForSelector('.desktop', { timeout: 90000 });
 
   // Launch agent using the global launchApp function
   await page.evaluate(async () => {

@@ -4,18 +4,60 @@ import {
   requestBusyState,
   releaseBusyState,
 } from "../../system/busy-state-manager.js";
+import { webLLMService } from "./webllm-service.js";
 
 const SUPPORTED_AGENTS = {
-  Clippy: "Clippit",
-  Dot: "DOT",
-  F1: "F1",
-  Genius: "GENIUS",
-  "Office Logo": "LOGO",
-  MNATURE: "MNATURE",
-  "Monkey King": "Monkey King",
-  Links: "OFFCAT",
-  Rocky: "ROCKY",
+  Clippy: {
+    internalName: "Clippit",
+    personality: "You are Clippy, the helpful but sometimes overly enthusiastic paperclip assistant. You love giving tips, even when they might be obvious. You are friendly, optimistic, and always ready to help. Use 'I'm Clippy!' often."
+  },
+  Dot: {
+    internalName: "DOT",
+    personality: "You are Dot, a high-tech, futuristic ball of energy. You are efficient, precise, and speak with a bit of a digital, electronic flair. You're cool, modern (for 1998), and very smart."
+  },
+  F1: {
+    internalName: "F1",
+    personality: "You are F1, the personification of the Help key. You are professional, knowledgeable, and direct. You take your job of providing assistance very seriously and provide clear, concise instructions."
+  },
+  Genius: {
+    internalName: "GENIUS",
+    personality: "You are Genius, an elderly, wise, and slightly eccentric professor (resembling Einstein). You speak with authority and a touch of whimsy. You like to share 'brilliant' insights."
+  },
+  "Office Logo": {
+    internalName: "LOGO",
+    personality: "You are the Office Logo, a minimalist and abstract entity. You are calm, stable, and represent the core identity of the system. You speak with a dignified and balanced tone."
+  },
+  MNATURE: {
+    internalName: "MNATURE",
+    personality: "You are Mother Nature. You are serene, nurturing, and speak with a gentle, flowing tone. You care about the environment of the desktop and provide help in a peaceful way."
+  },
+  "Monkey King": {
+    internalName: "Monkey King",
+    personality: "You are the Monkey King, a mischievous and energetic character from legend. You are playful, confident, and your help might come with a side of humor or a challenge."
+  },
+  Links: {
+    internalName: "OFFCAT",
+    personality: "You are Links, the cat. You are curious, a bit independent, but ultimately helpful. You might occasionally mention wanting a treat or a nap, but you're always there to guide the user."
+  },
+  Rocky: {
+    internalName: "ROCKY",
+    personality: "You are Rocky, the dog. You are loyal, eager to please, and very friendly. You are always excited to help and your energy is infectious. You're a 'good boy' assistant."
+  },
 };
+
+const WINDOWS_98_HELP = `
+Windows 98 Web Edition is a browser-based recreation of the classic OS.
+Key features include:
+- Start Menu: Access all programs.
+- My Computer: Browse virtual files (ZenFS).
+- Internet Explorer: Browse the retro web (Wayback Machine).
+- Control Panel: Customize display, themes, and more.
+- Desktop Themes: Classic Windows themes (Baseball, Jungle, Space, etc.).
+- Virtual File System: Persistent storage in IndexedDB (/C:).
+- Mount Local Folders: Use 'Insert Removable Disk' in Explorer to mount real local folders.
+- Applications: Solitaire, Minesweeper, WordPad, Paint, Webamp (Winamp), etc.
+- DOS Emulation: Run Doom, Quake, and other DOS games.
+`;
 
 let currentAgentName = getItem("msAgentName") || "Clippy";
 
@@ -126,25 +168,57 @@ async function askAgent(agent, question) {
   });
 
   try {
-    const encodedQuestion = encodeURIComponent(question.trim());
-    const response = await fetch(
-      `https://resume-chat-api-nine.vercel.app/api/clippy-helper?query=${encodedQuestion}`,
-    );
-    const data = await response.json();
+    const agentConfig = SUPPORTED_AGENTS[currentAgentName] || SUPPORTED_AGENTS["Clippy"];
+    const personality = agentConfig.personality;
 
-    for (const fragment of data) {
-      const cleanAnswer = fragment.answer.replace(/\*\*/g, "");
-      await agent.speak(cleanAnswer, {
-        useTTS: ttsEnabled,
-        animation: fragment.animation,
-      });
+    const systemPrompt = `${personality}
+
+You are an assistant for 'Windows 98 Web Edition'.
+Here is some information about the system:
+${WINDOWS_98_HELP}
+
+IMPORTANT: Your response MUST be in a JSON array format where each element is an object with 'answer' and 'animation' keys.
+The 'animation' should be one of the typical MSAgent animations (e.g., Explain, GestureLeft, GestureRight, Wave, Thinking, Congratulate, Pleased, Sad, Alert, Searching, Processing).
+Keep answers short and friendly.
+
+Example response:
+[{"answer": "Sure! I can help with that.", "animation": "Explain"}]
+`;
+
+    const messages = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: question }
+    ];
+
+    const responseText = await webLLMService.chat(messages);
+    let data;
+    try {
+        data = JSON.parse(responseText);
+    } catch (e) {
+        // Fallback if LLM didn't return valid JSON
+        data = [{ answer: responseText, animation: "Explain" }];
+    }
+
+    if (Array.isArray(data)) {
+        for (const fragment of data) {
+          const cleanAnswer = fragment.answer.replace(/\*\*/g, "");
+          await agent.speak(cleanAnswer, {
+            useTTS: ttsEnabled,
+            animation: fragment.animation,
+          });
+        }
+    } else {
+        await agent.speak(data.answer || responseText, {
+            useTTS: ttsEnabled,
+            animation: data.animation || "Explain",
+        });
     }
   } catch (error) {
     await agent.speak(
       "Sorry, I couldn't get an answer for that at this time!",
       { useTTS: ttsEnabled, animation: "Wave" },
     );
-    console.error("API Error:", error);
+    console.error("LLM Error:", error);
   }
 }
 
@@ -168,8 +242,8 @@ export async function launchAgentApp(app, agentName = currentAgentName) {
 
   const ttsUserPref = getItem("msAgentTTSEnabled") ?? true;
 
-  const internalName =
-    SUPPORTED_AGENTS[agentName] || SUPPORTED_AGENTS["Clippy"];
+  const agentConfig = SUPPORTED_AGENTS[agentName] || SUPPORTED_AGENTS["Clippy"];
+  const internalName = agentConfig.internalName;
 
   const agent = await Agent.load(internalName, {
     fixed: false,
@@ -177,6 +251,9 @@ export async function launchAgentApp(app, agentName = currentAgentName) {
     initialAnimation: "Greeting",
   });
   window.msAgentInstance = agent;
+
+  // Pre-load LLM in background
+  webLLMService.init().catch(console.error);
 
   // Stay on top of windows but below menus
   // Note: the library may re-parent or create its own container.

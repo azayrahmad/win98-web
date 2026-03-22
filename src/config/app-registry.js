@@ -1,6 +1,6 @@
 import { ICONS } from './icons.js';
-import { getAgentMenuItems } from '../apps/agent/agent.js';
 import { getClippyMenuItems } from '../apps/clippy/clippy.js';
+import { getAgentMenuItems } from '../apps/agent/agent.js';
 import { getESheepMenuItems } from '../apps/esheep/esheep.js';
 import { getWebampMenuItems } from '../apps/webamp/webamp.js';
 
