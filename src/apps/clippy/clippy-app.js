@@ -30,9 +30,9 @@ export class ClippyApp extends Application {
         return null;
     }
 
-    _onLaunch() {
+    _onLaunch(data) {
         // Call the legacy launch function.
-        launchClippyApp(this);
+        launchClippyApp(this, undefined, { showTip: data?.showTip });
     }
 
     _cleanup() {
