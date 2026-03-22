@@ -1,7 +1,7 @@
 import { Application } from '../../system/application.js';
 import { tipOfTheDayContent } from './tip-of-the-day.js';
 import { apps } from '../../config/apps.js';
-import { launchApp } from '../../system/app-manager.js';
+import { launchApp, appManager } from '../../system/app-manager.js';
 import { getStartupApps, addStartupApp, removeStartupApp } from '../../system/startup-manager.js';
 import { ICONS } from '../../config/icons.js';
 
