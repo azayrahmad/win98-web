@@ -8,6 +8,8 @@ import {
   releaseBusyState,
 } from '../../system/busy-state-manager.js';
 import { appManager } from '../../system/app-manager.js';
+import { apps } from '../../config/apps.js';
+import { getStartupApps, addStartupApp, removeStartupApp } from '../../system/startup-manager.js';
 
 window.clippyAppInstance = null;
 let currentAgentName =
@@ -60,6 +62,26 @@ async function askClippy(agent, question) {
   }
 }
 
+async function showRandomTip(agent) {
+  const tips = apps.reduce((acc, app) => {
+    if (app.tips) {
+      return acc.concat(app.tips);
+    }
+    return acc;
+  }, []);
+
+  if (tips.length === 0) return;
+
+  const currentTipIndex = Math.floor(Math.random() * tips.length);
+  const tip = tips[currentTipIndex];
+  const ttsEnabled = agent.isTTSEnabled();
+
+  // Create a temporary element to strip HTML for TTS if needed,
+  // though speakAndAnimate might handle it.
+  // The tips might contain <a> tags.
+  await agent.speakAndAnimate(tip, "Explain", { useTTS: ttsEnabled });
+}
+
 import { AGENT_NAMES } from '../../config/agents.js';
 
 export function getClippyMenuItems(app) {
@@ -75,6 +97,10 @@ export function getClippyMenuItems(app) {
     {
       label: "&Animate",
       action: () => agent.animate(),
+    },
+    {
+      label: "&Show Tip",
+      action: () => showRandomTip(agent),
     },
     {
       label: "&Ask Clippy",
@@ -97,6 +123,25 @@ export function getClippyMenuItems(app) {
           const newState = !currentState;
           setItem(LOCAL_STORAGE_KEYS.CLIPPY_TTS_ENABLED, newState);
           if (agent) agent.setTTSEnabled(newState);
+        },
+      },
+    },
+    {
+      label: "Show tips at startup",
+      checkbox: {
+        check: async () => {
+          const startupApps = await getStartupApps();
+          return startupApps.includes('tip-of-the-day') || startupApps.includes('tipOfTheDay');
+        },
+        toggle: async () => {
+          const startupApps = await getStartupApps();
+          const isEnabled = startupApps.includes('tip-of-the-day') || startupApps.includes('tipOfTheDay');
+          if (isEnabled) {
+            await removeStartupApp('tip-of-the-day');
+            await removeStartupApp('tipOfTheDay');
+          } else {
+            await addStartupApp('tip-of-the-day');
+          }
         },
       },
     },
@@ -144,11 +189,12 @@ export function showClippyContextMenu(event, app) {
   new window.ContextMenu(menuItems, event);
 }
 
-export function launchClippyApp(app, agentName = currentAgentName) {
+export function launchClippyApp(app, agentName = currentAgentName, options = {}) {
   if (app) {
     window.clippyAppInstance = app;
   }
   const appInstance = app || window.clippyAppInstance;
+  const showTip = options.showTip || false;
 
   if (window.clippyAgent) {
     // Gracefully hide and remove the current agent before loading a new one
@@ -218,11 +264,15 @@ export function launchClippyApp(app, agentName = currentAgentName) {
       return originalSpeakAndAnimate.call(this, text, animation, newOptions);
     };
 
-    agent.speakAndAnimate(
-      "Hey, there. Want quick answers to your questions? Just click me.",
-      "Explain",
-      { useTTS: ttsEnabled },
-    );
+    if (showTip) {
+      showRandomTip(agent);
+    } else {
+      agent.speakAndAnimate(
+        "Hey, there. Want quick answers to your questions? Just click me.",
+        "Explain",
+        { useTTS: ttsEnabled },
+      );
+    }
 
     let startX, startY;
     agent._el.on("mousedown", (e) => {
