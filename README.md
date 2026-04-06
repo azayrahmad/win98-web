@@ -1,6 +1,17 @@
 # Windows 98 Web Edition
 
+<div align="center">
+
+[![Deploy static content to Pages](https://github.com/azayrahmad/win98-web/actions/workflows/static.yml/badge.svg)](https://github.com/azayrahmad/win98-web/actions/workflows/static.yml)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/azayrahmad/win98-web?style=flat-square)](https://github.com/azayrahmad/win98-web/releases)
+[![GitHub](https://img.shields.io/github/license/azayrahmad/win98-web?style=flat-square)](https://github.com/azayrahmad/win98-web/blob/main/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/azayrahmad/win98-web?style=flat-square)](https://github.com/azayrahmad/win98-web/issues)
+[![GitHub stars](https://img.shields.io/github/stars/azayrahmad/win98-web?style=flat-square)](https://github.com/azayrahmad/win98-web/stargazers)
+[![Built with Bun](https://img.shields.io/badge/Built%20with-Bun-black?style=flat-square&logo=bun)](https://bun.sh)
+
 > An ultimate pixel-perfect browser‑based recreation attempt of Windows 98.
+
+</div>
 
 A web-based recreation of the classic Windows 98 desktop experience, built using vanilla JavaScript, HTML, and CSS. Experience the familiar interface of Windows 98 directly in your modern browser, complete with working applications and games, customizable themes, and an AI-powered Clippy.
 
@@ -93,6 +104,20 @@ Windows 98 Web Edition includes a growing collection of built-in applications. T
 * **Display Properties & Desktop Themes** for theme and appearance customization.
 * **Disk Defragmenter** (visual simulation, not real defragmentation).
 * **Help & Report A Bug**.
+
+---
+
+## 🐞 Bug Reporting
+
+We want to make Windows 98 Web Edition as stable and authentic as possible! If you encounter any issues, please let us know.
+
+### **The Preferred Way: GitHub Issues**
+For the best tracking, please report bugs directly on our GitHub repository. This allows the community to discuss, track, and fix issues transparently.
+
+👉 **[Report a Bug on GitHub](https://github.com/azayrahmad/win98-web/issues/new/choose)**
+
+### **In-App Reporting**
+If you don't have a GitHub account, you can also use the **Report a Bug** application within the OS (Start → Programs → Accessories → Report a Bug). Note that these reports are anonymous and we may not be able to follow up with you directly.
 
 ### Special Features
 * **Assistant (Clippy)**: An intelligent assistant that can answer questions and help navigate the system.

@@ -450,6 +450,7 @@ export const appRegistry = {
     id: "report-a-bug",
     title: "Report a Bug",
     icon: ICONS.error,
+    category: "Accessories",
     width: 400,
     height: 320,
     resizable: false,
