@@ -3,6 +3,7 @@ import { fs } from "@zenfs/core";
 import { ShowDialogWindow } from '../../shared/components/dialog-window.js';
 import { ShowFilePicker } from '../../shared/utils/file-picker.js';
 import { getZenFSFileAsText } from '../../system/zenfs-utils.js';
+import { parseRTF, toHTML, convertHTMLToRTF } from '@jonahschulte/rtf-toolkit';
 import "./wordpad.css";
 import { ICONS } from '../../config/icons.js';
 
@@ -402,6 +403,91 @@ export class WordPadApp extends Application {
     const fontSize = this.win.$content.find("#wordpad-font-size")[0];
     fontFamily.value = "Times New Roman";
     fontSize.value = "10";
+
+    if (typeof data === "string") {
+      await this.loadFile(data);
+    } else if (data && typeof data === "object" && data.filePath) {
+      await this.loadFile(data.filePath);
+    }
+  }
+
+  async loadFile(path) {
+    try {
+      let content = await getZenFSFileAsText(path);
+      if (path.toLowerCase().endsWith(".rtf")) {
+        try {
+          content = this.preProcessRTF(content);
+          const doc = parseRTF(content);
+          this.editor.innerHTML = toHTML(doc, { includeWrapper: false });
+        } catch (parseError) {
+          console.error("RTF parse error, falling back to raw text:", parseError);
+          this.editor.innerText = content;
+        }
+      } else {
+        this.editor.innerHTML = content;
+      }
+      this.zenfsPath = path;
+      this.fileName = path.split("/").pop();
+      this.isDirty = false;
+      this.updateTitle();
+    } catch (e) {
+      console.error("Error opening file from ZenFS:", e);
+      ShowDialogWindow({
+        title: "Error",
+        text: `Could not open file: ${path}`,
+        buttons: [{ label: "OK", isDefault: true }],
+      });
+    }
+  }
+
+  preProcessRTF(rtf) {
+    // 1. Remove spaces after opening braces that prevent destination recognition
+    rtf = rtf.replace(/\{\s+/g, "{");
+
+    // 2. Strip ignorable groups and unsupported destinations using a depth-aware loop
+    // @jonahschulte/rtf-toolkit parser is fragile and gets confused by nested groups
+    // in destinations like \fonttbl, or unknown destinations like \stylesheet.
+    let result = "";
+    let depth = 0;
+    let skipUntilDepth = -1;
+
+    for (let i = 0; i < rtf.length; i++) {
+      const char = rtf[i];
+
+      if (char === "{") {
+        depth++;
+        if (depth > 1 && skipUntilDepth === -1) {
+          const next = rtf.slice(i + 1, i + 30);
+          // Strip ignorable groups (starting with \* or *) and known unsupported destinations
+          if (
+            next.startsWith("\\*") ||
+            next.startsWith("*") ||
+            next.startsWith("\\stylesheet") ||
+            next.startsWith("\\info") ||
+            next.startsWith("\\listtable") ||
+            next.startsWith("\\listoverridetable") ||
+            next.startsWith("\\pgdsctbl") ||
+            next.startsWith("\\generator") ||
+            next.startsWith("\\background") ||
+            next.startsWith("\\shp")
+          ) {
+            skipUntilDepth = depth;
+          }
+        }
+      }
+
+      if (skipUntilDepth === -1) {
+        result += char;
+      }
+
+      if (char === "}") {
+        if (depth === skipUntilDepth) {
+          skipUntilDepth = -1;
+        }
+        depth--;
+      }
+    }
+    return result;
   }
 
   _setupToolbarListeners() {
@@ -830,31 +916,34 @@ export class WordPadApp extends Application {
     const path = await ShowFilePicker({
       title: "Open Document",
       mode: "open",
-      fileTypes: [{ label: "HTML Document (*.html)", extensions: ["html"] }],
+      fileTypes: [
+        { label: "Rich Text Format (*.rtf)", extensions: ["rtf"] },
+        { label: "All Files (*.*)", extensions: ["*"] },
+      ],
     });
 
     if (path) {
-      try {
-        const content = await getZenFSFileAsText(path);
-        this.editor.innerHTML = content;
-        this.zenfsPath = path;
-        this.fileName = path.split("/").pop();
-        this.isDirty = false;
-        this.updateTitle();
-      } catch (e) {
-        console.error("Error opening file from ZenFS:", e);
-      }
+      await this.loadFile(path);
     }
   }
 
   async saveFile() {
     if (this.zenfsPath) {
       try {
-        await fs.promises.writeFile(this.zenfsPath, this.editor.innerHTML);
+        let content = this.editor.innerHTML;
+        if (this.zenfsPath.toLowerCase().endsWith(".rtf")) {
+          content = this.htmlToRTF(content);
+        }
+        await fs.promises.writeFile(this.zenfsPath, content);
         this.isDirty = false;
         this.updateTitle();
       } catch (err) {
         console.error("Error saving file:", err);
+        ShowDialogWindow({
+          title: "Error",
+          text: `Could not save file: ${err.message}`,
+          buttons: [{ label: "OK", isDefault: true }],
+        });
       }
     } else {
       await this.saveAs();
@@ -866,19 +955,33 @@ export class WordPadApp extends Application {
       title: "Save Document As",
       mode: "save",
       suggestedName:
-        this.fileName === "Untitled" ? "Untitled.html" : this.fileName,
-      fileTypes: [{ label: "HTML Document (*.html)", extensions: ["html"] }],
+        this.fileName === "Untitled"
+          ? "Untitled.rtf"
+          : this.fileName.replace(/\.html$/i, ".rtf"),
+      fileTypes: [
+        { label: "Rich Text Format (*.rtf)", extensions: ["rtf"] },
+        { label: "All Files (*.*)", extensions: ["*"] },
+      ],
     });
 
     if (path) {
       try {
-        await fs.promises.writeFile(path, this.editor.innerHTML);
+        let content = this.editor.innerHTML;
+        if (path.toLowerCase().endsWith(".rtf")) {
+          content = this.htmlToRTF(content);
+        }
+        await fs.promises.writeFile(path, content);
         this.zenfsPath = path;
         this.fileName = path.split("/").pop();
         this.isDirty = false;
         this.updateTitle();
       } catch (err) {
         console.error("Error saving file:", err);
+        ShowDialogWindow({
+          title: "Error",
+          text: `Could not save file: ${err.message}`,
+          buttons: [{ label: "OK", isDefault: true }],
+        });
       }
     }
   }

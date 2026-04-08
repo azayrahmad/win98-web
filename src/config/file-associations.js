@@ -117,6 +117,11 @@ export const fileAssociations = {
     appId: "notepad",
     icon: ICONS.textFile,
   },
+  rtf: {
+    name: "Rich Text Format",
+    appId: "wordpad",
+    icon: ICONS.wordpad,
+  },
   // Image files
   png: {
     name: "PNG Image",
