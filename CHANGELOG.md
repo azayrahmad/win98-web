@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.10.0](https://github.com/azayrahmad/win98-web/compare/win98-web-v0.9.0...win98-web-v0.10.0) (2026-04-08)
+
+
+### Features
+
+* add README badges and enhance bug reporting with GitHub integration ([aa3b50f](https://github.com/azayrahmad/win98-web/commit/aa3b50f5328df22b2cece2cc2f0f1695d9d18cd6))
+* **agent:** fix tutorial text display and enhance interactive flow ([455a197](https://github.com/azayrahmad/win98-web/commit/455a1979855b353d57a1b23719cd5eb5e776efaa))
+* **agent:** fix tutorial text/TTS and improve Start Menu logic ([cecf9da](https://github.com/azayrahmad/win98-web/commit/cecf9da80b871f4afcc48ee013620c1f325184c5))
+* **agent:** update tutorial to interactive ask-based flow ([937035f](https://github.com/azayrahmad/win98-web/commit/937035f67fbe33541d3c9a7ef4c49a328231764c))
+
+
+### Bug Fixes
+
+* agent tutorial buttons and package commands ([2b6dbe6](https://github.com/azayrahmad/win98-web/commit/2b6dbe66ea8240172b58f32cf364f8cc379ed95e))
+
 ## [0.9.0](https://github.com/azayrahmad/win98-web/compare/win98-web-v0.8.1...win98-web-v0.9.0) (2026-03-24)
 
 
