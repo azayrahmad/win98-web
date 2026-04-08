@@ -30,8 +30,8 @@ export default class ReportABugApp extends Application {
 
     const preface = document.createElement("p");
     preface.className = "reportabug-preface";
-    preface.textContent =
-      "We are sorry you are experiencing an issue. Please provide a detailed description of the bug you encountered. Your feedback is valuable and helps us improve the system.";
+    preface.innerHTML =
+      "We use GitHub to track bugs and feature requests. For the best experience, please use our <b>GitHub Issues</b> page.";
     container.appendChild(preface);
 
     this.textarea = document.createElement("textarea");
@@ -43,13 +43,27 @@ export default class ReportABugApp extends Application {
     buttonContainer.className = "reportabug-buttons";
     container.appendChild(buttonContainer);
 
+    this.githubButton = document.createElement("button");
+    this.githubButton.className = "button-default-size";
+    this.githubButton.style.marginRight = "10px";
+    this.githubButton.textContent = "Report on GitHub";
+    this.githubButton.onclick = () => this.handleGithubReport();
+    buttonContainer.appendChild(this.githubButton);
+
     this.sendButton = document.createElement("button");
     this.sendButton.className = "button-default-size";
-    this.sendButton.textContent = "Send";
+    this.sendButton.textContent = "Quick Send";
     this.sendButton.onclick = () => this.handleSend();
     buttonContainer.appendChild(this.sendButton);
 
     return win;
+  }
+
+  handleGithubReport() {
+    const baseUrl = "https://github.com/azayrahmad/win98-web/issues/new";
+    const body = encodeURIComponent(this.textarea.value);
+    const url = `${baseUrl}${body ? "?body=" + body : ""}`;
+    window.open(url, "_blank");
   }
 
   async _onLaunch() {

@@ -21,3 +21,9 @@
   display: flex;
   justify-content: flex-end;
 }
+
+.reportabug-buttons button {
+  min-width: 80px;
+  width: auto !important;
+  white-space: nowrap;
+}
