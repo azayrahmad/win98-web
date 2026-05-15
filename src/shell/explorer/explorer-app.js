@@ -1085,7 +1085,7 @@ export class ZenExplorerApp extends Application {
       !finalUrl.startsWith("http://") &&
       !finalUrl.startsWith("https://")
     ) {
-      finalUrl = `https://${finalUrl}`;
+      finalUrl = this.retroMode ? `http://${finalUrl}` : `https://${finalUrl}`;
     }
 
     const loadIframe = async (target) => {
@@ -1125,12 +1125,9 @@ export class ZenExplorerApp extends Application {
 
           const data = await response.json();
           const snapshot = data?.archived_snapshots?.closest;
-          const has1998Snapshot =
-            snapshot?.available === true &&
-            typeof snapshot?.timestamp === "string" &&
-            snapshot.timestamp.startsWith("1998");
+          const isAvailable = snapshot?.available === true;
 
-          if (!has1998Snapshot) {
+          if (!isAvailable) {
             loadIframe("./internet-explorer/404.html");
             return;
           }
