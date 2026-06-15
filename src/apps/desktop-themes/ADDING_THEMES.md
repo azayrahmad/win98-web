@@ -17,7 +17,7 @@ Before you begin, you will need to have the following assets ready:
 
 *   **A `.theme` or `.ini` file:** This file contains the color scheme for your theme. You can find these files online or create your own.
 *   **A wallpaper image:** This can be a `.jpg`, `.png`, or `.bmp` file.
-*   **Sound files:** A set of `.wav` files for the different system events.
+*   **Sound files:** A set of `.mp3` files for the different system events.
 *   **Icon files:** `.png` files for the "My Computer," "Recycle Bin," and "Network Neighborhood" icons. You will need two sizes for each icon: 16x16 and 32x32 pixels.
 
 ## Step 1: Convert Your Color Scheme to CSS
@@ -37,7 +37,7 @@ Next, you need to place your asset files in the correct directories:
 
 *   **CSS file:** Place your `.css` file in the `public/os-gui/` directory.
 *   **Wallpaper image:** Place your wallpaper image in the `src/assets/img/wallpapers/themes/` directory.
-*   **Sound files:** Place your `.wav` files in the `src/assets/audio/` directory.
+*   **Sound files:** Place your `.mp3` files in the `src/assets/audio/` directory.
 *   **Icon files:** Place your `.png` icon files in the `src/assets/icons/theme-icons/` directory.
 
 ## Step 3: Configure Your Theme
@@ -73,8 +73,8 @@ Open the `src/config/sound-schemes.js` file and add a new entry for your sound s
 First, import your sound files at the top of the file:
 
 ```javascript
-import myThemeStartup from "../assets/audio/my-theme-startup.wav";
-import myThemeDefaultSound from "../assets/audio/my-theme-default-sound.wav";
+import myThemeStartup from "../assets/audio/my-theme-startup.mp3";
+import myThemeDefaultSound from "../assets/audio/my-theme-default-sound.mp3";
 // ... import other sound files
 ```
 
